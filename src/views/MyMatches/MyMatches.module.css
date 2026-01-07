@@ -1,0 +1,282 @@
+.page{
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: transparent;
+  color: var(--text);
+}
+
+/* ========================= */
+/* Header */
+/* ========================= */
+.header h2{
+  font-size: 26px;
+  font-weight: 1000;
+  color: var(--text);
+}
+
+.header p{
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 4px;
+}
+
+/* ========================= */
+/* List */
+/* ========================= */
+.list{
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ========================= */
+/* Card */
+/* ========================= */
+.card{
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: transform .15s ease, border-color .15s ease;
+}
+
+.card:active{
+  transform: scale(.98);
+}
+
+.card:hover{
+  border-color: rgba(34,197,94,.45);
+}
+
+/* ========================= */
+/* Image */
+/* ========================= */
+.imageBox{
+  position: relative;
+  height: 96px;
+}
+
+.imageBox img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ========================= */
+/* Badges */
+/* ========================= */
+.badge{
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: linear-gradient(
+    180deg,
+    var(--primary),
+    var(--primary-2)
+  );
+  color: #06210f;
+  font-size: 9px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.time{
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,.55);
+  color: white;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 4px 8px;
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+}
+
+/* ========================= */
+/* Info */
+/* ========================= */
+.info{
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info h3{
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.info p{
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+/* ========================= */
+/* Empty state */
+/* ========================= */
+.empty{
+  padding: 48px 20px;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: var(--r-xl);
+  background: linear-gradient(
+    180deg,
+    var(--surface),
+    transparent
+  );
+}
+
+.emptyIcon{
+  font-size: 36px;
+  opacity: .25;
+  margin-bottom: 12px;
+}
+
+.empty p{
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.empty span{
+  font-size: 10px;
+  color: var(--muted-2);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+}
+
+/* ========================= */
+/* Footer */
+/* ========================= */
+.footer{
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  text-align: center;
+}
+
+.footer p{
+  font-size: 9px;
+  font-weight: 1000;
+  color: var(--muted);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  opacity: .6;
+}
+/* filtros */
+.filters{
+  display:flex;
+  gap:10px;
+  padding: 10px 16px 0;
+  flex-wrap:wrap;
+}
+
+.filterBtn{
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border, rgba(255,255,255,.14));
+  background: var(--surface, rgba(255,255,255,.04));
+  color: var(--text, #fff);
+  font-weight: 900;
+  cursor: pointer;
+  opacity: .86;
+}
+
+.active{
+  opacity: 1;
+  border-color: var(--accent, rgba(217,77,43,.65));
+  background: var(--accent-soft, rgba(217,77,43,.14));
+}
+
+/* header stats */
+.headerStats{
+  margin-top: 8px;
+  opacity: .9;
+  display:flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+}
+
+/* meta row no card (histórico) */
+.metaRow{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  font-size: 12px;
+  opacity: .9;
+}
+
+/* badges por status */
+.badge_SCHEDULED{
+  background: rgba(255,255,255,.22);
+  border: 1px solid rgba(255,255,255,.25);
+}
+
+.badge_STARTED{
+  background: rgba(22,163,74,.22);
+  border: 1px solid rgba(34,197,94,.45);
+}
+
+.badge_FINISHED{
+  background: rgba(99,102,241,.22);
+  border: 1px solid rgba(129,140,248,.45);
+}
+
+.badge_CANCELLED{
+  background: rgba(220,38,38,.22);
+  border: 1px solid rgba(248,113,113,.45);
+}
+/* =========================
+   PATCH — STATUS BADGES (prioridade sobre .badge)
+   ========================= */
+
+/* base do badge continua (shape) mas deixa o fundo "neutro" para as variações controlarem */
+.badge{
+  background: rgba(255,255,255,.20);
+  border: 1px solid rgba(255,255,255,.22);
+  color: rgba(255,255,255,.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* status: agendada */
+.badge_SCHEDULED{
+  background: rgba(255,255,255,.20);
+  border-color: rgba(255,255,255,.22);
+  color: rgba(255,255,255,.92);
+}
+
+/* status: em andamento */
+.badge_STARTED{
+  background: rgba(22,163,74,.22);
+  border-color: rgba(34,197,94,.45);
+  color: rgba(240,253,244,.98);
+}
+
+/* status: finalizada */
+.badge_FINISHED{
+  background: rgba(99,102,241,.22);
+  border-color: rgba(129,140,248,.45);
+  color: rgba(238,242,255,.98);
+}
+
+/* status: cancelada */
+.badge_CANCELLED{
+  background: rgba(220,38,38,.22);
+  border-color: rgba(248,113,113,.45);
+  color: rgba(254,242,242,.98);
+}

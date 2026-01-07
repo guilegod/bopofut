@@ -1,0 +1,178 @@
+/* =========================================================
+   THEME — BÓPÔ FUT (Premium Sport • Meio-termo)
+   Controle tudo por aqui: fundo, texto, cards, botões, etc.
+   ========================================================= */
+
+:root{
+  /* --------- Background (nem preto nem branco) --------- */
+  --bg: #0f172a;                 /* base */
+  --bg-2: #111f3b;               /* variação para gradiente */
+  --bg-soft: rgba(255,255,255,.04);
+
+  /* --------- Surfaces (cards/panels) --------- */
+  --surface: rgba(255,255,255,.06);       /* cards padrão */
+  --surface-2: rgba(255,255,255,.085);    /* destaque leve */
+  --surface-solid: #162545;               /* quando precisar sólido */
+
+  /* --------- Borders / Dividers --------- */
+  --border: rgba(255,255,255,.12);
+  --border-2: rgba(255,255,255,.18);
+
+  /* --------- Text --------- */
+  --text: #e7edf6;               /* principal */
+  --muted: rgba(231,237,246,.72);
+  --muted-2: rgba(231,237,246,.55);
+
+  /* --------- Brand (esporte) --------- */
+  --primary: #22c55e;            /* verde */
+  --primary-2: #16a34a;
+  --primary-soft: rgba(34,197,94,.16);
+
+  --accent: #fbbf24;             /* âmbar/dourado */
+  --accent-2: #f59e0b;
+  --accent-soft: rgba(251,191,36,.18);
+
+  /* --------- Status --------- */
+  --danger: #ef4444;
+  --danger-soft: rgba(239,68,68,.16);
+
+  --info: #60a5fa;
+  --info-soft: rgba(96,165,250,.16);
+
+  /* --------- Shadows --------- */
+  --shadow-sm: 0 8px 24px rgba(0,0,0,.28);
+  --shadow-md: 0 14px 40px rgba(0,0,0,.35);
+
+  /* --------- Radius --------- */
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+
+  /* --------- Spacing --------- */
+  --p-1: 8px;
+  --p-2: 12px;
+  --p-3: 16px;
+  --p-4: 22px;
+
+  /* --------- Typography --------- */
+  --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+
+  /* --------- App width --------- */
+  --app-max: 1100px;
+
+  /* --------- Effects --------- */
+  --glass: blur(12px);
+
+
+  /* =========================================================
+     PALETA "TERRA" (vinda do tema antigo)
+     Use esses tokens para substituir os hex hardcoded antigos.
+     ========================================================= */
+
+  /* nomes "antigos" (compat) */
+  --legacy-bg: #FDFBF7;          /* bg antigo */
+  --legacy-grass: #2D5A27;       /* grass antigo */
+  --legacy-earth: #A67C52;       /* earth antigo */
+  --legacy-paper: #E8D5B5;       /* paper antigo */
+  --legacy-text: #2D2926;        /* text antigo */
+  --legacy-accent: #D94D2B;      /* accent antigo */
+
+  /* aliases mais fáceis (curtos) */
+  --paper: var(--legacy-paper);
+  --earth: var(--legacy-earth);
+  --grass: var(--legacy-grass);
+  --ink: var(--legacy-text);
+  --spice: var(--legacy-accent);
+
+  /* versões soft pra “misturar” com o seu tema atual */
+  --grass-soft: rgba(45, 90, 39, .18);
+  --earth-soft: rgba(166, 124, 82, .18);
+  --paper-soft: rgba(232, 213, 181, .18);
+  --spice-soft: rgba(217, 77, 43, .18);
+
+  /* bordas no estilo "paper" sem ficar claro demais */
+  --border-paper: rgba(232, 213, 181, .28);
+  --border-earth: rgba(166, 124, 82, .28);
+  --border-grass: rgba(45, 90, 39, .28);
+
+  /* se você quiser trocar a identidade rápido no futuro:
+     é só mudar essas linhas, o app inteiro acompanha */
+  --brand-grass: var(--primary);
+  --brand-paper: var(--accent);
+  --brand-earth: var(--accent-2);
+  --brand-spice: var(--spice);
+}
+
+/* =========================================================
+   Global helpers (opcionais): use nos modules se quiser
+   ========================================================= */
+
+.theme-bg{
+  background: radial-gradient(circle at 18% 0%, var(--bg-2), var(--bg) 60%);
+  color: var(--text);
+}
+
+.card{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.cardStrong{
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.title{
+  font-weight: 900;
+  color: var(--text);
+}
+
+.muted{
+  color: var(--muted);
+}
+
+.btnPrimary{
+  background: linear-gradient(180deg, var(--primary), var(--primary-2));
+  color: #06210f;
+  border-radius: var(--r-lg);
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.btnAccent{
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  color: #2a1a00;
+  border-radius: var(--r-lg);
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.btnGhost{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--r-lg);
+  font-weight: 900;
+}
+
+.chip{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}

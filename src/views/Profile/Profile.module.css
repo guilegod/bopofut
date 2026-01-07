@@ -1,0 +1,129 @@
+.page{
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: transparent; /* deixa o tema global mandar */
+  color: var(--text);
+  min-height: 100%;
+}
+
+/* ========================= */
+/* Top */
+/* ========================= */
+.topRow{
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  gap: 10px;
+}
+
+.backBtn{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  font-weight: 1000;
+  color: var(--text);
+}
+
+.topTitle{
+  text-align: center;
+  font-weight: 1000;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-size: 11px;
+  opacity: .9;
+}
+
+.topSpacer{
+  width: 44px;
+  height: 44px;
+}
+
+/* ========================= */
+/* Edit button */
+/* ========================= */
+.editBtn{
+  width: 100%;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: 11px;
+  color: var(--text);
+}
+
+/* ========================= */
+/* Sections */
+/* ========================= */
+.section{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.h3{
+  margin: 0;
+  font-size: 18px;
+  font-weight: 1000;
+  color: var(--text);
+}
+
+/* ========================= */
+/* Activities */
+/* ========================= */
+.activityList{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.activityItem{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 14px;
+  border-radius: var(--r-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.activityTitle{
+  font-weight: 1000;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.activitySub{
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ========================= */
+/* Badge */
+/* ========================= */
+.activityBadge{
+  font-size: 10px;
+  font-weight: 1000;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  border: 1px solid rgba(34,197,94,.35);
+  color: var(--primary);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}

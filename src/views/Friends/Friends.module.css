@@ -1,0 +1,143 @@
+.page{
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: transparent;
+  color: var(--text);
+}
+
+/* ========================= */
+/* Header */
+/* ========================= */
+.header{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.backBtn{
+  font-size: 20px;
+  color: var(--accent);
+}
+
+/* ========================= */
+/* Search */
+/* ========================= */
+.search{
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text);
+}
+
+.search::placeholder{
+  color: var(--muted);
+}
+
+/* ========================= */
+/* List */
+/* ========================= */
+.list{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ========================= */
+/* Card */
+/* ========================= */
+.card{
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--border);
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform .15s ease, background .15s ease;
+}
+
+.card:active{
+  transform: scale(.97);
+}
+
+/* ========================= */
+/* Left */
+/* ========================= */
+.left{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatarWrap{
+  position: relative;
+}
+
+.avatarWrap img{
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid rgba(251,191,36,.45);
+}
+
+.dot{
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 2px solid var(--bg);
+}
+
+.on{ background: var(--primary); }
+.off{ background: #9ca3af; }
+
+/* ========================= */
+/* Text */
+/* ========================= */
+.name{
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.meta{
+  font-size: 9px;
+  font-weight: 900;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .12em;
+}
+
+/* ========================= */
+/* More */
+/* ========================= */
+.more{
+  font-size: 22px;
+  color: var(--accent);
+  opacity: .9;
+}
+
+/* ========================= */
+/* Invite */
+/* ========================= */
+.invite{
+  margin-top: 10px;
+  padding: 16px;
+  border-radius: var(--r-xl);
+  border: 1px dashed rgba(251,191,36,.45);
+  background: transparent;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  color: var(--accent);
+}

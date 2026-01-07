@@ -1,0 +1,172 @@
+.page{
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* ========================= */
+/* Header */
+/* ========================= */
+.header{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.backBtn{
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+/* ========================= */
+/* Balance */
+/* ========================= */
+.balanceCard{
+  background: linear-gradient(
+    180deg,
+    var(--primary),
+    var(--primary-2)
+  );
+  border-radius: var(--r-xl);
+  padding: 22px;
+  color: #06210f;
+  box-shadow: var(--shadow-md);
+}
+
+.balanceLabel{
+  font-size: 10px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  opacity: .75;
+}
+
+.balanceValue{
+  font-size: 36px;
+  margin: 6px 0 14px;
+  font-weight: 900;
+}
+
+/* ========================= */
+/* Sections */
+/* ========================= */
+.section{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sectionHeader{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ========================= */
+/* Cards */
+/* ========================= */
+.card{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ========================= */
+/* Presets */
+/* ========================= */
+.presets{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.presetBtn{
+  border-radius: 12px;
+  padding: 10px 0;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-weight: 800;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.active{
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #06210f;
+}
+
+/* ========================= */
+/* Buttons */
+/* ========================= */
+.primaryBtn{
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  color: #2a1a00;
+  padding: 14px;
+  border-radius: var(--r-lg);
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.outlineBtn{
+  border: 1px solid var(--border);
+  padding: 14px;
+  border-radius: var(--r-lg);
+  font-weight: 900;
+  font-size: 11px;
+  background: transparent;
+  color: var(--text);
+}
+
+/* ========================= */
+/* List */
+/* ========================= */
+.list{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.item{
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.item span{
+  font-size: 10px;
+  opacity: .6;
+}
+
+.positive{
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.negative{
+  color: var(--danger);
+  font-weight: 900;
+}
+
+/* ========================= */
+/* Footer */
+/* ========================= */
+.footerNote{
+  font-size: 10px;
+  opacity: .6;
+  text-align: center;
+}

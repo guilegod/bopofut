@@ -1,0 +1,170 @@
+.page{
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: transparent;
+  color: var(--text);
+}
+
+/* ========================= */
+/* Header */
+/* ========================= */
+.header{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.back{
+  font-size: 20px;
+  color: var(--accent);
+}
+
+/* ========================= */
+/* Avatar */
+/* ========================= */
+.avatarWrap{
+  display: flex;
+  justify-content: center;
+}
+
+.avatarBox{
+  position: relative;
+  width: 96px;
+  height: 96px;
+}
+
+.avatarBox img{
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 4px solid rgba(34,197,94,.55);
+}
+
+.avatarBtn{
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    var(--accent),
+    var(--accent-2)
+  );
+  color: #2a1a00;
+  font-size: 16px;
+  border: 2px solid var(--bg);
+}
+
+/* ========================= */
+/* Form */
+/* ========================= */
+.form{
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.fields{
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field label{
+  font-size: 10px;
+  font-weight: 1000;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-left: 6px;
+}
+
+.field input,
+.field select{
+  padding: 14px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-weight: 800;
+  color: var(--text);
+  outline: none;
+}
+
+.field input::placeholder{
+  color: var(--muted);
+}
+
+/* ========================= */
+/* Contact */
+/* ========================= */
+.contact{
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.contact h3{
+  font-size: 10px;
+  font-weight: 1000;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.contactBox{
+  background: var(--surface-2);
+  border-radius: var(--r-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid var(--border);
+}
+
+.contactBox span{
+  font-size: 8px;
+  font-weight: 1000;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .14em;
+}
+
+.contactBox strong{
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 900;
+}
+
+/* ========================= */
+/* Note */
+/* ========================= */
+.note{
+  font-size: 9px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 8px;
+}
+
+/* ========================= */
+/* Save */
+/* ========================= */
+.saveBtn{
+  width: 100%;
+  padding: 18px;
+  border-radius: var(--r-xl);
+  background: linear-gradient(
+    180deg,
+    var(--primary),
+    var(--primary-2)
+  );
+  color: #06210f;
+  font-weight: 1000;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  font-size: 12px;
+}

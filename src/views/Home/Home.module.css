@@ -1,0 +1,158 @@
+.page{
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  background: transparent;
+  animation: fadeIn .25s ease-out;
+}
+
+/* ========================= */
+/* Sections */
+/* ========================= */
+.section{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sectionTitle{
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ========================= */
+/* Header row */
+/* ========================= */
+.sectionHeaderRow{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.navBtns{
+  display: flex;
+  gap: 8px;
+}
+
+.iconBtn{
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform .12s ease, background .12s ease;
+}
+.iconBtn:hover{
+  background: var(--surface-2);
+}
+.iconBtn:active{
+  transform: scale(.92);
+}
+
+/* ========================= */
+/* Matches header */
+/* ========================= */
+.matchesHeader{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.h2{
+  margin: 0;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.dateBadge{
+  font-size: 11px;
+  font-weight: 800;
+  color: #2a1a00;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  padding: 6px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+}
+
+/* ========================= */
+/* Match list */
+/* ========================= */
+.matchesList{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ========================= */
+/* Empty state */
+/* ========================= */
+.emptyBox{
+  text-align: center;
+  padding: 36px 18px;
+  border-radius: var(--r-xl);
+  border: 1px dashed var(--border);
+  background: linear-gradient(
+    180deg,
+    var(--surface),
+    transparent
+  );
+}
+
+.emptyText{
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.linkBtn{
+  margin-top: 14px;
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-weight: 900;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  font-size: 11px;
+  padding: 6px 0;
+  position: relative;
+}
+.linkBtn::after{
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--primary),
+    transparent
+  );
+}
+
+/* ========================= */
+/* Animations */
+/* ========================= */
+@keyframes fadeIn{
+  from{
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to{
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

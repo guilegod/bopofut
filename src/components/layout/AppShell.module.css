@@ -1,0 +1,251 @@
+.shell{
+  /* layout, não é cor: ok ficar aqui */
+  --app-max: 1100px;
+
+  min-height: 100dvh; /* melhor que 100vh em mobile */
+  background: transparent; /* deixa o body / theme mandar */
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Centraliza em telas grandes sem “esticar” demais */
+.topbar,
+.content{
+  width: 100%;
+  max-width: var(--app-max);
+  margin: 0 auto;
+}
+
+/* Barra do topo */
+.topbar{
+  height: 58px;
+  padding: 0 14px;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(10px);
+}
+
+/* Botão voltar */
+.backBtn{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.backHide{ opacity:0; pointer-events:none; }
+.backShow{ opacity:1; }
+
+.title{
+  text-align: center;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  opacity: .95;
+}
+
+.rightSlot{
+  width: 44px;
+  height: 44px;
+}
+
+/* Conteúdo: segura espaço do bottom nav + safe-area */
+.content{
+  flex: 1;
+  min-height: 0; /* importante em layouts flex (evita corte estranho) */
+
+  padding: 18px 14px calc(98px + env(safe-area-inset-bottom));
+}
+
+/* Bottom nav fixo e centralizado */
+.bottomNav{
+  height: 74px;
+  padding: 10px 10px calc(14px + env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+
+  /* agora ele sempre fica por cima */
+  z-index: 80;
+
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+
+  /* limita e dá respiro lateral */
+  max-width: var(--app-max);
+  width: calc(100% - 24px);
+}
+
+/* Itens do menu */
+.navItem{
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  color: var(--text);
+}
+
+/* Ativo usando apenas variáveis do tema
+   (assumi que você tem --accent no theme.css; se o nome for outro, me fala que eu ajusto em 10s) */
+.navActive{
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+}
+
+.navIcon{ font-size: 18px; line-height: 1; }
+.navLabel{
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  opacity: .85;
+}
+
+/* Melhor scroll */
+@media (prefers-reduced-motion: no-preference){
+  .content{ scroll-behavior: smooth; }
+}
+.shell{
+  --app-max: 1100px;
+
+  min-height: 100dvh;
+  background: transparent;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar,
+.content{
+  width: 100%;
+  max-width: var(--app-max);
+  margin: 0 auto;
+}
+
+.topbar{
+  height: 58px;
+  padding: 0 14px;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(10px);
+}
+
+.backBtn{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.backHide{ opacity:0; pointer-events:none; }
+.backShow{ opacity:1; }
+
+.title{
+  text-align: center;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  opacity: .95;
+}
+
+.rightSlot{
+  width: 44px;
+  height: 44px;
+}
+
+.content{
+  flex: 1;
+  min-height: 0;
+  padding: 18px 14px calc(98px + env(safe-area-inset-bottom));
+}
+
+.bottomNav{
+  height: 74px;
+  padding: 10px 10px calc(14px + env(safe-area-inset-bottom));
+  display: grid;
+
+  /* ✅ agora é dinâmico: 4 ou 5 itens */
+  grid-template-columns: repeat(var(--nav-count, 4), 1fr);
+
+  gap: 10px;
+
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+
+  z-index: 80;
+
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+
+  max-width: var(--app-max);
+  width: calc(100% - 24px);
+}
+
+.navItem{
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  color: var(--text);
+}
+
+.navActive{
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+}
+
+.navIcon{ font-size: 18px; line-height: 1; }
+.navLabel{
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  opacity: .85;
+}
+

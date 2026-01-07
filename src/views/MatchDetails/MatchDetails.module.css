@@ -1,0 +1,169 @@
+.page{
+  min-height: 100%;
+  background: transparent;
+  color: var(--text);
+}
+
+.content{
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.panel{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.grid2{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 700px){
+  .grid2{ grid-template-columns: 1fr; }
+}
+
+/* ========================= */
+/* Buttons */
+/* ========================= */
+.btnPrimary{
+  width: 100%;
+  border-radius: var(--r-lg);
+  padding: 16px 14px;
+  background: linear-gradient(180deg, var(--primary), var(--primary-2));
+  color: #06210f;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  text-align: center;
+}
+
+.btnDanger{
+  width: 100%;
+  border-radius: var(--r-lg);
+  padding: 16px 14px;
+  background: transparent;
+  color: var(--danger);
+  border: 2px solid var(--danger);
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  text-align: center;
+}
+
+.btnSecondary{
+  width: 100%;
+  border-radius: var(--r-lg);
+  padding: 14px 12px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  color: #2a1a00;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  text-align: center;
+  font-size: 12px;
+}
+
+.muted{
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+/* ========================= */
+/* DetailsTab layout helpers */
+/* ========================= */
+.detailsStack{
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.strong{
+  font-weight: 1000;
+}
+
+.priceStrong{
+  font-weight: 1000;
+  color: var(--primary);
+}
+
+/* ========================= */
+/* Convocados */
+/* ========================= */
+.convocadosHeader{
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.convocadosTitle{
+  margin: 0;
+  font-size: 20px;
+  font-weight: 1000;
+  color: var(--text);
+}
+
+.convocadosInfo{
+  font-size: 10px;
+  font-weight: 1000;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.playersGrid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.playerPill{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.playerAvatar{
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,.18);
+}
+
+.playerName{
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 700px){
+  .playersGrid{ grid-template-columns: 1fr; }
+}
+
+/* ========================= */
+/* CTA + Actions */
+/* ========================= */
+.ctaRow{
+  margin-top: 14px;
+}
+
+.actionsStack{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
