@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import styles from "./myMatches.module.css";
+import styles from "./MyMatches.module.css";
 
 import Header from "./components/Header.jsx";
 import MatchCard from "./components/MatchCard.jsx";
