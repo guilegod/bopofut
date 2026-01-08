@@ -1,4 +1,4 @@
-import styles from "../matchCreator.module.css";
+import styles from "../MatchCreator.module.css";
 
 export default function DateSelector({ dates, value, onSelect, onScroll, scrollRef }) {
   return (

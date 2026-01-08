@@ -1,5 +1,5 @@
 import { useState } from "react";
-import styles from "./editProfile.module.css";
+import styles from "./EditProfile.module.css";
 
 import Header from "./components/Header.jsx";
 import AvatarEditor from "./components/AvatarEditor.jsx";

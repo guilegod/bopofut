@@ -1,4 +1,4 @@
-import styles from "./friends.module.css";
+import styles from "./Friends.module.css";
 
 import Header from "./components/Header.jsx";
 import SearchBar from "./components/SearchBar.jsx";

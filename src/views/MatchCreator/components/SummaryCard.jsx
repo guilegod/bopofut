@@ -1,4 +1,4 @@
-import styles from "../matchCreator.module.css";
+import styles from "../MatchCreator.module.css";
 
 export default function SummaryCard({ data }) {
   const total = (Number(data.maxPlayers) || 0) * (Number(data.pricePerPlayer) || 0);

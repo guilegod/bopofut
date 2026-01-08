@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import styles from "./matchCreator.module.css";
+import styles from "./MatchCreator.module.css";
 
 import CourtSelector from "./components/CourtSelector.jsx";
 import DateSelector from "./components/DateSelector.jsx";
