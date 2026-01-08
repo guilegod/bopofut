@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import styles from "./Profile.module.css";
 import { achievements } from "../../mockData.js";
 
-import PlayerCard from "./components/PlayerCard.jsx";
+import PlayerCard from "./components/Playercard.jsx";
 import WalletCard from "./components/WalletCard.jsx";
 import AchievementsGrid from "./components/AchievementsGrid.jsx";
 import OwnerManagement from "./components/OwnerManagement.jsx";
