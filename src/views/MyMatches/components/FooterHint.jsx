@@ -1,4 +1,4 @@
-import styles from "../myMatches.module.css";
+import styles from "../MyMatches.module.css";
 
 export default function FooterHint() {
   return (
