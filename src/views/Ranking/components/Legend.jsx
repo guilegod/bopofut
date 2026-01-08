@@ -1,4 +1,4 @@
-import styles from "../ranking.module.css";
+import styles from "../Ranking.module.css";
 
 export default function Legend() {
   return (

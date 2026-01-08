@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import styles from "./ranking.module.css";
+import styles from "./Ranking.module.css";
 
 import Header from "./components/Header.jsx";
 import Tabs from "./components/Tabs.jsx";
