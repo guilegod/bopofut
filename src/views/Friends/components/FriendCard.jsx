@@ -1,4 +1,4 @@
-import styles from "../friends.module.css";
+import styles from "../Friends.module.css";
 
 export default function FriendCard({ friend }) {
   const online = friend.status !== "Offline";
