@@ -1,4 +1,4 @@
-import styles from "../editProfile.module.css";
+import styles from "../EditProfile.module.css";
 
 export default function Header({ onBack }) {
   return (
