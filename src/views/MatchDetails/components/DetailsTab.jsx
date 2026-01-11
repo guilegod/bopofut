@@ -20,7 +20,27 @@ export default function DetailsTab({
   availableFriends,
   onInviteFriend,
 }) {
-  const isAdmin = user?.role === "owner" || user?.id === match.organizerId;
+  const isAdmin = user?.role === "owner" || user?.role === "admin" || user?.id === match.organizerId;
+
+  function resolvePlayer(playerId) {
+    // ✅ se for o usuário logado, usa o user real (arruma "Convidado")
+    if (playerId === user?.id) {
+      return {
+        name: user?.name || "Você",
+        avatar: user?.avatar || `https://picsum.photos/seed/${playerId}/200`,
+      };
+    }
+
+    // tenta no mock
+    const p = mockUsers.find((u) => u.id === playerId);
+    if (p) return p;
+
+    // fallback
+    return {
+      name: "Convidado",
+      avatar: `https://picsum.photos/seed/${playerId}/200`,
+    };
+  }
 
   return (
     <div className={styles.detailsStack}>
@@ -48,19 +68,11 @@ export default function DetailsTab({
 
         <div className={styles.playersGrid}>
           {match.currentPlayers.map((playerId, i) => {
-            const p =
-              mockUsers.find((u) => u.id === playerId) || {
-                name: "Convidado",
-                avatar: `https://picsum.photos/seed/${playerId}/200`,
-              };
+            const p = resolvePlayer(playerId);
 
             return (
-              <div key={i} className={styles.playerPill}>
-                <img
-                  src={p.avatar}
-                  alt={p.name}
-                  className={styles.playerAvatar}
-                />
+              <div key={`${playerId}-${i}`} className={styles.playerPill}>
+                <img src={p.avatar} alt={p.name} className={styles.playerAvatar} />
                 <strong className={styles.playerName}>{p.name}</strong>
               </div>
             );
@@ -93,20 +105,13 @@ export default function DetailsTab({
             Sair da Pelada
           </button>
         ) : (
-          <button
-            className={styles.btnPrimary}
-            onClick={onConfirmJoin}
-            disabled={spotsLeft === 0}
-          >
+          <button className={styles.btnPrimary} onClick={onConfirmJoin} disabled={spotsLeft === 0}>
             Confirmar Presença
           </button>
         )}
 
         {isAdmin && (
-          <button
-            className={styles.btnSecondary}
-            onClick={() => onManageStats(match.id)}
-          >
+          <button className={styles.btnSecondary} onClick={() => onManageStats(match.id)}>
             Gerenciar Súmula (Admin)
           </button>
         )}

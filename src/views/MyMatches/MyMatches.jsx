@@ -16,12 +16,12 @@ function safeArr(v) {
 
 function normalizeJoined(matches, userId) {
   return safeArr(matches).filter((m) =>
-    safeArr(m?.currentPlayers).includes(userId)
+    safeArr(m?.presences).some((p) => p.userId === userId)
   );
 }
 
 function matchDateISO(m) {
-  const raw = String(m?.date || "");
+  const raw = String(m?.dateISO || m?.date || "");
   if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
   if (raw.includes("T")) return raw.slice(0, 10);
   return "9999-12-31";
@@ -34,12 +34,7 @@ function sortByDateTime(a, b) {
   return String(a?.time || "").localeCompare(String(b?.time || ""));
 }
 
-export default function MyMatches({
-  matches = [],
-  courts = [],
-  user,
-  onSelectMatch,
-}) {
+export default function MyMatches({ matches = [], courts = [], user, onSelectMatch }) {
   const [filter, setFilter] = useState("ALL");
 
   const myMatches = useMemo(() => {
@@ -96,51 +91,26 @@ export default function MyMatches({
         cancelledCount={grouped.cancelled.length}
       />
 
-      {/* FILTROS */}
       <div className={styles.filters}>
-        <button
-          className={`${styles.filterBtn} ${
-            filter === "ALL" ? styles.active : ""
-          }`}
-          onClick={() => setFilter("ALL")}
-        >
-          Todas
-        </button>
-        <button
-          className={`${styles.filterBtn} ${
-            filter === "LIVE" ? styles.active : ""
-          }`}
-          onClick={() => setFilter("LIVE")}
-        >
-          Em andamento
-        </button>
-        <button
-          className={`${styles.filterBtn} ${
-            filter === "UPCOMING" ? styles.active : ""
-          }`}
-          onClick={() => setFilter("UPCOMING")}
-        >
-          Próximas
-        </button>
-        <button
-          className={`${styles.filterBtn} ${
-            filter === "FINISHED" ? styles.active : ""
-          }`}
-          onClick={() => setFilter("FINISHED")}
-        >
-          Finalizadas
-        </button>
-        <button
-          className={`${styles.filterBtn} ${
-            filter === "CANCELLED" ? styles.active : ""
-          }`}
-          onClick={() => setFilter("CANCELLED")}
-        >
-          Canceladas
-        </button>
+        {["ALL", "LIVE", "UPCOMING", "FINISHED", "CANCELLED"].map((k) => (
+          <button
+            key={k}
+            className={`${styles.filterBtn} ${filter === k ? styles.active : ""}`}
+            onClick={() => setFilter(k)}
+          >
+            {k === "ALL"
+              ? "Todas"
+              : k === "LIVE"
+              ? "Em andamento"
+              : k === "UPCOMING"
+              ? "Próximas"
+              : k === "FINISHED"
+              ? "Finalizadas"
+              : "Canceladas"}
+          </button>
+        ))}
       </div>
 
-      {/* LISTA */}
       <div className={styles.list}>
         {list.length > 0 ? (
           list.map((match) => (

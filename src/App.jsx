@@ -46,6 +46,41 @@ function cleanText(v) {
   return String(v ?? "").replace(/\r?\n/g, "").trim();
 }
 
+/**
+ * 🔥 FIX: apiRequest às vezes não retorna array direto.
+ * Pode vir: array, {data:[]}, {matches:[]}, {courts:[]}, {items:[]}, string JSON...
+ */
+function extractArrayResponse(raw, preferredKeys = []) {
+  try {
+    let data = raw;
+
+    // se vier string JSON
+    if (typeof data === "string") {
+      const s = data.trim();
+      if (s.startsWith("[") || s.startsWith("{")) data = JSON.parse(s);
+    }
+
+    // array direto
+    if (Array.isArray(data)) return data;
+
+    // tenta algumas chaves comuns primeiro
+    for (const k of preferredKeys) {
+      if (Array.isArray(data?.[k])) return data[k];
+    }
+
+    // tenta chaves padrão
+    const fallbacks = ["data", "items", "results", "rows", "matches", "courts"];
+    for (const k of fallbacks) {
+      if (Array.isArray(data?.[k])) return data[k];
+    }
+
+    return [];
+  } catch (e) {
+    console.warn("extractArrayResponse falhou:", e);
+    return [];
+  }
+}
+
 // UI trabalha com "fut7" / "futsal"
 function inferCourtTypeFromName(name) {
   const t = cleanText(name).toLowerCase();
@@ -124,11 +159,7 @@ function toUIFromApiMatch(m) {
     maxPlayers: m?.maxPlayers ?? 14,
     pricePerPlayer: m?.pricePerPlayer ?? m?.price ?? 30,
 
-    currentPlayers: Array.isArray(m?.players)
-      ? m.players
-      : Array.isArray(m?.currentPlayers)
-      ? m.currentPlayers
-      : [],
+    presences: Array.isArray(m?.presences) ? m.presences : [],
     distance: m?.distance ?? 0,
     messages: Array.isArray(m?.messages) ? m.messages : [],
 
@@ -170,6 +201,11 @@ function buildMatchISOFromPayload(payload) {
   return dt.toISOString();
 }
 
+function isManualCourtId(v) {
+  const s = cleanText(v).toLowerCase();
+  return !s || s === "manual" || s === "__manual__" || s === "none" || s === "null" || s === "undefined";
+}
+
 export default function App() {
   // =========================================================
   // USER BASE
@@ -203,14 +239,8 @@ export default function App() {
   async function loadCourts(token) {
     setCourtsLoading(true);
     try {
-      const data = await apiRequest("/courts", token ? { token } : undefined);
-
-      const listRaw = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.courts)
-        ? data.courts
-        : [];
-
+      const raw = await apiRequest("/courts", token ? { token } : undefined);
+      const listRaw = extractArrayResponse(raw, ["courts"]);
       const normalized = listRaw.map(normalizeCourt);
       setCourts(normalized);
       console.log("✅ COURTS normalizadas:", normalized);
@@ -232,11 +262,9 @@ export default function App() {
     setMatchesLoading(true);
     try {
       const token = (tokenParam || getToken() || "").toString().trim();
-
-      // ✅ se /matches estiver protegido no deploy, manda token
-      const data = await apiRequest("/matches", token ? { token } : undefined);
-
-      const list = Array.isArray(data) ? data.map(toUIFromApiMatch) : [];
+      const raw = await apiRequest("/matches", token ? { token } : undefined);
+      const listRaw = extractArrayResponse(raw, ["matches"]);
+      const list = listRaw.map(toUIFromApiMatch);
       setMatches(list);
       console.log("✅ MATCHES carregadas:", list);
     } catch (e) {
@@ -262,12 +290,20 @@ export default function App() {
 
   const selectedMatch = matches.find((m) => m.id === selectedMatchId) || null;
 
-  const selectedCourt =
-    selectedMatch?.court ||
-    (selectedMatch?.courtId
-      ? courts.find((c) => cleanText(c.id) === cleanText(selectedMatch.courtId))
-      : null) ||
-    null;
+  // ✅ manual ok: pode ser null
+  const selectedCourt = useMemo(() => {
+    if (selectedMatch?.court) return normalizeCourt(selectedMatch.court);
+
+    const cid = selectedMatch?.courtId;
+    if (!cid || isManualCourtId(cid)) return null;
+
+    const found =
+      courts.find((c) => cleanText(c.id) === cleanText(cid)) ||
+      courts.find((c) => cleanText(c.uiId) === cleanText(cid)) ||
+      null;
+
+    return found ? normalizeCourt(found) : null;
+  }, [selectedMatch, courts]);
 
   // =========================================================
   // AUTH BOOT
@@ -408,28 +444,6 @@ export default function App() {
     setView("home");
   }
 
-  function onJoin(matchId, playerIds) {
-    setMatches((prev) =>
-      prev.map((m) => {
-        if (m.id !== matchId) return m;
-        const nextPlayers = Array.from(new Set([...(m.currentPlayers || []), ...(playerIds || [])]));
-        return { ...m, currentPlayers: nextPlayers };
-      })
-    );
-  }
-
-  function onLeave(matchId) {
-    setMatches((prev) =>
-      prev.map((m) => {
-        if (m.id !== matchId) return m;
-        return {
-          ...m,
-          currentPlayers: (m.currentPlayers || []).filter((pid) => pid !== user.id),
-        };
-      })
-    );
-  }
-
   function onNewMessage(msg) {
     setMatches((prev) =>
       prev.map((m) => {
@@ -474,72 +488,40 @@ export default function App() {
     const sentId = String(payload?.courtId || "");
     const sentIdClean = cleanText(sentId);
 
-    const isManual =
-      !sentIdClean ||
-      sentIdClean === "manual" ||
-      sentIdClean === "__manual__" ||
-      sentIdClean === "none" ||
-      sentIdClean === "null";
-
+    const isManual = isManualCourtId(sentIdClean);
     const dateISO = buildMatchISOFromPayload(payload);
 
     const matchAddress = cleanText(payload?.matchAddress || "");
     const typeUi = cleanText(payload?.type || payload?.courtType || payload?.matchType || "fut7").toLowerCase();
-    const type = toApiMatchType(typeUi); // ✅ FIX DO 400: manda FUT7/FUTSAL
+    const type = toApiMatchType(typeUi);
 
     const bodyBase = {
       title: cleanText(payload?.title || ""),
       date: dateISO,
-      type, // ✅ backend enum
+      type,
       maxPlayers: Number(payload?.maxPlayers ?? 14),
       pricePerPlayer: Number(payload?.pricePerPlayer ?? 30),
     };
 
-    // ✅ MANUAL: não depende de arena (precisa backend aceitar courtId nullable)
     if (isManual) {
-      if (!bodyBase.title) {
-        alert("Informe o nome da partida.");
-        return;
-      }
-      if (!matchAddress) {
-        alert("Informe o local da partida (endereço).");
-        return;
-      }
+      if (!bodyBase.title) return alert("Informe o nome da partida.");
+      if (!matchAddress) return alert("Informe o local da partida (endereço).");
 
-      const body = {
-        ...bodyBase,
-        courtId: null,        // ✅ manual (backend precisa permitir)
-        matchAddress,         // ✅ obrigatório no manual
-      };
+      const body = { ...bodyBase, courtId: null, matchAddress };
 
-      console.log("[onCreateMatch][MANUAL] body:", body);
-
-      const created = await apiRequest("/matches", {
-        method: "POST",
-        token,
-        body,
-      });
-
+      const created = await apiRequest("/matches", { method: "POST", token, body });
       await loadMatches(token);
       setSelectedMatchId(created?.id || null);
       setView("matchDetails");
       return;
     }
 
-    // ✅ COM ARENA: valida courtId e manda sem \n
     const court =
       courts.find((c) => cleanText(c.id) === sentIdClean) ||
       courts.find((c) => cleanText(c.uiId) === sentIdClean) ||
       null;
 
     if (!court) {
-      console.error("[onCreateMatch] courtId não encontrado:", {
-        sentId,
-        sentIdClean,
-        courtsIds: courts.map((c) => c.id),
-        courtsUiIds: courts.map((c) => c.uiId),
-      });
-
       alert(
         "Erro: a arena selecionada não existe na lista carregada.\n\n" +
           "Dica: recarregue as arenas ou verifique se o id no banco está correto."
@@ -558,20 +540,9 @@ export default function App() {
       return;
     }
 
-    const body = {
-      ...bodyBase,
-      courtId: courtIdToSend,
-      matchAddress: matchAddress || "", // opcional: override
-    };
+    const body = { ...bodyBase, courtId: courtIdToSend, matchAddress: matchAddress || "" };
 
-    console.log("[onCreateMatch][ARENA] body:", body);
-
-    const created = await apiRequest("/matches", {
-      method: "POST",
-      token,
-      body,
-    });
-
+    const created = await apiRequest("/matches", { method: "POST", token, body });
     await loadMatches(token);
     setSelectedMatchId(created?.id || null);
     setView("matchDetails");
@@ -654,9 +625,7 @@ export default function App() {
     : view;
 
   const isAuthView = view === "login" || view === "register";
-
   const adminMatch = adminMatchId ? matches.find((m) => m.id === adminMatchId) || null : null;
-
   const loadingAny = matchesLoading || courtsLoading;
 
   return (
@@ -677,20 +646,20 @@ export default function App() {
       ) : view === "register" ? (
         <Register onRegisterSuccess={handleRegister} onGoLogin={() => setView("login")} />
       ) : loadingAny ? (
-        <div style={{ padding: 18, opacity: 0.75 }}>
-          Carregando {courtsLoading ? "arenas" : "partidas"}…
-        </div>
+        <div style={{ padding: 18, opacity: 0.75 }}>Carregando {courtsLoading ? "arenas" : "partidas"}…</div>
       ) : view === "matchDetails" && selectedMatch ? (
         <MatchDetails
-          match={selectedMatch}
-          court={selectedCourt} // ✅ pode ser null no manual
-          user={user}
-          onJoin={onJoin}
-          onLeave={onLeave}
-          onBack={goBack}
-          onManageStats={onManageStats}
-          onNewMessage={onNewMessage}
-        />
+        match={selectedMatch}
+        court={selectedCourt}
+        user={user}
+        onBack={goBack}
+        onManageStats={onManageStats}
+        onNewMessage={onNewMessage}
+        onPresenceChange={async () => {
+          const token = getToken();
+          await loadMatches(token);
+        }}
+      />
       ) : view === "profile" ? (
         <Profile
           user={user}
@@ -734,15 +703,16 @@ export default function App() {
               ✎ Editar Perfil (atalho atual)
             </button>
 
+            {/* ✅ user comum NÃO vê "Voltar ao Painel" */}
             {isArenaOwner ? (
               <button type="button" style={panelBtn()} onClick={() => setView("arenaPanel")}>
-                🏟️ Voltar ao Painel
+                🏟️ Voltar ao Painel da Arena
               </button>
-            ) : (
+            ) : isOrganizer ? (
               <button type="button" style={panelBtn()} onClick={() => setView("ownerDashboard")}>
-                🎯 Voltar ao Painel
+                🎯 Voltar ao Painel do Organizador
               </button>
-            )}
+            ) : null}
           </div>
         </div>
       ) : view === "matchCreator" ? (

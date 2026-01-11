@@ -20,17 +20,15 @@ const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=1200&q=60";
 
 export default function Header({ court, match, onBack, placeName, placeAddress }) {
-  const typeLabel = String(match?.type || "")
-    .replace(/_/g, " ")
-    .toUpperCase();
+  const typeLabel = String(match?.type || "").replace(/_/g, " ").toUpperCase();
 
-  // ✅ status vem do admin (backend-ready)
   const status = match?.admin?.status;
   const statusLabel = getStatusLabel(status);
   const statusKey = getStatusKey(status);
 
   const imgSrc = court?.imageUrl || match?.imageUrl || FALLBACK_IMG;
-  const courtName = court?.name || "Local da Partida";
+  const courtName = court?.name || match?.title || "Local da Partida";
+  const address = placeAddress || court?.address || match?.matchAddress || "Local a confirmar";
 
   return (
     <div className={styles.header}>
@@ -55,7 +53,7 @@ export default function Header({ court, match, onBack, placeName, placeAddress }
         </div>
 
         <h2 className={styles.title}>{placeName || courtName}</h2>
-        <p className={styles.address}>{placeAddress || court?.address || "Local a confirmar"}</p>
+        <p className={styles.address}>{address}</p>
       </div>
     </div>
   );

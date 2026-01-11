@@ -1,165 +1,217 @@
+/* =========================================================
+   MINHA AGENDA — PREMIUM (BÓPÔ FUT)
+   - Header glass + stats
+   - filtros “segmented pills”
+   - lista com espaçamento e empty state premium
+   ========================================================= */
+
 .page{
   padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 18px;
   background: transparent;
   color: var(--text);
 }
 
-/* ========================= */
-/* Header */
-/* ========================= */
+/* =========================
+   HEADER (glass)
+   ========================= */
+.header{
+  position: relative;
+  border-radius: var(--r-xl);
+  border: 1px solid var(--border);
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,.78),
+    rgba(255,255,255,.58)
+  );
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  padding: 18px 18px 14px;
+  isolation: isolate;
+}
+
+.header::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(700px 240px at 86% 10%, rgba(24,195,126,.14), transparent 60%),
+    radial-gradient(620px 260px at 12% 85%, rgba(201,162,78,.16), transparent 62%);
+  opacity: 1;
+}
+
+.header::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.06;
+  mix-blend-mode:multiply;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+}
+
 .header h2{
+  position: relative;
+  z-index: 1;
   font-size: 26px;
   font-weight: 1000;
+  margin: 0;
   color: var(--text);
+  letter-spacing: -0.02em;
 }
 
 .header p{
-  font-size: 11px;
-  color: var(--muted);
-  font-style: italic;
-  margin-top: 4px;
-}
-
-/* ========================= */
-/* List */
-/* ========================= */
-.list{
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* ========================= */
-/* Card */
-/* ========================= */
-.card{
-  background: var(--surface);
-  border-radius: var(--r-xl);
-  overflow: hidden;
-  border: 1px solid var(--border);
-  cursor: pointer;
-  transition: transform .15s ease, border-color .15s ease;
-}
-
-.card:active{
-  transform: scale(.98);
-}
-
-.card:hover{
-  border-color: rgba(34,197,94,.45);
-}
-
-/* ========================= */
-/* Image */
-/* ========================= */
-.imageBox{
   position: relative;
-  height: 96px;
+  z-index: 1;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 6px 0 0;
 }
 
-.imageBox img{
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+/* =========================
+   STATS (chips premium)
+   ========================= */
+.headerStats{
+  position: relative;
+  z-index: 1;
+  margin-top: 12px;
+  display:flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  opacity: 1;
 }
 
-/* ========================= */
-/* Badges */
-/* ========================= */
-.badge{
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  background: linear-gradient(
-    180deg,
-    var(--primary),
-    var(--primary-2)
-  );
-  color: #06210f;
-  font-size: 9px;
-  font-weight: 1000;
-  text-transform: uppercase;
-  padding: 4px 8px;
-  border-radius: 8px;
-}
-
-.time{
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(0,0,0,.55);
-  color: white;
-  font-size: 9px;
-  font-weight: 900;
-  padding: 4px 8px;
-  border-radius: 999px;
-  backdrop-filter: blur(8px);
-}
-
-/* ========================= */
-/* Info */
-/* ========================= */
-.info{
-  padding: 14px;
-  display: flex;
-  justify-content: space-between;
+.headerStats > span{
+  display: inline-flex;
   align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.55);
+  border: 1px solid rgba(15,28,45,.08);
+  box-shadow: 0 10px 22px rgba(15,28,45,.07);
+  color: var(--text);
+  font-weight: 900;
 }
 
-.info h3{
-  font-size: 15px;
-  font-weight: 900;
+.headerStats > span b{
+  font-weight: 1000;
   color: var(--text);
 }
 
-.info p{
-  font-size: 10px;
+.headerStats > span i{
+  font-style: normal;
   color: var(--muted);
-  margin-top: 2px;
-  text-transform: uppercase;
-  letter-spacing: .08em;
+  font-weight: 900;
 }
 
-/* ========================= */
-/* Empty state */
-/* ========================= */
+/* =========================
+   FILTERS (segmented pills)
+   ========================= */
+.filters{
+  display:flex;
+  gap:10px;
+  padding: 0;
+  flex-wrap:wrap;
+}
+
+.filterBtn{
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,28,45,.10);
+  background: rgba(255,255,255,.55);
+  color: var(--text);
+  font-weight: 1000;
+  cursor: pointer;
+  opacity: .90;
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease;
+  box-shadow: 0 10px 22px rgba(15,28,45,.06);
+}
+
+.filterBtn:hover{
+  transform: translateY(-1px);
+  border-color: rgba(24,195,126,.22);
+  box-shadow: 0 14px 28px rgba(15,28,45,.09);
+}
+
+.filterBtn:active{
+  transform: scale(.98);
+}
+
+.active{
+  opacity: 1;
+  border-color: rgba(24,195,126,.35);
+  background:
+    linear-gradient(135deg, rgba(24,195,126,.20), rgba(201,162,78,.18)),
+    rgba(255,255,255,.55);
+  box-shadow:
+    0 16px 34px rgba(24,195,126,.12),
+    0 10px 22px rgba(15,28,45,.06);
+}
+
+/* =========================
+   LIST
+   ========================= */
+.list{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* =========================
+   EMPTY STATE
+   ========================= */
 .empty{
-  padding: 48px 20px;
+  padding: 46px 20px;
   text-align: center;
-  border: 1px dashed var(--border);
+  border: 1px dashed rgba(15,28,45,.14);
   border-radius: var(--r-xl);
-  background: linear-gradient(
-    180deg,
-    var(--surface),
-    transparent
-  );
+  background: linear-gradient(180deg, rgba(255,255,255,.62), rgba(255,255,255,.35));
+  box-shadow: var(--shadow-sm);
 }
 
 .emptyIcon{
-  font-size: 36px;
-  opacity: .25;
-  margin-bottom: 12px;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 12px;
+  border-radius: 18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(255,255,255,.65);
+  border: 1px solid rgba(15,28,45,.10);
+  box-shadow: 0 16px 28px rgba(15,28,45,.06);
+  font-size: 22px;
+  opacity: .9;
 }
 
 .empty p{
+  margin: 0;
   font-size: 14px;
-  color: var(--muted);
-  font-weight: 700;
+  color: var(--text);
+  font-weight: 1000;
 }
 
 .empty span{
+  display:block;
+  margin-top: 6px;
   font-size: 10px;
-  color: var(--muted-2);
-  letter-spacing: .2em;
+  color: var(--muted);
+  letter-spacing: .20em;
   text-transform: uppercase;
+  font-weight: 900;
+  opacity: .9;
 }
 
-/* ========================= */
-/* Footer */
-/* ========================= */
+/* =========================
+   FOOTER
+   ========================= */
 .footer{
   border-top: 1px solid var(--border);
   padding-top: 16px;
@@ -174,77 +226,20 @@
   text-transform: uppercase;
   opacity: .6;
 }
-/* filtros */
-.filters{
-  display:flex;
-  gap:10px;
-  padding: 10px 16px 0;
-  flex-wrap:wrap;
-}
-
-.filterBtn{
-  height: 36px;
-  padding: 0 12px;
-  border-radius: 999px;
-  border: 1px solid var(--border, rgba(255,255,255,.14));
-  background: var(--surface, rgba(255,255,255,.04));
-  color: var(--text, #fff);
-  font-weight: 900;
-  cursor: pointer;
-  opacity: .86;
-}
-
-.active{
-  opacity: 1;
-  border-color: var(--accent, rgba(217,77,43,.65));
-  background: var(--accent-soft, rgba(217,77,43,.14));
-}
-
-/* header stats */
-.headerStats{
-  margin-top: 8px;
-  opacity: .9;
-  display:flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  font-size: 12px;
-}
 
 /* meta row no card (histórico) */
 .metaRow{
   display:flex;
   gap: 10px;
   flex-wrap: wrap;
-  margin-top: 8px;
+  margin-top: 10px;
   font-size: 12px;
-  opacity: .9;
+  opacity: .92;
 }
 
-/* badges por status */
-.badge_SCHEDULED{
-  background: rgba(255,255,255,.22);
-  border: 1px solid rgba(255,255,255,.25);
-}
-
-.badge_STARTED{
-  background: rgba(22,163,74,.22);
-  border: 1px solid rgba(34,197,94,.45);
-}
-
-.badge_FINISHED{
-  background: rgba(99,102,241,.22);
-  border: 1px solid rgba(129,140,248,.45);
-}
-
-.badge_CANCELLED{
-  background: rgba(220,38,38,.22);
-  border: 1px solid rgba(248,113,113,.45);
-}
 /* =========================
-   PATCH — STATUS BADGES (prioridade sobre .badge)
+   STATUS BADGES (se usado no MyMatches card)
    ========================= */
-
-/* base do badge continua (shape) mas deixa o fundo "neutro" para as variações controlarem */
 .badge{
   background: rgba(255,255,255,.20);
   border: 1px solid rgba(255,255,255,.22);
@@ -253,30 +248,37 @@
   -webkit-backdrop-filter: blur(8px);
 }
 
-/* status: agendada */
 .badge_SCHEDULED{
   background: rgba(255,255,255,.20);
   border-color: rgba(255,255,255,.22);
   color: rgba(255,255,255,.92);
 }
 
-/* status: em andamento */
 .badge_STARTED{
   background: rgba(22,163,74,.22);
   border-color: rgba(34,197,94,.45);
   color: rgba(240,253,244,.98);
 }
 
-/* status: finalizada */
 .badge_FINISHED{
   background: rgba(99,102,241,.22);
   border-color: rgba(129,140,248,.45);
   color: rgba(238,242,255,.98);
 }
 
-/* status: cancelada */
 .badge_CANCELLED{
   background: rgba(220,38,38,.22);
   border-color: rgba(248,113,113,.45);
   color: rgba(254,242,242,.98);
+}
+
+/* =========================
+   RESPONSIVO
+   ========================= */
+@media (max-width: 720px){
+  .page{ padding: 18px; }
+  .header{ padding: 16px; }
+  .header h2{ font-size: 22px; }
+  .filters{ gap: 8px; }
+  .filterBtn{ height: 36px; padding: 0 12px; }
 }

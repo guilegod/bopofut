@@ -149,10 +149,33 @@
 
 @media (max-width: 680px){
   .grid{
-    grid-template-columns: 1fr;
+    /* ✅ mantém lado a lado no mobile */
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
 
   .card{
-    height: 156px;
+    /* ✅ um pouco mais baixo pra caber melhor no mobile */
+    height: 128px;
+    border-radius: 20px;
+  }
+
+  .overlay{
+    padding: 12px;
+  }
+
+  .title{
+    font-size: 16px;
+  }
+
+  .sub{
+    font-size: 10px;
   }
 }
+
+/* extra: celulares bem pequenos (opcional) */
+@media (max-width: 380px){
+  .card{ height: 118px; }
+  .title{ font-size: 15px; }
+}
+
