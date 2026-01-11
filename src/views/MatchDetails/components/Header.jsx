@@ -16,6 +16,9 @@ function getStatusKey(status) {
   return "scheduled";
 }
 
+const FALLBACK_IMG =
+  "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=1200&q=60";
+
 export default function Header({ court, match, onBack, placeName, placeAddress }) {
   const typeLabel = String(match?.type || "")
     .replace(/_/g, " ")
@@ -26,9 +29,12 @@ export default function Header({ court, match, onBack, placeName, placeAddress }
   const statusLabel = getStatusLabel(status);
   const statusKey = getStatusKey(status);
 
+  const imgSrc = court?.imageUrl || match?.imageUrl || FALLBACK_IMG;
+  const courtName = court?.name || "Local da Partida";
+
   return (
     <div className={styles.header}>
-      <img src={court.imageUrl} alt={court.name} className={styles.img} />
+      <img src={imgSrc} alt={courtName} className={styles.img} />
       <div className={styles.overlay} />
 
       <button onClick={onBack} className={styles.backBtn} aria-label="Voltar">
@@ -39,18 +45,17 @@ export default function Header({ court, match, onBack, placeName, placeAddress }
         <div className={styles.badges}>
           <span className={styles.type}>{typeLabel}</span>
 
-          {/* ✅ Status badge */}
           <span className={`${styles.status} ${styles[`status_${statusKey}`]}`}>
             {statusLabel}
           </span>
 
-          {match.distance !== undefined && match.distance !== null && (
+          {match?.distance !== undefined && match?.distance !== null && (
             <span className={styles.distance}>📍 {Number(match.distance).toFixed(1)} km</span>
           )}
         </div>
 
-        <h2 className={styles.title}>{placeName || court.name}</h2>
-        <p className={styles.address}>{placeAddress || court.address}</p>
+        <h2 className={styles.title}>{placeName || courtName}</h2>
+        <p className={styles.address}>{placeAddress || court?.address || "Local a confirmar"}</p>
       </div>
     </div>
   );

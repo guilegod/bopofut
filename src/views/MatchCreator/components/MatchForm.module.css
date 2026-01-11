@@ -1,0 +1,190 @@
+.card{
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(255,255,255,.82);
+  border-radius: 18px;
+  box-shadow: 0 18px 44px rgba(0,0,0,.06);
+  overflow: hidden;
+}
+
+.head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 14px 8px;
+}
+
+.kicker{
+  font-size: 12px;
+  color: rgba(0,0,0,.55);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.title{
+  margin: 2px 0 0;
+  font-size: 16px;
+  color: rgba(0,0,0,.88);
+  letter-spacing: -0.02em;
+}
+
+.typeChip{
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: linear-gradient(180deg, rgba(14, 84, 52, .14), rgba(255,255,255,.85));
+  color: rgba(0,0,0,.82);
+  white-space: nowrap;
+}
+
+.body{
+  padding: 10px 14px 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.row2{
+  display: grid;
+  gap: 10px;
+}
+.row3{
+  display: grid;
+  gap: 10px;
+}
+@media (min-width: 820px){
+  .row2{ grid-template-columns: 1.4fr .6fr; }
+  .row3{ grid-template-columns: 1fr 1fr 1fr; }
+}
+
+.label{
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(0,0,0,.62);
+}
+
+.input, .select{
+  height: 42px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,.12);
+  background: rgba(255,255,255,.92);
+  color: rgba(0,0,0,.86);
+  padding: 0 12px;
+  outline: none;
+}
+
+.input:focus, .select:focus{
+  border-color: rgba(14, 84, 52, .35);
+  box-shadow: 0 0 0 4px rgba(14, 84, 52, .12);
+}
+
+.textarea{
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,.12);
+  background: rgba(255,255,255,.92);
+  color: rgba(0,0,0,.86);
+  padding: 10px 12px;
+  outline: none;
+  resize: vertical;
+}
+
+.textarea:focus{
+  border-color: rgba(14, 84, 52, .35);
+  box-shadow: 0 0 0 4px rgba(14, 84, 52, .12);
+}
+
+.hint{
+  font-size: 12px;
+  color: rgba(0,0,0,.56);
+  line-height: 1.25;
+}
+
+.section{
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(0,0,0,.02);
+  border-radius: 16px;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.sectionTitle{
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(0,0,0,.82);
+}
+
+.arenaBox{
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(255,255,255,.72);
+  padding: 10px 12px;
+}
+
+.arenaTop{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.arenaPill{
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(255,255,255,.90);
+  color: rgba(0,0,0,.70);
+}
+
+.arenaName{
+  font-size: 13px;
+  color: rgba(0,0,0,.86);
+  font-weight: 700;
+}
+
+.arenaSub{
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(0,0,0,.70);
+}
+
+.arenaMuted{
+  color: rgba(0,0,0,.55);
+}
+
+.mapsRow{
+  display: grid;
+  gap: 8px;
+}
+
+.mapsBtn{
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  border: 1px solid rgba(212, 175, 55, .30);
+  background: linear-gradient(180deg, rgba(212, 175, 55, .20), rgba(255,255,255,.88));
+  color: rgba(0,0,0,.86);
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  box-shadow: 0 14px 30px rgba(0,0,0,.06);
+}
+
+.mapsBtn:hover{ transform: translateY(-1px); }
+.mapsBtn:active{ transform: translateY(0); }
+
+.disabled{
+  opacity: .55;
+  filter: grayscale(.2);
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.mapsNote{
+  font-size: 12px;
+  color: rgba(0,0,0,.58);
+}

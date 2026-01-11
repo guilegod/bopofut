@@ -17,14 +17,40 @@ export default function Profile({
   onOpenWallet,
   onEditProfile,
   onBack,
-  onLogout, // ✅ novo
+  onLogout,
+
+  // ✅ navegação
+  onOpenOrganizerPanel,
+  onOpenArenaPanel,
+  onOpenAgenda,
+  onOpenFinance,
+  onOpenPromotions,
+  onOpenAccountSettings,
 }) {
   const [selectedAchievement, setSelectedAchievement] = useState(null);
   const [miniGadgetAchievement, setMiniGadgetAchievement] = useState(null);
 
-  const isOwner = user?.role === "owner";
+  // ✅ roles (sem confusão)
+  const isOrganizer = user?.role === "owner";
+  const isArenaOwner = user?.role === "arena_owner";
+  const isPlayer = !isOrganizer && !isArenaOwner;
 
-  function getProgress(achievement, targetUser = user) {
+  const safeUser = user || {
+    name: "Usuário",
+    avatar: "",
+    role: "user",
+    stats: { goals: 0, assists: 0, gamesPlayed: 0 },
+    unlockedAchievementIds: [],
+    walletBalance: 0,
+  };
+
+  const roleLabel = useMemo(() => {
+    if (isArenaOwner) return "Arena Owner";
+    if (isOrganizer) return "Organizador";
+    return "Jogador";
+  }, [isArenaOwner, isOrganizer]);
+
+  function getProgress(achievement, targetUser = safeUser) {
     if (!achievement || !targetUser) return 0;
 
     const stats = targetUser.stats || { goals: 0, assists: 0, gamesPlayed: 0 };
@@ -37,13 +63,11 @@ export default function Profile({
       case "games":
         return Math.min(100, (stats.gamesPlayed / achievement.targetValue) * 100);
       default:
-        return (targetUser.unlockedAchievementIds || []).includes(achievement.id)
-          ? 100
-          : 30;
+        return (targetUser.unlockedAchievementIds || []).includes(achievement.id) ? 100 : 30;
     }
   }
 
-  function getStatusLabel(achievement, targetUser = user) {
+  function getStatusLabel(achievement, targetUser = safeUser) {
     if (!achievement || !targetUser) return "";
 
     const stats = targetUser.stats || { goals: 0, assists: 0, gamesPlayed: 0 };
@@ -66,34 +90,53 @@ export default function Profile({
     <div className={styles.page}>
       {/* topo */}
       <div className={styles.topRow}>
-        <button className={styles.backBtn} onClick={onBack} aria-label="Voltar">
+        <button
+          type="button"
+          className={styles.backBtn}
+          onClick={() => onBack?.()}
+          aria-label="Voltar"
+        >
           ←
         </button>
-        <div className={styles.topTitle}>Perfil</div>
+
+        <div className={styles.topTitle}>
+          Perfil <span style={{ opacity: 0.7, fontWeight: 800 }}>• {roleLabel}</span>
+        </div>
+
         <div className={styles.topSpacer} />
       </div>
 
-      {/* Player Card */}
+      {/* Player Card / Role Card */}
       <PlayerCard
-        user={user}
-        isOwner={isOwner}
+        user={safeUser}
+        role={safeUser?.role}
         achievements={achievements}
         onMiniAchievement={setMiniGadgetAchievement}
       />
 
-      {/* Editar perfil */}
-      <button onClick={onEditProfile} className={styles.editBtn}>
+      {/* Ações rápidas */}
+      <button type="button" onClick={() => onEditProfile?.()} className={styles.editBtn}>
         ✎ <span>Editar Perfil</span>
       </button>
 
+      <button
+        type="button"
+        onClick={() => onOpenAccountSettings?.()}
+        className={styles.editBtn}
+        style={{ opacity: onOpenAccountSettings ? 1 : 0.85 }}
+        title={onOpenAccountSettings ? "Configurações de Conta" : "Em breve"}
+      >
+        ⚙ <span>Configurações de Conta</span>
+      </button>
+
       {/* Carteira */}
-      <WalletCard user={user} onOpenWallet={onOpenWallet} />
+      <WalletCard user={safeUser} onOpenWallet={() => onOpenWallet?.()} />
 
       {/* Conteúdo por role */}
-      {!isOwner ? (
+      {isPlayer ? (
         <>
           <AchievementsGrid
-            user={user}
+            user={safeUser}
             achievements={achievements}
             onSelectAchievement={setSelectedAchievement}
           />
@@ -102,7 +145,6 @@ export default function Profile({
             <h3 className={styles.h3}>Últimas Atividades</h3>
 
             <div className={styles.activityList}>
-              {/* TEMPORÁRIO até backend */}
               {[1, 2].map((i) => (
                 <div key={i} className={styles.activityItem}>
                   <div>
@@ -117,11 +159,22 @@ export default function Profile({
           </section>
         </>
       ) : (
-        <OwnerManagement />
+        <>
+          {/* ✅ nada de comentário dentro das props */}
+          <OwnerManagement
+            role={safeUser?.role}
+            onOpenOrganizerPanel={onOpenOrganizerPanel}
+            onOpenArenaPanel={onOpenArenaPanel}
+            onOpenAgenda={onOpenAgenda}
+            onOpenFinance={onOpenFinance}
+            onOpenPromotions={onOpenPromotions}
+            onOpenAccountSettings={onOpenAccountSettings}
+          />
+        </>
       )}
 
       {/* Logout */}
-      <button onClick={onLogout} className={styles.editBtn}>
+      <button type="button" onClick={() => onLogout?.()} className={styles.editBtn}>
         ⎋ <span>Sair da Conta</span>
       </button>
 
@@ -129,9 +182,7 @@ export default function Profile({
       {selectedAchievement && (
         <AchievementModal
           achievement={selectedAchievement}
-          isUnlocked={(user.unlockedAchievementIds || []).includes(
-            selectedAchievement.id
-          )}
+          isUnlocked={(safeUser.unlockedAchievementIds || []).includes(selectedAchievement.id)}
           progress={getProgress(selectedAchievement)}
           statusLabel={getStatusLabel(selectedAchievement)}
           onClose={() => setSelectedAchievement(null)}

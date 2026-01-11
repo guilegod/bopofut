@@ -1,18 +1,146 @@
 .banner{
+  position: relative;
   width: 100%;
   height: 128px;
   border-radius: 24px;
-  border: 1px dashed var(--border);
-  background: linear-gradient(180deg, var(--surface), transparent);
+  overflow: hidden;
+
+  /* base do tema */
+  background: linear-gradient(
+    180deg,
+    var(--surface),
+    var(--surface-2)
+  );
+
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+/* imagem de fundo opcional */
+.bg{
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: saturate(1.1) contrast(1.05);
+  opacity: .85;
+}
+
+/* overlay escuro + glass */
+.overlay{
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(0,0,0,.55),
+    rgba(0,0,0,.15)
+  );
+  backdrop-filter: blur(2px);
+}
+
+/* conteúdo */
+.content{
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 18px 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* bloco de texto */
+.textBlock{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 70%;
+}
+
+.kicker{
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+
+.title{
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1.15;
+}
+
+.subtitle{
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.25;
+}
+
+/* CTA */
+.cta{
+  border-radius: 999px;
+  padding: 10px 18px;
+  border: none;
+
+  background: linear-gradient(
+    180deg,
+    var(--accent),
+    var(--accent-2)
+  );
+
+  color: #1d1200;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform .12s ease, filter .12s ease;
+}
+
+.cta:hover{
+  filter: brightness(1.05);
+}
+
+.cta:active{
+  transform: scale(.95);
+}
+
+/* fallback simples (caso use só texto, sem imagem) */
 .text{
   font-size: 10px;
   font-weight: 900;
   letter-spacing: .3em;
   text-transform: uppercase;
   color: var(--muted-2);
+}
+
+/* responsivo */
+@media (max-width: 640px){
+  .banner{
+    height: auto;
+    min-height: 120px;
+  }
+
+  .content{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .textBlock{
+    max-width: 100%;
+  }
+
+  .cta{
+    align-self: flex-start;
+  }
 }

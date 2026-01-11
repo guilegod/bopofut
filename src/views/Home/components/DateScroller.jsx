@@ -16,19 +16,21 @@ export default function DateScroller({
             key={d.value}
             type="button"
             onClick={() => onSelectDate(d.value)}
-            className={`${styles.item} ${
-              isActive ? styles.active : styles.inactive
-            }`}
+            className={`${styles.item} ${isActive ? styles.active : styles.inactive}`}
+            aria-pressed={isActive}
           >
             <span
-              className={`${styles.dayName} ${
-                isActive ? styles.dayNameActive : ""
-              }`}
+              className={`${styles.dayName} ${isActive ? styles.dayNameActive : ""}`}
             >
               {d.dayName}
             </span>
 
             <span className={styles.dayNum}>{d.dayNum}</span>
+
+            {/* ✅ Data “completa” (Hoje/Amanhã ou "9 Jan") */}
+            <span className={`${styles.label} ${isActive ? styles.labelActive : ""}`}>
+              {d.label}
+            </span>
           </button>
         );
       })}

@@ -9,8 +9,9 @@ import RankingBanner from "./components/RankingBanner.jsx";
 
 /**
  * Backend-ready notes:
- * - match.date pode vir como: "Hoje" | "Amanhã" | "YYYY-MM-DD"
- * - courts/matches podem vir vazios inicialmente
+ * - match.date (UI) é label tipo "09 jan" (vindo do App.jsx)
+ * - match.dateISO (real) é ISO do backend: "2026-01-09T22:00:00.000Z"
+ * - match.type pode NÃO existir no backend (derivamos por court.name/title)
  */
 export default function Home({
   matches,
@@ -19,13 +20,13 @@ export default function Home({
   onSelectMatch,
   onOpenRanking,
   onOpenMatchCreator,
-  canCreateMatch = false, // ✅ novo (controle de permissão)
+  canCreateMatch = false,
 }) {
   const [activeType, setActiveType] = useState("fut7");
   const [selectedDate, setSelectedDate] = useState("Hoje");
   const scrollRef = useRef(null);
 
-  // ===== Helpers de data (para o backend) =====
+  // ===== Helpers de data =====
   function pad2(n) {
     return String(n).padStart(2, "0");
   }
@@ -42,12 +43,39 @@ export default function Home({
       d.setDate(d.getDate() + 1);
       return toISODate(d);
     }
-    // Se já vier ISO do backend, usa direto
     if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-    // Se for label tipo "7 Jan", não dá pra converter com certeza — então mantém string
     return value;
   }
 
+  function inferTypeFromText(txt) {
+    const t = String(txt || "").toLowerCase();
+    if (t.includes("futsal")) return "futsal";
+    if (t.includes("fut7")) return "fut7";
+    return "";
+  }
+
+  function getMatchCourt(match) {
+    if (match?.court?.id) return match.court;
+    const cid = match?.courtId;
+    if (!cid) return null;
+    return (courts || []).find((c) => c?.id === cid) || null;
+  }
+
+  function getMatchType(match) {
+    const direct = String(match?.type || "").toLowerCase();
+    if (direct === "fut7" || direct === "futsal") return direct;
+
+    const court = getMatchCourt(match);
+    const byCourt = inferTypeFromText(court?.name);
+    if (byCourt) return byCourt;
+
+    const byTitle = inferTypeFromText(match?.title);
+    if (byTitle) return byTitle;
+
+    return "fut7";
+  }
+
+  // ===== Datas do scroller =====
   const dateFilters = useMemo(() => {
     const dates = [];
     const days = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -81,7 +109,6 @@ export default function Home({
         value = "Amanhã";
       } else {
         label = `${d.getDate()} ${months[d.getMonth()]}`;
-        // ✅ value em ISO para o futuro backend (sem quebrar o label)
         value = toISODate(d);
       }
 
@@ -96,19 +123,24 @@ export default function Home({
     return dates;
   }, []);
 
+  // ===== Filtragem (tipo + data) =====
   const filteredMatches = useMemo(() => {
     const selectedISO = selectedDateToISO(selectedDate);
 
     const filtered = (matches || []).filter((m) => {
-      const typeMatch = String(m?.type || "").toLowerCase() === activeType;
+      // ✅ type (derivado)
+      const typeMatch = getMatchType(m) === activeType;
 
-      // ✅ dateMatch: aceita "Hoje/Amanhã" (mock atual) ou ISO (backend)
-      const raw = String(m?.date || "");
+      // ✅ data (preferir dateISO quando existir)
+      const rawISO = String(m?.dateISO || "");
+      const isoDay = rawISO && rawISO.includes("T") ? rawISO.slice(0, 10) : rawISO;
+
       const dateMatch =
-        raw === selectedDate ||
-        raw === selectedISO ||
-        // Se o backend mandar DateTime completo (ex: 2026-01-06T20:00:00Z)
-        (raw.includes("T") && raw.slice(0, 10) === selectedISO);
+        // quando seleciona "Hoje/Amanhã"
+        (selectedDate === "Hoje" || selectedDate === "Amanhã")
+          ? isoDay === selectedISO
+          : // quando seleciona data do scroller (ISO)
+            isoDay === selectedISO || String(m?.date || "") === selectedDate;
 
       return typeMatch && dateMatch;
     });
@@ -118,7 +150,7 @@ export default function Home({
       if (b?.distance === undefined) return -1;
       return a.distance - b.distance;
     });
-  }, [matches, activeType, selectedDate]);
+  }, [matches, courts, activeType, selectedDate]);
 
   function scrollCalendar(direction) {
     if (!scrollRef.current) return;
@@ -173,7 +205,6 @@ export default function Home({
             {activeType === "fut7" ? "Peladas de Fut7" : "Peladas de Futsal"}
           </h2>
 
-          {/* ✅ BOTÃO CRIAR (controlado por permissão) */}
           {canCreateMatch ? (
             <button
               type="button"
@@ -188,7 +219,7 @@ export default function Home({
         <div className={styles.matchesList}>
           {filteredMatches.length > 0 ? (
             filteredMatches.map((match) => {
-              const court = (courts || []).find((c) => c?.id === match?.courtId);
+              const court = getMatchCourt(match);
               return (
                 <MatchCard
                   key={match.id}

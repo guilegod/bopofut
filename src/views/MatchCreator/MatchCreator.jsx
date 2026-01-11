@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import styles from "./MatchCreator.module.css";
 
 import CourtSelector from "./components/CourtSelector.jsx";
@@ -6,142 +6,293 @@ import DateSelector from "./components/DateSelector.jsx";
 import MatchForm from "./components/MatchForm.jsx";
 import SummaryCard from "./components/SummaryCard.jsx";
 
-export default function MatchCreator({ courts = [], organizerId, onCreate, onBack }) {
+const MANUAL_ID = "__manual__";
+
+/**
+ * MatchCreator (BóPô Fut)
+ * - Agora suporta criar partida SEM arena (manual)
+ * - Manual: courtId = "__manual__" e exige matchAddress
+ * - Arena: courtId = id RAW (mas App manda limpo no POST)
+ */
+export default function MatchCreator({
+  courts = [],
+  organizerId,
+  onCreate,
+  onBack,
+  defaultType = "futsal", // "futsal" | "fut7"
+}) {
   const scrollRef = useRef(null);
 
-  const firstCourtId = courts?.[0]?.id || "";
+  const safeCourts = Array.isArray(courts) ? courts : [];
+  const cleanText = (v) => String(v ?? "").replace(/\r?\n/g, "").trim();
+
+  const inferTypeFromText = (txt) => {
+    const t = cleanText(txt).toLowerCase();
+    if (!t) return "";
+    if (
+      t.includes("fut7") ||
+      t.includes("society") ||
+      t.includes("sint") ||
+      t.includes("sintético") ||
+      t.includes("sintetico")
+    ) {
+      return "fut7";
+    }
+    if (t.includes("futsal") || t.includes("sal")) return "futsal";
+    return "";
+  };
+
+  const normalizeCourtType = (court) => {
+    const raw = (court?.type || court?.surface || court?.category || "")
+      .toString()
+      .toLowerCase();
+
+    if (raw.includes("7") || raw.includes("fut7") || raw.includes("sint") || raw.includes("society"))
+      return "fut7";
+    if (raw.includes("sal") || raw.includes("futsal")) return "futsal";
+
+    return inferTypeFromText(court?.name) || inferTypeFromText(court?.id) || "futsal";
+  };
+
+  const courtsWithType = useMemo(() => {
+    return safeCourts.map((c) => {
+      const __type = normalizeCourtType(c);
+
+      const idRaw = String(c?.id ?? "");
+      const nameRaw = String(c?.name ?? "");
+
+      const uiId = cleanText(idRaw);
+      const uiName = cleanText(nameRaw);
+
+      const displayName = uiName
+        .replace(/\((.*?)\)/g, "")
+        .replace(/\s{2,}/g, " ")
+        .trim();
+
+      return {
+        ...c,
+        id: idRaw,
+        name: nameRaw,
+        uiId,
+        uiName,
+        displayName,
+        __type,
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [safeCourts]);
+
+  const firstCourtIdByType = (type) => courtsWithType.find((c) => c.__type === type)?.id || "";
+
+  const [courtType, setCourtType] = useState(defaultType);
+
+  const [courtId, setCourtId] = useState(() => {
+    const first = firstCourtIdByType(defaultType);
+    return first || MANUAL_ID;
+  });
+
+  // quando trocar tipo: se não tiver quadra daquele tipo, vira manual
+  useEffect(() => {
+    const selectedCourt = courtsWithType.find((c) => c.id === courtId) || null;
+
+    const first = firstCourtIdByType(courtType);
+
+    if (!first) {
+      if (courtId !== MANUAL_ID) setCourtId(MANUAL_ID);
+      return;
+    }
+
+    if (!selectedCourt) {
+      setCourtId(first);
+      return;
+    }
+
+    if (selectedCourt.__type !== courtType) {
+      setCourtId(first);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courtType, courtsWithType]);
+
+  const isManual = courtId === MANUAL_ID;
+
+  const selectedCourt = useMemo(() => {
+    if (isManual) return null;
+    return courtsWithType.find((c) => c.id === courtId) || null;
+  }, [courtsWithType, courtId, isManual]);
 
   const [formData, setFormData] = useState({
-    courtId: firstCourtId,
-    date: "Hoje",
+    courtId: courtId,
+
+    dateLabel: "Hoje",
+    dateISO: "",
     time: "19:00",
+
+    title: "",
     maxPlayers: 14,
     pricePerPlayer: 30,
 
-    // ✅ novos campos
-    title: courts?.[0]?.name ? `Pelada - ${courts[0].name}` : "",
-    address: courts?.[0]?.address || "",
-    googleMapsUrl: courts?.[0]?.googleMapsUrl || "",
+    matchAddress: "",
+
+    notes: "",
+    visibility: "public",
   });
 
-  const selectedCourt = (courts || []).find((c) => c.id === formData.courtId) || null;
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, courtId }));
+  }, [courtId]);
 
-  function normalizeType(courtType) {
-    const t = String(courtType || "").toLowerCase();
-    if (t.includes("futsal")) return "futsal";
-    return "fut7";
-  }
+  useEffect(() => {
+    setFormData((prev) => {
+      if (prev.title?.trim()) return prev;
 
-  // ✅ quando trocar a quadra, pré-preenche nome/endereço/maps
-  function handleCourtChange(courtId) {
-    const court = (courts || []).find((c) => c.id === courtId) || null;
+      // se manual, não tenta montar título pela arena
+      if (isManual) {
+        const prefix = courtType === "fut7" ? "Fut7" : "Futsal";
+        return { ...prev, title: `Pelada ${prefix}` };
+      }
 
-    setFormData((prev) => ({
-      ...prev,
-      courtId,
-      title: court?.name ? `Pelada - ${court.name}` : prev.title,
-      address: court?.address || "",
-      googleMapsUrl: court?.googleMapsUrl || "",
-    }));
-  }
+      const niceName = selectedCourt?.displayName || cleanText(selectedCourt?.name) || "";
+      if (!niceName) return prev;
 
-  const dateOptions = useMemo(() => {
-    const days = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-    const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-    const list = [];
+      const prefix = courtType === "fut7" ? "Fut7" : "Futsal";
+      return { ...prev, title: `Pelada ${prefix} - ${niceName}` };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCourt?.name, selectedCourt?.displayName, courtType, isManual]);
 
-    for (let i = 0; i < 10; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() + i);
+  const arenaAddress = useMemo(() => {
+    if (!selectedCourt) return "";
+    const parts = [
+      selectedCourt.address,
+      selectedCourt.neighborhood,
+      selectedCourt.city,
+      selectedCourt.state,
+    ]
+      .map((x) => cleanText(x))
+      .filter(Boolean);
 
-      const label =
-        i === 0 ? "Hoje" : i === 1 ? "Amanhã" : `${d.getDate()} ${months[d.getMonth()]}`;
+    return parts.join(", ");
+  }, [selectedCourt]);
 
-      list.push({
-        dayName: days[d.getDay()],
-        dayNum: d.getDate(),
-        value: label,
-      });
+  const mapsQuery = useMemo(() => {
+    const raw = cleanText(formData.matchAddress) || cleanText(arenaAddress);
+    if (!raw) return "";
+    return encodeURIComponent(raw);
+  }, [formData.matchAddress, arenaAddress]);
+
+  const mapsUrl = mapsQuery ? `https://www.google.com/maps/search/?api=1&query=${mapsQuery}` : "";
+
+  const canCreate = useMemo(() => {
+    if (!organizerId) return false;
+    if (!formData.time) return false;
+    if (!formData.maxPlayers || formData.maxPlayers < 2) return false;
+    if (formData.pricePerPlayer < 0) return false;
+    if (formData.dateLabel === "Outra data" && !formData.dateISO) return false;
+
+    // ✅ regra nova:
+    // - manual: exige endereço
+    // - arena: exige courtId real
+    if (isManual) {
+      return !!cleanText(formData.matchAddress);
     }
-    return list;
-  }, []);
+    return !!formData.courtId && formData.courtId !== MANUAL_ID;
+  }, [formData, organizerId, isManual]);
 
-  function scrollCalendar(dir) {
-    if (!scrollRef.current) return;
-    scrollRef.current.scrollBy({ left: dir === "left" ? -120 : 120, behavior: "smooth" });
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-
-    if (!formData.courtId || !selectedCourt) return;
-
-    const newMatch = {
-      id: `m-${Date.now()}`, // backend depois
-      courtId: formData.courtId,
+  const payload = useMemo(() => {
+    return {
       organizerId,
+      courtId: formData.courtId, // "__manual__" ou id RAW
+      type: courtType,
 
-      // ✅ dados da partida
-      title: String(formData.title || "").trim(),
-      address: String(formData.address || "").trim(),
-      googleMapsUrl: String(formData.googleMapsUrl || "").trim(),
-
-      date: formData.date,
+      title: cleanText(formData.title),
+      dateLabel: formData.dateLabel,
+      dateISO: cleanText(formData.dateISO),
       time: formData.time,
-      type: normalizeType(selectedCourt?.type),
-
-      pricePerPlayer: Number(formData.pricePerPlayer) || 0,
       maxPlayers: Number(formData.maxPlayers) || 0,
+      pricePerPlayer: Number(formData.pricePerPlayer) || 0,
 
-      currentPlayers: organizerId ? [organizerId] : [],
-      messages: [],
+      matchAddress: cleanText(formData.matchAddress),
+
+      notes: cleanText(formData.notes),
+      visibility: formData.visibility,
     };
+  }, [formData, organizerId, courtType]);
 
-    await onCreate?.(newMatch);
+  function update(patch) {
+    setFormData((prev) => ({ ...prev, ...patch }));
   }
 
-  const canSubmit = Boolean(
-    formData.courtId &&
-      selectedCourt &&
-      String(formData.title || "").trim() &&
-      String(formData.address || "").trim() &&
-      String(formData.googleMapsUrl || "").trim()
-  );
+  async function handleCreate() {
+    if (!canCreate) return;
+
+    try {
+      await onCreate?.(payload);
+
+      requestAnimationFrame(() => {
+        scrollRef.current?.scrollTo?.({ top: 0, behavior: "smooth" });
+      });
+    } catch (err) {
+      console.error("MatchCreator onCreate error:", err);
+      alert("Erro ao criar partida. Verifique os dados e tente novamente.");
+    }
+  }
 
   return (
-    <div className={styles.page}>
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <CourtSelector
-          courts={courts}
-          value={formData.courtId}
-          onChange={handleCourtChange}
-        />
-
-        <DateSelector
-          dates={dateOptions}
-          value={formData.date}
-          onSelect={(date) => setFormData((prev) => ({ ...prev, date }))}
-          onScroll={scrollCalendar}
-          scrollRef={scrollRef}
-        />
-
-        <MatchForm
-          data={formData}
-          onChange={(patch) => setFormData((prev) => ({ ...prev, ...patch }))}
-        />
-
-        <SummaryCard data={formData} />
-
-        <button type="submit" className={styles.submit} disabled={!canSubmit}>
-          Publicar Pelada
+    <div className={styles.page} ref={scrollRef}>
+      <header className={styles.header}>
+        <button className={styles.backBtn} onClick={onBack} type="button" aria-label="Voltar">
+          ←
         </button>
 
-        {!courts?.length ? (
-          <div style={{ opacity: 0.75, marginTop: 10 }}>
-            Nenhuma quadra disponível ainda.
-          </div>
-        ) : null}
-      </form>
+        <div className={styles.headerText}>
+          <div className={styles.kicker}>Criar Pelada</div>
+          <h1 className={styles.title}>MatchCreator</h1>
+        </div>
+
+        <div className={styles.headerRight}>
+          <span className={styles.badgePremium}>Premium</span>
+        </div>
+      </header>
+
+      <div className={styles.grid}>
+        <section className={styles.leftCol}>
+          <CourtSelector
+            courts={courtsWithType}
+            valueCourtType={courtType}
+            onChangeCourtType={setCourtType}
+            valueCourtId={courtId}
+            onChangeCourtId={setCourtId}
+            manualId={MANUAL_ID}
+          />
+
+          <DateSelector
+            valueLabel={formData.dateLabel}
+            valueISO={formData.dateISO}
+            onChange={(next) => update(next)}
+          />
+
+          <MatchForm
+            formData={formData}
+            onChange={update}
+            arenaAddress={arenaAddress}
+            mapsUrl={mapsUrl}
+            courtType={courtType}
+            selectedCourt={selectedCourt}
+          />
+        </section>
+
+        <aside className={styles.rightCol}>
+          <SummaryCard
+            formData={formData}
+            selectedCourt={selectedCourt}
+            courtType={courtType}
+            arenaAddress={arenaAddress}
+            mapsUrl={mapsUrl}
+            canCreate={canCreate}
+            onCreate={handleCreate}
+          />
+        </aside>
+      </div>
     </div>
   );
 }

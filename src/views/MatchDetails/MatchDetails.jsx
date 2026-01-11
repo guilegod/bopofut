@@ -8,6 +8,10 @@ import InfoTab from "./components/InfoTab.jsx";
 import RulesTab from "./components/RulesTab.jsx";
 import ChatTab from "./components/ChatTab.jsx";
 
+function clean(v) {
+  return String(v ?? "").replace(/\r?\n/g, "").trim();
+}
+
 export default function MatchDetails({
   match,
   court,
@@ -20,7 +24,6 @@ export default function MatchDetails({
 }) {
   const [activeTab, setActiveTab] = useState("details");
 
-  // Invite UI
   const [inviteFeedback, setInviteFeedback] = useState(null);
   const [copyFeedback, setCopyFeedback] = useState(null);
   const [showFriendSelector, setShowFriendSelector] = useState(false);
@@ -35,12 +38,42 @@ export default function MatchDetails({
   const isJoined = currentPlayers.includes(user?.id);
   const spotsLeft = Math.max(0, maxPlayers - currentPlayers.length);
 
-  // ✅ prioridade para os dados da partida (quando existir)
-  const placeName = match?.title || court?.name || "Pelada";
-  const placeAddress = match?.address || court?.address || "";
-  const googleMapsUrl = match?.googleMapsUrl || court?.googleMapsUrl || "";
+  // =============================
+  // 📍 DADOS CORRETOS DE LOCAL
+  // =============================
+  const arenaName = clean(
+    court?.displayName ||
+    court?.uiName ||
+    court?.name ||
+    "Arena"
+  ).replace(/\((.*?)\)/g, "").trim();
 
-  // (backend-ready) se no futuro você passar users via prop/service, é só trocar aqui
+  const arenaAddress = clean(
+    [court?.address, court?.city, court?.state].filter(Boolean).join(", ")
+  );
+
+  // Endereço REAL da partida (criado no MatchCreator)
+  const matchAddress = clean(match?.matchAddress || "");
+
+  // O que os jogadores veem como local:
+  const placeAddress = matchAddress || arenaAddress || "Local a confirmar";
+
+  // Nome da partida
+  const placeName = clean(match?.title || "Pelada");
+
+  // =============================
+  // 🌍 MAPS
+  // =============================
+  const mapsQuery = encodeURIComponent(`${placeName} ${placeAddress}`);
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+
+  const mapEmbedUrl = useMemo(() => {
+    return `https://maps.google.com/maps?q=${mapsQuery}&z=15&output=embed`;
+  }, [mapsQuery]);
+
+  // =============================
+  // Friends (mock)
+  // =============================
   const availableFriends = useMemo(() => {
     return mockUsers.filter(
       (u) =>
@@ -72,7 +105,7 @@ export default function MatchDetails({
 
   function handleWhatsAppShare() {
     const url = `https://bopofut.app/m/${match.id}`;
-    const text = `⚽ ${placeName}\n📍 ${placeAddress || "Local a confirmar"}\n🔗 ${url}`;
+    const text = `⚽ ${placeName}\n📍 ${placeAddress}\n🔗 ${url}`;
     const wa = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(wa, "_blank");
   }
@@ -85,25 +118,8 @@ export default function MatchDetails({
   }
 
   function handleOpenMaps() {
-    // prioridade: link salvo
-    if (googleMapsUrl) {
-      window.open(googleMapsUrl, "_blank");
-      return;
-    }
-    // fallback: gerar pelo endereço/nome
-    const query = encodeURIComponent(`${placeName} ${placeAddress}`.trim());
-    window.open(
-      `https://www.google.com/maps/search/?api=1&query=${query}`,
-      "_blank"
-    );
+    window.open(googleMapsUrl, "_blank");
   }
-
-  // ✅ iframe bem estável (não depende do formato do googleMapsUrl)
-  // mas ainda respeitamos prioridade do link salvo para "Abrir no Maps" via handleOpenMaps()
-  const mapEmbedUrl = useMemo(() => {
-    const query = encodeURIComponent(`${placeName} ${placeAddress}`.trim());
-    return `https://maps.google.com/maps?q=${query}&z=15&output=embed`;
-  }, [placeName, placeAddress]);
 
   return (
     <div className={styles.page}>
@@ -113,6 +129,7 @@ export default function MatchDetails({
         onBack={onBack}
         placeName={placeName}
         placeAddress={placeAddress}
+        arenaName={arenaName}
       />
 
       <Tabs
@@ -143,7 +160,6 @@ export default function MatchDetails({
           />
         )}
 
-        {/* ✅ AQUI ERA O BUG: Tabs usa "info", não "local" */}
         {activeTab === "info" && (
           <InfoTab
             match={match}
