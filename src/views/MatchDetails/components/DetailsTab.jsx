@@ -1,6 +1,5 @@
 import styles from "../MatchDetails.module.css";
 import InvitePanel from "./InvitePanel.jsx";
-import { mockUsers } from "../../../mockData.js";
 
 export default function DetailsTab({
   match,
@@ -20,25 +19,24 @@ export default function DetailsTab({
   availableFriends,
   onInviteFriend,
 }) {
-  const isAdmin = user?.role === "owner" || user?.role === "admin" || user?.id === match.organizerId;
+  const isAdmin =
+    user?.role === "owner" ||
+    user?.role === "admin" ||
+    user?.id === match.organizerId;
 
-  function resolvePlayer(playerId) {
-    // ✅ se for o usuário logado, usa o user real (arruma "Convidado")
-    if (playerId === user?.id) {
+  function resolvePlayer(presence) {
+    const u = presence?.user;
+
+    if (!u) {
       return {
-        name: user?.name || "Você",
-        avatar: user?.avatar || `https://picsum.photos/seed/${playerId}/200`,
+        name: "Convidado",
+        avatar: `https://picsum.photos/seed/${presence.userId}/200`,
       };
     }
 
-    // tenta no mock
-    const p = mockUsers.find((u) => u.id === playerId);
-    if (p) return p;
-
-    // fallback
     return {
-      name: "Convidado",
-      avatar: `https://picsum.photos/seed/${playerId}/200`,
+      name: u.name,
+      avatar: u.avatar || `https://picsum.photos/seed/${u.id}/200`,
     };
   }
 
@@ -62,16 +60,16 @@ export default function DetailsTab({
         <div className={styles.convocadosHeader}>
           <h3 className={styles.convocadosTitle}>Convocados</h3>
           <div className={styles.convocadosInfo}>
-            {match.currentPlayers.length} de {match.maxPlayers} vagas
+            {match.presences.length} de {match.maxPlayers} vagas
           </div>
         </div>
 
         <div className={styles.playersGrid}>
-          {match.currentPlayers.map((playerId, i) => {
-            const p = resolvePlayer(playerId);
+          {match.presences.map((presence, i) => {
+            const p = resolvePlayer(presence);
 
             return (
-              <div key={`${playerId}-${i}`} className={styles.playerPill}>
+              <div key={`${presence.userId}-${i}`} className={styles.playerPill}>
                 <img src={p.avatar} alt={p.name} className={styles.playerAvatar} />
                 <strong className={styles.playerName}>{p.name}</strong>
               </div>
@@ -105,13 +103,20 @@ export default function DetailsTab({
             Sair da Pelada
           </button>
         ) : (
-          <button className={styles.btnPrimary} onClick={onConfirmJoin} disabled={spotsLeft === 0}>
+          <button
+            className={styles.btnPrimary}
+            onClick={onConfirmJoin}
+            disabled={spotsLeft === 0}
+          >
             Confirmar Presença
           </button>
         )}
 
         {isAdmin && (
-          <button className={styles.btnSecondary} onClick={() => onManageStats(match.id)}>
+          <button
+            className={styles.btnSecondary}
+            onClick={() => onManageStats(match.id)}
+          >
             Gerenciar Súmula (Admin)
           </button>
         )}
