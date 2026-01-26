@@ -126,47 +126,14 @@ select option{
   background: #ffffff;
   color: #0F1C2D;
 }
-/* ===== Mobile hardening ===== */
-html, body {
+html, body, #root {
   width: 100%;
+  max-width: 100%;
   overflow-x: hidden;
 }
 
-* {
-  box-sizing: border-box;
-}
-
-img, video {
-  max-width: 100%;
-  height: auto;
-}
-
-/* Evita textos/labels estourarem o card */
-.safeText {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.safeWrap {
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
-
-/* Área principal não ficar atrás do bottom nav */
-:root{
-  --bottom-nav-h: 74px; /* ajuste se teu menu for maior/menor */
-}
-
-.appMain, main, .page, .container {
-  padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px));
-}
-
-/* Cards e blocos nunca ultrapassarem a tela */
-.card, .panel, .section, .box {
-  max-width: 100%;
-}
-
-/* Inputs/Selects no mobile sem “zoom” no iOS e sem ficar estourado */
-input, select, textarea, button {
-  max-width: 100%;
+@media (max-width: 600px){
+  * {
+    max-width: 100vw;
+  }
 }
