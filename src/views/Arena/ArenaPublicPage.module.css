@@ -2,6 +2,11 @@
   padding: 16px;
   display: grid;
   gap: 12px;
+
+  /* ✅ anti-quebra mobile + evita conteúdo ficar atrás do bottom menu */
+  max-width: 100%;
+  overflow-x: hidden;
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ===== Topbar/Hero ===== */
@@ -15,6 +20,9 @@
   border: 1px solid rgba(255,255,255,.12);
   background: rgba(255,255,255,.05);
   box-shadow: 0 12px 30px rgba(0,0,0,.22);
+
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .backBtn{
@@ -35,6 +43,7 @@
   align-items: center;
   gap: 10px;
   justify-content: space-between;
+  min-width: 0; /* ✅ importante */
 }
 
 .title{
@@ -44,6 +53,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .rightPills{
@@ -51,6 +61,7 @@
   gap: 8px;
   flex-wrap: wrap;
   justify-content: flex-end;
+  min-width: 0;
 }
 
 .datePill{
@@ -95,6 +106,7 @@
   border: 1px solid rgba(255,255,255,.14);
   background: rgba(0,0,0,.14);
   font-weight: 900;
+  max-width: 100%;
 }
 
 .quickChipSoft{
@@ -104,6 +116,7 @@
   background: rgba(255,255,255,.06);
   font-weight: 900;
   opacity: .92;
+  max-width: 100%;
 }
 
 .hero{
@@ -132,7 +145,7 @@
 /* ===== Sticky Tabs ===== */
 .tabsSticky{
   position: sticky;
-  top: 10px;
+  top: calc(10px + env(safe-area-inset-top, 0px)); /* ✅ melhor no mobile */
   z-index: 6;
 }
 
@@ -146,6 +159,8 @@
   background: rgba(0,0,0,.16);
   backdrop-filter: blur(10px);
   box-shadow: 0 12px 24px rgba(0,0,0,.14);
+
+  max-width: 100%;
 }
 
 .tabBtn{
@@ -157,6 +172,7 @@
   font-weight: 950;
   cursor: pointer;
   opacity: .92;
+  min-width: 0;
 }
 
 .tabActive{
@@ -173,11 +189,15 @@
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,.12);
   background: rgba(255,255,255,.04);
+
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .toolbarBlock{
   display: grid;
   gap: 6px;
+  min-width: 0;
 }
 
 .toolbarLabel{
@@ -196,6 +216,7 @@
   padding: 0 12px;
   outline: none;
   font-weight: 900;
+  min-width: 0;
 }
 
 .searchInput::placeholder{
@@ -206,6 +227,7 @@
 .content{
   display: grid;
   gap: 12px;
+  max-width: 100%;
 }
 
 .courtCard{
@@ -214,6 +236,9 @@
   background: rgba(255,255,255,.05);
   padding: 14px;
   box-shadow: 0 10px 24px rgba(0,0,0,.18);
+
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .courtTop{
@@ -229,6 +254,9 @@
   font-weight: 1100;
   letter-spacing: .01em;
   font-size: 15px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .courtType{
@@ -262,6 +290,7 @@
   background: rgba(217,77,43,.14);
   font-weight: 1000;
   font-size: 12px;
+  max-width: 100%;
 }
 
 .badgeSoft{
@@ -271,12 +300,14 @@
   background: rgba(255,255,255,.06);
   font-weight: 1000;
   font-size: 12px;
+  max-width: 100%;
 }
 
 .courtActions{
   display: grid;
   gap: 8px;
   justify-items: end;
+  min-width: 0;
 }
 
 .primaryBtn{
@@ -313,8 +344,10 @@
   padding-bottom: 6px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
-}
 
+  /* ✅ premium scroll */
+  scroll-snap-type: x mandatory;
+}
 .slotChip{
   border: 1px solid rgba(255,255,255,.14);
   background: rgba(255,255,255,.06);
@@ -322,6 +355,9 @@
   border-radius: 999px;
   font-weight: 1100;
   white-space: nowrap;
+
+  flex: 0 0 auto;
+  scroll-snap-align: start;
 }
 
 .emptyInline{
@@ -407,10 +443,39 @@
   .primaryBtn, .secondaryBtn{ width: 100%; }
 }
 
+/* ✅ Tabs: no mobile pequeno, melhor virar “carrossel” horizontal (não stack 3 linhas) */
 @media (max-width: 560px){
   .topbar{ grid-template-columns: 44px 1fr; }
   .hero{ display: none; }
-  .tabs{ grid-template-columns: 1fr; }
+
+  .tabs{
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px;
+  }
+  .tabBtn{
+    flex: 0 0 auto;
+    min-width: 140px;
+  }
+
   .kpis{ grid-template-columns: 1fr; }
   .kpisMini{ grid-template-columns: 1fr; }
+}
+
+/* ✅ Header: evita “espremido” extremo */
+@media (max-width: 420px){
+  .titleRow{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .rightPills{
+    justify-content: flex-start;
+  }
+  .datePill, .timePill{
+    font-size: 11px;
+    padding: 6px 9px;
+  }
 }
