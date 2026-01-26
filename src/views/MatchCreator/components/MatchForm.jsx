@@ -7,6 +7,10 @@ export default function MatchForm({
   mapsUrl,
   courtType,
   selectedCourt,
+
+  // ✅ novo
+  useArenaAddress = true,
+  onToggleUseArenaAddress,
 }) {
   const cleanText = (v) => String(v ?? "").replace(/\r?\n/g, "").trim();
 
@@ -14,7 +18,6 @@ export default function MatchForm({
     onChange?.(patch);
   }
 
-  // ✅ nome premium da arena (não mostra \n, nem "(Futsal)")
   const arenaNameRaw =
     selectedCourt?.displayName ||
     selectedCourt?.uiName ||
@@ -28,9 +31,20 @@ export default function MatchForm({
 
   const typeLabel = courtType === "fut7" ? "Fut7 (Sintético)" : "Futsal";
 
-  const matchAddr = cleanText(formData.matchAddress || "");
   const arenaAddr = cleanText(arenaAddress || "");
-  const mapsSource = matchAddr ? "PARTIDA" : arenaAddr ? "ARENA" : "—";
+  const matchAddr = cleanText(formData.matchAddress || "");
+
+  const effectiveAddr = useArenaAddress ? arenaAddr : matchAddr;
+  const mapsSource = useArenaAddress ? "ARENA (automático)" : matchAddr ? "MANUAL" : arenaAddr ? "ARENA (fallback)" : "—";
+
+  // extras opcionais (se existirem no objeto)
+  const capacity = selectedCourt?.capacity;
+  const pixKey = selectedCourt?.pixKey || selectedCourt?.arenaPixKey;
+  const hasParking = selectedCourt?.hasParking ?? selectedCourt?.arenaHasParking;
+  const hasLockerRoom = selectedCourt?.hasLockerRoom ?? selectedCourt?.arenaHasLockerRoom;
+  const hasLighting = selectedCourt?.hasLighting ?? selectedCourt?.arenaHasLighting;
+  const ratingAvg = selectedCourt?.ratingAvg ?? selectedCourt?.arenaRatingAvg;
+  const ratingCount = selectedCourt?.ratingCount ?? selectedCourt?.arenaRatingCount;
 
   return (
     <section className={styles.card}>
@@ -111,43 +125,36 @@ export default function MatchForm({
         <div className={styles.section}>
           <div className={styles.sectionTitle}>Local</div>
 
-          {/* ✅ endereço REAL da partida (manual). NÃO depende da arena */}
+          {/* ✅ Agora o padrão é: usar endereço da ARENA automaticamente */}
           <label className={styles.label}>
-            Endereço da partida (real)
+            Endereço (para os jogadores)
             <input
               className={styles.input}
-              value={formData.matchAddress || ""}
+              value={useArenaAddress ? arenaAddr : (formData.matchAddress || "")}
+              disabled={useArenaAddress}
               onChange={(e) => set({ matchAddress: e.target.value })}
-              placeholder="Rua, número, bairro, cidade (ex: Av. X, 123 - Centro, Curitiba/PR)"
+              placeholder={useArenaAddress ? "Endereço automático da arena" : "Rua, número, bairro, cidade..."}
               inputMode="text"
               autoComplete="street-address"
             />
+
             <span className={styles.hint}>
-              Esse é o endereço que os jogadores verão e que gera o link do Maps. Trocar a arena não altera isso.
+              {useArenaAddress
+                ? "Usando automaticamente o endereço da arena. Se precisar mudar, clique em “Editar endereço (opcional)”."
+                : "Você está editando manualmente. Para voltar ao padrão, clique em “Usar endereço da arena”."}
             </span>
           </label>
 
-          {/* ✅ arena informativa (sem confundir com endereço real) */}
-          <div className={styles.arenaBox}>
-            <div className={styles.arenaTop}>
-              <span className={styles.arenaPill}>Arena selecionada</span>
-              <span className={styles.arenaName}>{arenaLabel}</span>
-            </div>
-
-            {!!arenaAddr ? (
-              <div className={styles.arenaSub}>
-                <span className={styles.arenaMuted}>Localidade da arena:</span>{" "}
-                {arenaAddr}
-              </div>
-            ) : (
-              <div className={styles.arenaSub}>
-                <span className={styles.arenaMuted}>Localidade da arena:</span>{" "}
-                —
-              </div>
-            )}
-          </div>
-
           <div className={styles.mapsRow}>
+            <button
+              type="button"
+              className={styles.mapsBtn}
+              onClick={() => onToggleUseArenaAddress?.(useArenaAddress ? false : true)}
+              title={useArenaAddress ? "Liberar edição manual" : "Voltar a usar o endereço da arena"}
+            >
+              {useArenaAddress ? "Editar endereço (opcional)" : "Usar endereço da arena"}
+            </button>
+
             <a
               className={`${styles.mapsBtn} ${mapsUrl ? "" : styles.disabled}`}
               href={mapsUrl || undefined}
@@ -160,17 +167,43 @@ export default function MatchForm({
               title={
                 mapsUrl
                   ? `Maps gerado a partir do endereço: ${mapsSource}`
-                  : "Preencha o endereço da partida ou selecione uma arena com endereço."
+                  : "Sem endereço suficiente para gerar o link"
               }
             >
               Abrir no Google Maps ↗
             </a>
+          </div>
 
-            <div className={styles.mapsNote}>
-              {mapsUrl
-                ? `Link gerado a partir do endereço: ${mapsSource}`
-                : "Preencha o endereço da partida (recomendado) ou use a localidade da arena."}
+          {/* ✅ Arena informativa */}
+          <div className={styles.arenaBox}>
+            <div className={styles.arenaTop}>
+              <span className={styles.arenaPill}>Arena selecionada</span>
+              <span className={styles.arenaName}>{arenaLabel}</span>
             </div>
+
+            <div className={styles.arenaSub}>
+              <span className={styles.arenaMuted}>Localidade:</span>{" "}
+              {arenaAddr || "—"}
+            </div>
+
+            {/* ✅ Extras (só aparecem se existirem) */}
+            {(capacity || pixKey || hasParking !== undefined || hasLockerRoom !== undefined || hasLighting !== undefined || ratingAvg) && (
+              <div className={styles.arenaSub}>
+                <span className={styles.arenaMuted}>Detalhes:</span>{" "}
+                {capacity ? `👥 cap ${capacity}` : ""}
+                {hasLighting === true ? " • 💡 iluminação" : hasLighting === false ? " • 💡 sem iluminação" : ""}
+                {hasLockerRoom === true ? " • 🚿 vestiário" : hasLockerRoom === false ? " • 🚿 sem vestiário" : ""}
+                {hasParking === true ? " • 🚗 estacionamento" : hasParking === false ? " • 🚗 sem estacionamento" : ""}
+                {pixKey ? " • 💳 Pix" : ""}
+                {ratingAvg ? ` • ⭐ ${Number(ratingAvg).toFixed(1)}${ratingCount ? ` (${ratingCount})` : ""}` : ""}
+              </div>
+            )}
+          </div>
+
+          <div className={styles.mapsNote}>
+            {mapsUrl
+              ? `Link gerado a partir do endereço: ${mapsSource}`
+              : "Sem endereço suficiente para gerar o link."}
           </div>
         </div>
 

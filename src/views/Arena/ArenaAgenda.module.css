@@ -538,3 +538,177 @@
 @media (min-width: 981px) and (max-width: 1240px){
   .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+/* ==============================
+   Premium: Disponibilidade colapsável
+============================== */
+.availabilityWrap{
+  border-radius: 18px;
+  border: 1px solid var(--border, rgba(255,255,255,.12));
+  background: var(--surface-2, rgba(255,255,255,.05));
+  box-shadow: var(--shadow, 0 12px 30px rgba(0,0,0,.25));
+  overflow: hidden;
+}
+
+.availabilityHead{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,.10));
+}
+
+.availabilityTitle{
+  font-weight: 1000;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.availabilityHint{
+  font-size: 12px;
+  opacity: .72;
+  font-weight: 800;
+}
+
+.availabilityActions{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pinBtn{
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid var(--border, rgba(255,255,255,.14));
+  background: transparent;
+  color: var(--text, #fff);
+  cursor: pointer;
+  font-weight: 1000;
+  opacity: .9;
+  transition: transform .15s ease, background .15s ease, border-color .15s ease, opacity .15s ease;
+}
+.pinBtn:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,.22);
+  background: rgba(255,255,255,.04);
+  opacity: 1;
+}
+.pinActive{
+  border-color: rgba(217,77,43,.55);
+  background: rgba(217,77,43,.14);
+}
+
+.chevron{
+  opacity: .7;
+  font-weight: 1000;
+}
+
+/* corpo que colapsa */
+.availabilityBody{
+  padding: 12px 14px 14px;
+  max-height: 520px;
+  opacity: 1;
+  transition: max-height .22s ease, opacity .18s ease;
+}
+
+.availabilityCollapsed .availabilityBody{
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+}
+
+/* select inline dentro do chip */
+.avInlineSelect{
+  margin-left: 8px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 10px;
+  padding: 6px 10px;
+  color: inherit;
+  font-weight: 800;
+}
+
+/* grid dos dias */
+.avGrid{
+  margin-top: 10px;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255,255,255,0.03);
+}
+
+.avRow{
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr 140px;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.avRow:last-child{ border-bottom: 0; }
+
+.avDow{ font-weight: 1000; }
+
+.avField{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.avLabel{
+  opacity: .8;
+  font-weight: 800;
+  width: 44px;
+}
+
+.avInput{
+  width: 100%;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 12px;
+  padding: 8px 10px;
+  color: inherit;
+  font-weight: 900;
+  outline: none;
+}
+.avInput:focus{
+  border-color: rgba(217,77,43,.45);
+  box-shadow: 0 12px 28px rgba(0,0,0,.25);
+}
+
+.avToggle{
+  justify-self: end;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.18);
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.06);
+  color: inherit;
+  font-weight: 1000;
+  cursor: pointer;
+  transition: transform .15s ease, border-color .15s ease, background .15s ease;
+}
+.avToggle:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,.22);
+}
+
+.avOn{ background: rgba(50,200,120,0.18); }
+.avOff{ background: rgba(255,255,255,0.06); }
+
+@media (max-width: 980px){
+  /* em telas menores: não depende de hover, deixa aberto por padrão */
+  .availabilityCollapsed .availabilityBody{
+    max-height: 520px;
+    opacity: 1;
+    padding: 12px 14px 14px;
+    pointer-events: auto;
+  }
+  .avRow{ grid-template-columns: 60px 1fr; }
+  .avToggle{ justify-self: start; }
+  .availabilityHint{ display: none; }
+}

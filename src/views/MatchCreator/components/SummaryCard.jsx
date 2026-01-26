@@ -7,6 +7,10 @@ export default function SummaryCard({
   courtType,
   arenaAddress,
   mapsUrl,
+
+  // ✅ novo
+  useArenaAddress = true,
+
   canCreate,
   onCreate,
 }) {
@@ -29,7 +33,15 @@ export default function SummaryCard({
 
   const matchAddr = cleanText(formData.matchAddress || "");
   const arenaAddr = cleanText(arenaAddress || "");
-  const locationLine = matchAddr || arenaAddr || "—";
+
+  const locationLine = useArenaAddress ? arenaAddr : (matchAddr || arenaAddr || "—");
+  const addressSource = useArenaAddress
+    ? "Arena (automático)"
+    : matchAddr
+      ? "Manual (editado)"
+      : arenaAddr
+        ? "Arena (fallback)"
+        : "—";
 
   const arenaNameRaw =
     selectedCourt?.displayName ||
@@ -42,7 +54,25 @@ export default function SummaryCard({
     .replace(/\s{2,}/g, " ")
     .trim();
 
-  const addressSource = matchAddr ? "Endereço real (partida)" : arenaAddr ? "Localidade da arena" : "—";
+  // extras opcionais
+  const capacity = selectedCourt?.capacity;
+  const pixKey = selectedCourt?.pixKey || selectedCourt?.arenaPixKey;
+  const hasParking = selectedCourt?.hasParking ?? selectedCourt?.arenaHasParking;
+  const hasLockerRoom = selectedCourt?.hasLockerRoom ?? selectedCourt?.arenaHasLockerRoom;
+  const hasLighting = selectedCourt?.hasLighting ?? selectedCourt?.arenaHasLighting;
+  const ratingAvg = selectedCourt?.ratingAvg ?? selectedCourt?.arenaRatingAvg;
+  const ratingCount = selectedCourt?.ratingCount ?? selectedCourt?.arenaRatingCount;
+
+  const detailsLine = useMemo(() => {
+    const parts = [];
+    if (capacity) parts.push(`👥 cap ${capacity}`);
+    if (hasLighting === true) parts.push("💡 iluminação");
+    if (hasLockerRoom === true) parts.push("🚿 vestiário");
+    if (hasParking === true) parts.push("🚗 estacionamento");
+    if (pixKey) parts.push("💳 Pix");
+    if (ratingAvg) parts.push(`⭐ ${Number(ratingAvg).toFixed(1)}${ratingCount ? ` (${ratingCount})` : ""}`);
+    return parts.join(" • ");
+  }, [capacity, hasLighting, hasLockerRoom, hasParking, pixKey, ratingAvg, ratingCount]);
 
   return (
     <div className={styles.card}>
@@ -61,8 +91,9 @@ export default function SummaryCard({
         </div>
 
         <div className={styles.block}>
-          <div className={styles.label}>Arena</div>
+          <div className={styles.label}>Arena / Quadra</div>
           <div className={styles.value}>{arenaName || "—"}</div>
+          {!!detailsLine && <div className={styles.sub}>{detailsLine}</div>}
         </div>
 
         <div className={styles.block}>
@@ -104,11 +135,7 @@ export default function SummaryCard({
             onClick={(e) => {
               if (!mapsUrl) e.preventDefault();
             }}
-            title={
-              mapsUrl
-                ? "Abrir rota/consulta no Google Maps"
-                : "Sem endereço suficiente para gerar o link"
-            }
+            title={mapsUrl ? "Abrir no Google Maps" : "Sem endereço suficiente para gerar o link"}
           >
             Ver no Maps
           </a>

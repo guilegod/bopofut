@@ -1,14 +1,29 @@
 import styles from "./DateSelector.module.css";
 
+function formatISO(date) {
+  return date.toISOString().slice(0, 10);
+}
+
 export default function DateSelector({ valueLabel, valueISO, onChange }) {
   const label = valueLabel || "Hoje";
 
   function setLabel(next) {
-    if (next === "Outra data") {
-      onChange?.({ dateLabel: next });
+    if (next === "Hoje") {
+      const today = formatISO(new Date());
+      onChange?.({ dateLabel: "Hoje", dateISO: today });
       return;
     }
-    onChange?.({ dateLabel: next, dateISO: "" });
+
+    if (next === "Amanhã") {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      onChange?.({ dateLabel: "Amanhã", dateISO: formatISO(tomorrow) });
+      return;
+    }
+
+    if (next === "Outra data") {
+      onChange?.({ dateLabel: "Outra data" });
+    }
   }
 
   function setISO(e) {
@@ -58,7 +73,12 @@ export default function DateSelector({ valueLabel, valueISO, onChange }) {
         {label === "Outra data" && (
           <label className={styles.label}>
             Escolha no calendário
-            <input className={styles.input} type="date" value={valueISO || ""} onChange={setISO} />
+            <input
+              className={styles.input}
+              type="date"
+              value={valueISO || ""}
+              onChange={setISO}
+            />
           </label>
         )}
       </div>

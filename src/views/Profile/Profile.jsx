@@ -115,19 +115,21 @@ export default function Profile({
       />
 
       {/* Ações rápidas */}
-      <button type="button" onClick={() => onEditProfile?.()} className={styles.editBtn}>
-        ✎ <span>Editar Perfil</span>
-      </button>
+        <button type="button" onClick={() => onEditProfile?.()} className={styles.editBtn}>
+          {isArenaOwner ? "🏟️ " : "✎ "}
+          <span>{isArenaOwner ? "Configurar Arena" : "Editar Perfil"}</span>
+        </button>
 
-      <button
-        type="button"
-        onClick={() => onOpenAccountSettings?.()}
-        className={styles.editBtn}
-        style={{ opacity: onOpenAccountSettings ? 1 : 0.85 }}
-        title={onOpenAccountSettings ? "Configurações de Conta" : "Em breve"}
-      >
-        ⚙ <span>Configurações de Conta</span>
-      </button>
+        <button
+          type="button"
+          onClick={() => onOpenAccountSettings?.()}
+          className={styles.editBtn}
+          style={{ opacity: onOpenAccountSettings ? 1 : 0.85 }}
+          title={onOpenAccountSettings ? "Minha Conta (Acesso)" : "Em breve"}
+        >
+          👤 <span>Minha Conta (Acesso)</span>
+        </button>
+
 
       {/* Carteira */}
       <WalletCard user={safeUser} onOpenWallet={() => onOpenWallet?.()} />

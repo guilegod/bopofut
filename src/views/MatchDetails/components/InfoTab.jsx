@@ -8,7 +8,6 @@ export default function InfoTab({
   mapEmbedUrl,
   onOpenMaps,
 }) {
-  // prioridade do LINK (abrir no Maps):
   const mapsLink =
     match?.googleMapsUrl ||
     court?.googleMapsUrl ||
@@ -18,9 +17,9 @@ export default function InfoTab({
         )}`
       : null);
 
-  const address = match?.address || court?.address || "";
+  // ✅ usa placeAddress (que já vem priorizando match.matchAddress)
+  const address = placeAddress || match?.matchAddress || court?.address || "";
 
-  // iframe: sempre estável (gerado pelo endereço/nome)
   const iframeSrc =
     mapEmbedUrl ||
     (address
@@ -39,9 +38,7 @@ export default function InfoTab({
 
   return (
     <div className={styles.panel}>
-      <h3 className={styles.h3}>
-        {court?.name || match?.title || "Local da partida"}
-      </h3>
+      <h3 className={styles.h3}>{court?.name || match?.title || "Local da partida"}</h3>
 
       {address && <p className={styles.sub}>📍 {address}</p>}
 

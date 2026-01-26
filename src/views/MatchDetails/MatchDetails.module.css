@@ -1,3 +1,10 @@
+/* =========================================================
+   MatchDetails — PREMIUM (alinhado ao theme.css)
+   - surfaces leves + bordas suaves + sombra premium
+   - botões consistentes (primary / secondary / ghost / danger)
+   - layout mobile-first
+   ========================================================= */
+
 .page{
   min-height: 100%;
   background: transparent;
@@ -10,6 +17,150 @@
   flex-direction: column;
   gap: 14px;
 }
+
+/* =========================================================
+   Helpers gerais
+   ========================================================= */
+
+.tabInner{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: var(--glass);
+}
+
+.cardRow{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sectionTitle{
+  font-weight: 1000;
+  letter-spacing: .04em;
+  color: var(--text);
+  margin: 0;
+}
+
+.kicker{
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.muted{
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+/* =========================================================
+   KPI (participantes / valor atleta etc)
+   ========================================================= */
+
+.kpiLabel{
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.kpiValue{
+  font-size: 18px;
+  font-weight: 1000;
+  color: var(--text);
+}
+
+/* =========================================================
+   Botões PREMIUM
+   ========================================================= */
+
+.btnBase{
+  width: 100%;
+  border-radius: var(--r-lg);
+  padding: 14px 12px;
+  font-weight: 1000;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  transition: transform .08s ease, filter .12s ease, opacity .12s ease, box-shadow .12s ease;
+  user-select: none;
+}
+
+.btnBase:active{
+  transform: scale(.99);
+}
+
+.btnBase:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Usados pelos arquivos novos */
+.primaryBtn{
+  composes: btnBase;
+  background: linear-gradient(180deg, var(--primary), var(--primary-2));
+  color: #06210f;
+  box-shadow: 0 12px 26px rgba(24,195,126,.18);
+}
+
+.primaryBtn:hover{
+  filter: brightness(1.03);
+}
+
+.secondaryBtn{
+  composes: btnBase;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  color: #2a1a00;
+  box-shadow: 0 12px 26px rgba(201,162,78,.18);
+}
+
+.secondaryBtn:hover{
+  filter: brightness(1.03);
+}
+
+.ghostBtn{
+  composes: btnBase;
+  background: rgba(255,255,255,.55);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.ghostBtn:hover{
+  filter: brightness(1.02);
+}
+
+.dangerBtn{
+  composes: btnBase;
+  background: transparent;
+  border: 2px solid var(--danger);
+  color: var(--danger);
+}
+
+.dangerBtn:hover{
+  filter: brightness(1.02);
+}
+
+/* =========================================================
+   Cards “grid” antigos (se algum tab ainda usar)
+   ========================================================= */
 
 .panel{
   background: var(--surface);
@@ -29,73 +180,10 @@
   .grid2{ grid-template-columns: 1fr; }
 }
 
-/* ========================= */
-/* Buttons */
-/* ========================= */
-.btnPrimary{
-  width: 100%;
-  border-radius: var(--r-lg);
-  padding: 16px 14px;
-  background: linear-gradient(180deg, var(--primary), var(--primary-2));
-  color: #06210f;
-  font-weight: 1000;
-  text-transform: uppercase;
-  letter-spacing: .12em;
-  text-align: center;
-}
+/* =========================================================
+   Convocados (legado + premium)
+   ========================================================= */
 
-.btnDanger{
-  width: 100%;
-  border-radius: var(--r-lg);
-  padding: 16px 14px;
-  background: transparent;
-  color: var(--danger);
-  border: 2px solid var(--danger);
-  font-weight: 1000;
-  text-transform: uppercase;
-  letter-spacing: .12em;
-  text-align: center;
-}
-
-.btnSecondary{
-  width: 100%;
-  border-radius: var(--r-lg);
-  padding: 14px 12px;
-  background: linear-gradient(180deg, var(--accent), var(--accent-2));
-  color: #2a1a00;
-  font-weight: 1000;
-  text-transform: uppercase;
-  letter-spacing: .12em;
-  text-align: center;
-  font-size: 12px;
-}
-
-.muted{
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-}
-/* ========================= */
-/* DetailsTab layout helpers */
-/* ========================= */
-.detailsStack{
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.strong{
-  font-weight: 1000;
-}
-
-.priceStrong{
-  font-weight: 1000;
-  color: var(--primary);
-}
-
-/* ========================= */
-/* Convocados */
-/* ========================= */
 .convocadosHeader{
   display: flex;
   justify-content: space-between;
@@ -119,6 +207,7 @@
   color: var(--muted);
 }
 
+/* se algum lugar ainda usar grid antigo */
 .playersGrid{
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -133,7 +222,7 @@
   padding: 10px;
   border-radius: 14px;
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: rgba(255,255,255,.60);
 }
 
 .playerAvatar{
@@ -141,11 +230,12 @@
   height: 34px;
   border-radius: 999px;
   object-fit: cover;
-  border: 1px solid rgba(255,255,255,.18);
+  border: 1px solid rgba(15, 28, 45, .10);
 }
 
 .playerName{
   font-size: 12px;
+  font-weight: 900;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -155,9 +245,10 @@
   .playersGrid{ grid-template-columns: 1fr; }
 }
 
-/* ========================= */
-/* CTA + Actions */
-/* ========================= */
+/* =========================================================
+   CTA / ações (se algum tab ainda usar)
+   ========================================================= */
+
 .ctaRow{
   margin-top: 14px;
 }

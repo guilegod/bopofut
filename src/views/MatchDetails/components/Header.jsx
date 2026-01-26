@@ -4,7 +4,8 @@ function getStatusLabel(status) {
   const s = String(status || "").toLowerCase();
   if (s === "iniciada" || s === "started" || s === "live") return "Em andamento";
   if (s === "finalizada" || s === "finished") return "Finalizada";
-  if (s === "cancelada" || s === "cancelled") return "Cancelada";
+  if (s === "cancelada" || s === "canceled" || s === "cancelled") return "Cancelada";
+  if (s === "expired" || s === "expirada") return "Expirada";
   return "Agendada";
 }
 
@@ -12,7 +13,8 @@ function getStatusKey(status) {
   const s = String(status || "").toLowerCase();
   if (s === "iniciada" || s === "started" || s === "live") return "live";
   if (s === "finalizada" || s === "finished") return "finished";
-  if (s === "cancelada" || s === "cancelled") return "cancelled";
+  if (s === "cancelada" || s === "canceled" || s === "cancelled") return "cancelled";
+  if (s === "expired" || s === "expirada") return "expired";
   return "scheduled";
 }
 
@@ -22,9 +24,10 @@ const FALLBACK_IMG =
 export default function Header({ court, match, onBack, placeName, placeAddress }) {
   const typeLabel = String(match?.type || "").replace(/_/g, " ").toUpperCase();
 
-  const status = match?.admin?.status;
-  const statusLabel = getStatusLabel(status);
-  const statusKey = getStatusKey(status);
+  // ✅ prioridade: match.status (backend) -> fallback match.admin.status (se existir)
+  const rawStatus = match?.status ?? match?.admin?.status;
+  const statusLabel = getStatusLabel(rawStatus);
+  const statusKey = getStatusKey(rawStatus);
 
   const imgSrc = court?.imageUrl || match?.imageUrl || FALLBACK_IMG;
   const courtName = court?.name || match?.title || "Local da Partida";

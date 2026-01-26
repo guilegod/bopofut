@@ -117,9 +117,9 @@ export async function apiRequest(path, options = {}) {
     });
 
     const message =
-      (data && (data.message || data.error)) ||
-      rawText ||
-      `Erro HTTP ${res.status}`;
+  (data && (data.error || data.message)) ||
+  rawText ||
+  `Erro HTTP ${res.status}`;
 
     const err = new Error(message);
     err.status = res.status;

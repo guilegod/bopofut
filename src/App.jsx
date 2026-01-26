@@ -4,13 +4,20 @@ import AppShell from "./components/layout/AppShell.jsx";
 
 import Home from "./views/Home/Home.jsx";
 import MatchDetails from "./views/MatchDetails/MatchDetails.jsx";
-import Profile from "./views/Profile/Profile.jsx";
+import ProfileHybrid from "./views/Profile/ProfileHybrid.jsx";
+//import ProfileV2 from "./views/Profile/ProfileV2.jsx";
 import Wallet from "./views/Wallet/Wallet.jsx";
 import MyMatches from "./views/MyMatches/MyMatches.jsx";
 import Friends from "./views/Friends/Friends.jsx";
 import Ranking from "./views/Ranking/Ranking.jsx";
 import EditProfile from "./views/EditProfile/EditProfile.jsx";
 import MatchCreator from "./views/MatchCreator/MatchCreator.jsx";
+import ArenaPublicPage from "./views/Arena/ArenaPublicPage.jsx";
+import ArenaCourtSettings from "./views/Arena/ArenaCourtSettings.jsx";
+
+
+// ✅ Public Courts (Praças)
+import { SquaresHome, SquarePage, LiveNow } from "./modules/publicSquares";
 
 // ✅ Owner (Organizador)
 import OwnerDashboard from "./views/OwnerManagement/OwnerDashboard.jsx";
@@ -157,7 +164,10 @@ function toUIFromApiMatch(m) {
     organizerId: m.organizerId,
 
     maxPlayers: m?.maxPlayers ?? 14,
-    pricePerPlayer: m?.pricePerPlayer ?? m?.price ?? 30,
+    pricePerPlayer:
+  m?.pricePerPlayer !== undefined && m?.pricePerPlayer !== null
+    ? Number(m.pricePerPlayer)
+    : (m?.price !== undefined && m?.price !== null ? Number(m.price) : null),
 
     presences: Array.isArray(m?.presences) ? m.presences : [],
     distance: m?.distance ?? 0,
@@ -231,6 +241,117 @@ export default function App() {
   const users = useMemo(() => mockUsers, []);
 
   // =========================================================
+  // VIEW CONTROL
+  // =========================================================
+  const [view, setView] = useState("login");
+  const [selectedMatchId, setSelectedMatchId] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  const [adminMatchId, setAdminMatchId] = useState(null);
+  const [arenaSelectedCourtId, setArenaSelectedCourtId] = useState(null);
+
+  // ✅ Perfil público (mesmo componente)
+  const [viewedUserId, setViewedUserId] = useState(null);
+
+  const isArenaOwner = user?.role === "arena_owner";
+  const isOrganizer = user?.role === "owner" || user?.role === "admin";
+
+  // ✅ view stack (voltar inteligente — principalmente no módulo Praças)
+  const [viewStack, setViewStack] = useState([]);
+
+  function setViewWithBack(nextView, fromViewOverride = null) {
+    const from = fromViewOverride || view;
+    if (from && from !== nextView) {
+      setViewStack((prev) => {
+        const last = prev[prev.length - 1];
+        if (last === from) return prev;
+        return [...prev, from];
+      });
+    }
+    setView(nextView);
+  }
+
+  function popBackOr(fallbackView) {
+    setViewStack((prev) => {
+      if (!prev.length) {
+        setView(fallbackView);
+        return prev;
+      }
+      const next = prev[prev.length - 1];
+      setView(next || fallbackView);
+      return prev.slice(0, -1);
+    });
+  }
+
+  function resetBackStack() {
+    setViewStack([]);
+  }
+
+  // =========================================================
+  // PRAÇAS (PublicCourts) — state
+  // =========================================================
+  const [selectedPublicCourtId, setSelectedPublicCourtId] = useState(null);
+  const [pendingDeepLinkCourtId, setPendingDeepLinkCourtId] = useState(null);
+
+  // ✅ Arena Public Page (agrupada por arenaOwnerId)
+  const [selectedArenaOwnerId, setSelectedArenaOwnerId] = useState(null);
+
+  // captura deep link logo de cara
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const courtId = params.get("court");
+      if (courtId) {
+        setPendingDeepLinkCourtId(String(courtId));
+        setSelectedPublicCourtId(String(courtId));
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  function requireAuthOrLogin() {
+    const token = getToken();
+    if (!token) {
+      setView("login");
+      return null;
+    }
+    return token;
+  }
+
+  function openArenaPublic(arenaOwnerId) {
+    const token = requireAuthOrLogin();
+    if (!token) return;
+    setSelectedArenaOwnerId(String(arenaOwnerId));
+    setViewWithBack("arenaPublic", "home");
+  }
+
+  function openPublicCourt(courtId) {
+    const token = requireAuthOrLogin();
+    if (!token) {
+      setPendingDeepLinkCourtId(String(courtId));
+      setSelectedPublicCourtId(String(courtId));
+      return;
+    }
+    setSelectedPublicCourtId(String(courtId));
+    setViewWithBack("publicCourtPage");
+  }
+
+  function openPublicLiveNow() {
+    const token = requireAuthOrLogin();
+    if (!token) return;
+    setViewWithBack("publicLiveNow");
+  }
+
+  // ✅ abrir perfil público de qualquer lugar
+  function openPlayerProfile(userId, fromViewOverride = null) {
+    const token = requireAuthOrLogin();
+    if (!token) return;
+    setViewedUserId(userId || null);
+    setViewWithBack("playerProfile", fromViewOverride);
+  }
+
+  // =========================================================
   // COURTS
   // =========================================================
   const [courts, setCourts] = useState([]);
@@ -258,39 +379,95 @@ export default function App() {
   const [matches, setMatches] = useState([]);
   const [matchesLoading, setMatchesLoading] = useState(false);
 
-  async function loadMatches(tokenParam) {
-    setMatchesLoading(true);
-    try {
-      const token = (tokenParam || getToken() || "").toString().trim();
-      const raw = await apiRequest("/matches", token ? { token } : undefined);
-      const listRaw = extractArrayResponse(raw, ["matches"]);
-      const list = listRaw.map(toUIFromApiMatch);
-      setMatches(list);
-      console.log("✅ MATCHES carregadas:", list);
-    } catch (e) {
-      console.error("❌ GET /matches falhou:", e);
-      setMatches([]);
-    } finally {
-      setMatchesLoading(false);
-    }
+async function loadMatches(tokenParam) {
+  setMatchesLoading(true);
+  try {
+    const token = String(tokenParam || getToken() || "").trim();
+    const raw = await apiRequest("/matches", token ? { token } : undefined);
+
+    // ✅ se o backend já devolve array direto
+    const listRaw = Array.isArray(raw) ? raw : (raw?.matches || raw?.data || []);
+
+    console.log("🔥 RAW /matches:", listRaw);
+    console.log("🔥 RAW KEYS 0:", listRaw?.[0] ? Object.keys(listRaw[0]) : []);
+
+    const list = (listRaw || []).map((m) => {
+      const dateObj = m?.date ? new Date(m.date) : null;
+      const dateValid = dateObj && !Number.isNaN(dateObj.getTime());
+
+      const priceNum =
+        m?.pricePerPlayer === 0
+          ? 0
+          : Number.isFinite(Number(m?.pricePerPlayer))
+          ? Number(m.pricePerPlayer)
+          : 0;
+
+      const maxPlayersNum = Number.isFinite(Number(m?.maxPlayers)) ? Number(m.maxPlayers) : 14;
+      const minPlayersNum = Number.isFinite(Number(m?.minPlayers)) ? Number(m.minPlayers) : 0;
+
+      const typeLower = String(m?.type || "").toLowerCase();
+
+      // tenta montar um "local" mesmo se court vier vazio
+      const courtName =
+        m?.court?.name ||
+        m?.court?.title ||
+        m?.court?.arena?.name ||
+        (m?.courtId ? "Quadra" : "Local manual");
+
+      const arenaName = m?.court?.arena?.name || null;
+
+      const addr =
+        m?.matchAddress ||
+        m?.court?.address ||
+        m?.court?.arena?.address ||
+        "";
+
+      return {
+        // ✅ mantém TUDO do backend
+        ...m,
+
+        // ✅ compat UI
+        title: m?.title ?? "Sem título",
+        organizerId: m?.organizerId ?? m?.organizer?.id ?? null,
+        courtId: m?.courtId ?? null,
+        court: m?.court ?? null,
+
+        // extras bons pra UI
+        courtName,
+        arenaName,
+        matchAddress: addr,
+
+        pricePerPlayer: priceNum,
+        maxPlayers: maxPlayersNum,
+        minPlayers: minPlayersNum,
+
+        dateISO: dateValid ? dateObj.toISOString() : null,
+        time: dateValid
+          ? dateObj.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+          : "",
+        date: dateValid
+          ? dateObj.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })
+          : "",
+
+        type: typeLower,
+      };
+    });
+
+    setMatches(list);
+    console.log("✅ MATCHES carregadas:", list);
+  } catch (e) {
+    console.error("❌ GET /matches falhou:", e);
+    setMatches([]);
+  } finally {
+    setMatchesLoading(false);
   }
+}
 
-  // =========================================================
-  // VIEW CONTROL
-  // =========================================================
-  const [view, setView] = useState("login");
-  const [selectedMatchId, setSelectedMatchId] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
 
-  const [adminMatchId, setAdminMatchId] = useState(null);
-  const [arenaSelectedCourtId, setArenaSelectedCourtId] = useState(null);
 
-  const isArenaOwner = user?.role === "arena_owner";
-  const isOrganizer = user?.role === "owner" || user?.role === "admin";
 
   const selectedMatch = matches.find((m) => m.id === selectedMatchId) || null;
 
-  // ✅ manual ok: pode ser null
   const selectedCourt = useMemo(() => {
     if (selectedMatch?.court) return normalizeCourt(selectedMatch.court);
 
@@ -312,6 +489,7 @@ export default function App() {
     async function boot() {
       try {
         const token = getToken();
+
         if (!token) {
           setView("login");
           return;
@@ -321,7 +499,15 @@ export default function App() {
         const nextUser = { ...baseUser, ...data.user };
         setUser(nextUser);
 
-        setView(nextUser.role === "arena_owner" ? "arenaPanel" : "home");
+        if (pendingDeepLinkCourtId) {
+          setSelectedPublicCourtId(pendingDeepLinkCourtId);
+          resetBackStack();
+          setView("publicCourtPage");
+          setPendingDeepLinkCourtId(null);
+        } else {
+          resetBackStack();
+          setView(nextUser.role === "arena_owner" ? "arenaPanel" : "home");
+        }
 
         await loadCourts(token);
         await loadMatches(token);
@@ -334,7 +520,7 @@ export default function App() {
     }
     boot();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [pendingDeepLinkCourtId]);
 
   // =========================================================
   // AUTH HANDLERS
@@ -346,7 +532,16 @@ export default function App() {
     const nextUser = { ...baseUser, ...data.user };
     setUser(nextUser);
 
-    setView(nextUser.role === "arena_owner" ? "arenaPanel" : "home");
+    if (pendingDeepLinkCourtId) {
+      setSelectedPublicCourtId(pendingDeepLinkCourtId);
+      resetBackStack();
+      setView("publicCourtPage");
+      setPendingDeepLinkCourtId(null);
+    } else {
+      resetBackStack();
+      setView(nextUser.role === "arena_owner" ? "arenaPanel" : "home");
+    }
+
     await loadCourts(data.token);
     await loadMatches(data.token);
   }
@@ -358,7 +553,16 @@ export default function App() {
     const nextUser = { ...baseUser, ...data.user };
     setUser(nextUser);
 
-    setView(nextUser.role === "arena_owner" ? "arenaPanel" : "home");
+    if (pendingDeepLinkCourtId) {
+      setSelectedPublicCourtId(pendingDeepLinkCourtId);
+      resetBackStack();
+      setView("publicCourtPage");
+      setPendingDeepLinkCourtId(null);
+    } else {
+      resetBackStack();
+      setView(nextUser.role === "arena_owner" ? "arenaPanel" : "home");
+    }
+
     await loadCourts(data.token);
     await loadMatches(data.token);
   }
@@ -369,34 +573,54 @@ export default function App() {
     setSelectedMatchId(null);
     setAdminMatchId(null);
     setArenaSelectedCourtId(null);
+    setSelectedArenaOwnerId(null);
     setMatches([]);
     setCourts([]);
+    setSelectedPublicCourtId(null);
+    setPendingDeepLinkCourtId(null);
+    setViewedUserId(null);
+    resetBackStack();
     setView("login");
   }
 
-  function requireAuthOrLogin() {
-    const token = getToken();
-    if (!token) {
-      setView("login");
-      return null;
-    }
-    return token;
-  }
-
+  // =========================================================
+  // NAV HELPERS
+  // =========================================================
   function openMatch(matchId) {
     const token = requireAuthOrLogin();
     if (!token) return;
     setSelectedMatchId(matchId);
-    setView("matchDetails");
+    setViewWithBack("matchDetails");
   }
 
   function openMatchCreator() {
     const token = requireAuthOrLogin();
     if (!token) return;
-    setView("matchCreator");
+    setViewWithBack("matchCreator");
   }
 
   function goBack() {
+    // ✅ Arena Public
+    if (view === "arenaPublic") {
+      setSelectedArenaOwnerId(null);
+      return popBackOr("home");
+    }
+
+    // ✅ PublicCourts (voltar inteligente)
+    if (view === "publicCourtPage" || view === "publicLiveNow") {
+      return popBackOr("publicCourtsHome");
+    }
+    if (view === "publicCourtsHome") {
+      return popBackOr(isArenaOwner ? "arenaPanel" : "home");
+    }
+
+    // ✅ Perfil público
+    if (view === "playerProfile") {
+      setViewedUserId(null);
+      return popBackOr("profile");
+    }
+
+    // ✅ Arena stack
     if (
       view === "arenaAgenda" ||
       view === "arenaFinance" ||
@@ -415,10 +639,10 @@ export default function App() {
     }
     if (view === "ownerDashboard") return setView("profile");
 
-    if (view === "matchDetails") return setView("home");
+    if (view === "matchDetails") return popBackOr("home");
     if (view === "editProfile") return setView("profile");
     if (view === "wallet") return setView("profile");
-    if (view === "matchCreator") return setView("home");
+    if (view === "matchCreator") return popBackOr("home");
     if (view === "register") return setView("login");
 
     return setView(isArenaOwner ? "arenaPanel" : "home");
@@ -428,20 +652,30 @@ export default function App() {
     const token = requireAuthOrLogin();
     if (!token) return;
 
+    const jump = (v) => {
+      resetBackStack();
+      setView(v);
+    };
+
     if (isArenaOwner) {
-      if (next === "arenaPanel") return setView("arenaPanel");
-      if (next === "arenaAgenda") return setView("arenaAgenda");
-      if (next === "arenaFinance") return setView("arenaFinance");
-      if (next === "profile") return setView("profile");
-      return setView("arenaPanel");
+      if (next === "arenaPanel") return jump("arenaPanel");
+      if (next === "arenaAgenda") return jump("arenaAgenda");
+      if (next === "arenaFinance") return jump("arenaFinance");
+      if (next === "profile") return jump("profile");
+      return jump("arenaPanel");
     }
 
-    if (next === "home") return setView("home");
-    if (next === "matches") return setView("myMatches");
-    if (next === "create") return setView("matchCreator");
-    if (next === "profile") return setView("profile");
-    if (next === "wallet") return setView("wallet");
-    setView("home");
+    // ✅ PublicCourts nav
+    if (next === "publicCourts") return jump("publicCourtsHome");
+    if (next === "publicLiveNow") return jump("publicLiveNow");
+
+    if (next === "home") return jump("home");
+    if (next === "matches") return jump("myMatches");
+    if (next === "create") return jump("matchCreator");
+    if (next === "profile") return jump("profile");
+    if (next === "wallet") return jump("wallet");
+
+    jump("home");
   }
 
   function onNewMessage(msg) {
@@ -481,77 +715,88 @@ export default function App() {
   // =========================================================
   // ✅ CREATE MATCH (POST /matches) — COM ENUM + MANUAL
   // =========================================================
-  async function onCreateMatch(payload) {
-    const token = requireAuthOrLogin();
-    if (!token) return;
+  // =========================================================
+// ✅ CREATE MATCH (POST /matches) — payload direto do MatchCreator
+// =========================================================
+async function onCreateMatch(payload) {
+  const token = requireAuthOrLogin();
+  if (!token) return;
 
-    const sentId = String(payload?.courtId || "");
-    const sentIdClean = cleanText(sentId);
+  const cleanText = (v) => String(v ?? "").trim();
 
-    const isManual = isManualCourtId(sentIdClean);
-    const dateISO = buildMatchISOFromPayload(payload);
+  const toOptionalInt = (v) => {
+    const s = String(v ?? "").trim();
+    if (!s) return undefined;
+    const n = Number(String(s).replace(",", "."));
+    if (!Number.isFinite(n)) return undefined;
+    return Math.trunc(n);
+  };
 
-    const matchAddress = cleanText(payload?.matchAddress || "");
-    const typeUi = cleanText(payload?.type || payload?.courtType || payload?.matchType || "fut7").toLowerCase();
-    const type = toApiMatchType(typeUi);
+  // ✅ MatchCreator manda payload.date como ISO completo
+  const startedAtISO = payload?.date ? String(payload.date) : "";
 
-    const bodyBase = {
-      title: cleanText(payload?.title || ""),
-      date: dateISO,
-      type,
-      maxPlayers: Number(payload?.maxPlayers ?? 14),
-      pricePerPlayer: Number(payload?.pricePerPlayer ?? 30),
-    };
+  // Validação robusta (aceita ISO completo)
+  if (!startedAtISO || Number.isNaN(new Date(startedAtISO).getTime())) {
+    console.log("DEBUG invalid date payload:", payload);
+    alert("Escolha uma data válida.");
+    return;
+  }
 
-    if (isManual) {
-      if (!bodyBase.title) return alert("Informe o nome da partida.");
-      if (!matchAddress) return alert("Informe o local da partida (endereço).");
+  const sentId = cleanText(payload?.courtId || "");
+  const isManual = !sentId; // MatchCreator manda null quando manual
 
-      const body = { ...bodyBase, courtId: null, matchAddress };
+  const title = cleanText(payload?.title || "");
+  const matchAddress = cleanText(payload?.matchAddress || "");
 
-      const created = await apiRequest("/matches", { method: "POST", token, body });
-      await loadMatches(token);
-      setSelectedMatchId(created?.id || null);
-      setView("matchDetails");
-      return;
-    }
+  const type = cleanText(payload?.type || payload?.courtType || "FUT7").toUpperCase();
 
-    const court =
-      courts.find((c) => cleanText(c.id) === sentIdClean) ||
-      courts.find((c) => cleanText(c.uiId) === sentIdClean) ||
-      null;
+  const maxPlayersVal = toOptionalInt(payload?.maxPlayers);
+  const pricePerPlayerVal = toOptionalInt(payload?.pricePerPlayer);
 
-    if (!court) {
-      alert(
-        "Erro: a arena selecionada não existe na lista carregada.\n\n" +
-          "Dica: recarregue as arenas ou verifique se o id no banco está correto."
-      );
-      return;
-    }
+  const bodyBase = {
+    title: title || "Sem título",
+    date: startedAtISO, // ✅ é isso que o backend precisa
+    type,
+    ...(Number.isFinite(maxPlayersVal) ? { maxPlayers: maxPlayersVal } : {}),
+    ...(Number.isFinite(pricePerPlayerVal) ? { pricePerPlayer: pricePerPlayerVal } : {}),
+  };
 
-    const courtIdToSend = cleanText(court.uiId || court.id);
+  // ✅ MANUAL
+  if (isManual) {
+    if (!title) return alert("Informe o nome da partida.");
+    if (!matchAddress) return alert("Informe o local (endereço).");
 
-    const finalAddress = matchAddress || cleanText(court.address || "");
-    if (!finalAddress) {
-      alert(
-        "Essa arena está sem endereço cadastrado.\n" +
-          "Digite o endereço no campo (override) ou preencha Court.address no banco."
-      );
-      return;
-    }
+    const created = await apiRequest("/matches", {
+      method: "POST",
+      token,
+      body: { ...bodyBase, courtId: null, matchAddress },
+    });
 
-    const body = { ...bodyBase, courtId: courtIdToSend, matchAddress: matchAddress || "" };
-
-    const created = await apiRequest("/matches", { method: "POST", token, body });
     await loadMatches(token);
     setSelectedMatchId(created?.id || null);
     setView("matchDetails");
+    return;
   }
+
+  // ✅ QUADRA
+  const created = await apiRequest("/matches", {
+    method: "POST",
+    token,
+    body: { ...bodyBase, courtId: sentId, matchAddress: matchAddress || null },
+  });
+
+  await loadMatches(token);
+  setSelectedMatchId(created?.id || null);
+  setView("matchDetails");
+}
+
+
 
   // =========================================================
   // MENU / UI
   // =========================================================
-  const canCreateMatch = isOrganizer;
+  const canCreateMatch = isOrganizer || isArenaOwner;
+
 
   const showBack =
     view === "matchDetails" ||
@@ -563,10 +808,15 @@ export default function App() {
     view === "arenaPromotions" ||
     view === "arenaCourtSettings" ||
     view === "arenaTournaments" ||
+    view === "arenaPublic" ||
     view === "ownerDashboard" ||
     view === "ownerFinance" ||
     view === "ownerPromotions" ||
-    view === "accountSettings";
+    view === "accountSettings" ||
+    view === "publicCourtsHome" ||
+    view === "publicCourtPage" ||
+    view === "publicLiveNow" ||
+    view === "playerProfile";
 
   const title =
     view === "login"
@@ -585,6 +835,8 @@ export default function App() {
       ? "Quadras"
       : view === "arenaTournaments"
       ? "Campeonatos"
+      : view === "arenaPublic"
+      ? "Arena"
       : view === "ownerDashboard"
       ? "Painel do Organizador"
       : view === "ownerFinance"
@@ -593,10 +845,18 @@ export default function App() {
       ? "Promoções"
       : view === "accountSettings"
       ? "Configurações"
+      : view === "publicCourtsHome"
+      ? "Praças"
+      : view === "publicLiveNow"
+      ? "Ao vivo"
+      : view === "publicCourtPage"
+      ? "Praça"
       : view === "home"
       ? "Bópô Fut"
       : view === "profile"
       ? "Perfil"
+      : view === "playerProfile"
+      ? "Jogador"
       : view === "wallet"
       ? "Wallet"
       : view === "myMatches"
@@ -615,13 +875,14 @@ export default function App() {
     ? view
     : view === "matchCreator"
     ? "create"
-    : view === "matchDetails" || view === "editProfile"
+    : view === "matchDetails" || view === "editProfile" || view === "playerProfile"
     ? "home"
     : view === "ownerDashboard" ||
       view === "ownerFinance" ||
       view === "ownerPromotions" ||
-      view === "accountSettings"
-    ? "profile"
+      view === "accountSettings" ||
+      view === "publicCourtsHome" || view === "publicCourtPage" || view === "publicLiveNow"
+    ? "publicCourts"
     : view;
 
   const isAuthView = view === "login" || view === "register";
@@ -638,6 +899,7 @@ export default function App() {
       canCreateMatch={!isAuthView && canCreateMatch}
       showNav={!isAuthView}
       isArenaOwner={!isAuthView && isArenaOwner}
+      isAdmin={user?.role === "admin"}  
     >
       {authLoading ? (
         <div style={{ padding: 18, opacity: 0.75 }}>Carregando...</div>
@@ -647,21 +909,35 @@ export default function App() {
         <Register onRegisterSuccess={handleRegister} onGoLogin={() => setView("login")} />
       ) : loadingAny ? (
         <div style={{ padding: 18, opacity: 0.75 }}>Carregando {courtsLoading ? "arenas" : "partidas"}…</div>
+      ) : view === "publicCourtsHome" ? (
+        <SquaresHome user={user} onOpenCourt={openPublicCourt} onOpenLiveNow={openPublicLiveNow} />
+      ) : view === "publicLiveNow" ? (
+        <LiveNow onOpenCourt={openPublicCourt} onBack={goBack} />
+      ) : view === "publicCourtPage" ? (
+        <SquarePage courtId={selectedPublicCourtId} user={user} onBack={goBack} />
+      ) : view === "arenaPublic" ? (
+        <ArenaPublicPage
+          arenaOwnerId={selectedArenaOwnerId}
+          courts={courts}
+          dateISO={new Date().toISOString().slice(0, 10)}
+          onBack={goBack}
+          onOpenMatchCreator={() => setView("matchCreator")}
+        />
       ) : view === "matchDetails" && selectedMatch ? (
         <MatchDetails
-        match={selectedMatch}
-        court={selectedCourt}
-        user={user}
-        onBack={goBack}
-        onManageStats={onManageStats}
-        onNewMessage={onNewMessage}
-        onPresenceChange={async () => {
-          const token = getToken();
-          await loadMatches(token);
-        }}
-      />
+          match={selectedMatch}
+          court={selectedCourt}
+          user={user}
+          onBack={goBack}
+          onManageStats={onManageStats}
+          onNewMessage={onNewMessage}
+          onPresenceChange={async () => {
+            const token = getToken();
+            await loadMatches(token);
+          }}
+        />
       ) : view === "profile" ? (
-        <Profile
+        <ProfileHybrid
           user={user}
           matches={matches}
           courts={courts}
@@ -680,8 +956,35 @@ export default function App() {
           onOpenFinance={() => setView(isArenaOwner ? "arenaFinance" : "ownerFinance")}
           onOpenPromotions={() => setView(isArenaOwner ? "arenaPromotions" : "ownerPromotions")}
           onOpenAccountSettings={() => setView("accountSettings")}
+          viewedUserId={null}
+          onOpenPlayerProfile={(userId) => openPlayerProfile(userId, "profile")}
         />
-      ) : view === "wallet" ? (
+      ) : view === "playerProfile" ? (
+        <ProfileHybrid
+          user={user}
+          matches={matches}
+          courts={courts}
+          onOpenWallet={() => setView("wallet")}
+          onOpenFriends={() => setView("friends")}
+          onOpenRanking={() => setView("ranking")}
+          onEditProfile={() => setView("editProfile")}
+          onBack={goBack}
+          onLogout={handleLogout}
+          onOpenOrganizerPanel={() => setView("ownerDashboard")}
+          onOpenArenaPanel={() => setView("arenaPanel")}
+          onOpenAgenda={() => {
+            setArenaSelectedCourtId(null);
+            setView("arenaAgenda");
+          }}
+          onOpenFinance={() => setView(isArenaOwner ? "arenaFinance" : "ownerFinance")}
+          onOpenPromotions={() => setView(isArenaOwner ? "arenaPromotions" : "ownerPromotions")}
+          onOpenAccountSettings={() => setView("accountSettings")}
+          viewedUserId={viewedUserId}
+          isPublicMode
+          onOpenPlayerProfile={(userId) => openPlayerProfile(userId, "playerProfile")}
+        />
+      ) 
+       : view === "wallet" ? (
         <Wallet user={user} onBack={() => setView("profile")} />
       ) : view === "myMatches" ? (
         <MyMatches matches={matches} courts={courts} user={user} onSelectMatch={openMatch} />
@@ -703,7 +1006,7 @@ export default function App() {
               ✎ Editar Perfil (atalho atual)
             </button>
 
-            {/* ✅ user comum NÃO vê "Voltar ao Painel" */}
+
             {isArenaOwner ? (
               <button type="button" style={panelBtn()} onClick={() => setView("arenaPanel")}>
                 🏟️ Voltar ao Painel da Arena
@@ -716,9 +1019,10 @@ export default function App() {
           </div>
         </div>
       ) : view === "matchCreator" ? (
-        <MatchCreator
+         <MatchCreator
           courts={courts}
           organizerId={user.id}
+          user={user}
           onCreate={onCreateMatch}
           onBack={() => setView("home")}
         />
@@ -768,6 +1072,7 @@ export default function App() {
         <ArenaAgenda
           user={user}
           courts={courts}
+          matches={matches}
           initialCourtId={arenaSelectedCourtId}
           onBack={() => setView("arenaPanel")}
           onOpenFinance={() => setView("arenaFinance")}
@@ -789,12 +1094,12 @@ export default function App() {
           </div>
         </div>
       ) : view === "arenaCourtSettings" ? (
-        <div style={panelWrap()}>
-          <div style={panelTitle()}>🏟️ Gerenciar Quadras</div>
-          <div style={panelSub()}>
-            Próximo: CRUD de quadras, preço/hora, esportes suportados, fotos e regras.
-          </div>
-        </div>
+        <ArenaCourtSettings
+          user={user}
+          courts={courts}
+          onBack={() => setView("arenaPanel")}
+          onCourtsUpdated={(next) => setCourts(next)}
+        />
       ) : view === "arenaTournaments" ? (
         <div style={panelWrap()}>
           <div style={panelTitle()}>🏆 Campeonatos</div>
@@ -811,6 +1116,7 @@ export default function App() {
           onSelectMatch={openMatch}
           onOpenRanking={() => setView("ranking")}
           onOpenMatchCreator={openMatchCreator}
+          onOpenArena={openArenaPublic} // ✅ agora funciona
         />
       )}
 

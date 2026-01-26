@@ -1,0 +1,417 @@
+.page{
+  min-height: 100vh;
+  padding: 18px 18px 28px;
+  color: var(--text, #fff);
+}
+
+.topbar{
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--border, rgba(255,255,255,0.12));
+  background: var(--surface, rgba(0,0,0,0.16));
+  box-shadow: var(--shadow, 0 18px 38px rgba(0,0,0,0.28));
+  backdrop-filter: blur(10px);
+}
+
+.backBtn{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--border, rgba(255,255,255,0.12));
+  background: rgba(255,255,255,0.06);
+  color: inherit;
+  cursor: pointer;
+  font-weight: 1000;
+}
+
+.titleWrap{ display: grid; gap: 2px; }
+.title{ font-size: 14px; font-weight: 1000; letter-spacing: .02em; text-transform: uppercase; }
+.subtitle{ font-size: 12px; opacity: .78; }
+
+.topActions{ display: flex; gap: 10px; align-items: center; justify-content: flex-end; }
+
+.primaryBtn, .ghostBtn{
+  border-radius: 999px;
+  border: 1px solid var(--border, rgba(255,255,255,0.14));
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 950;
+  color: inherit;
+}
+
+.primaryBtn{
+  background: rgba(255,255,255,0.12);
+}
+
+.ghostBtn{
+  background: rgba(255,255,255,0.06);
+}
+
+.primaryBtn:disabled, .ghostBtn:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.controls{
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.searchWrap{
+  position: relative;
+}
+
+.searchIcon{
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: .7;
+}
+
+.search{
+  width: 100%;
+  padding: 12px 12px 12px 34px;
+  border-radius: 999px;
+  border: 1px solid var(--border, rgba(255,255,255,0.12));
+  background: rgba(255,255,255,0.06);
+  color: inherit;
+  outline: none;
+}
+
+.filters{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.filtersLabel{
+  font-weight: 950;
+  opacity: .9;
+  font-size: 12px;
+}
+
+.pills{ display: flex; gap: 8px; }
+
+.pill{
+  border-radius: 999px;
+  border: 1px solid var(--border, rgba(255,255,255,0.14));
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.05);
+  color: inherit;
+  cursor: pointer;
+  font-weight: 950;
+  font-size: 12px;
+}
+
+.pillActive{
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.22);
+}
+
+.errorBox{
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(231, 76, 60, .35);
+  background: rgba(231, 76, 60, .10);
+  font-weight: 900;
+}
+
+.content{
+  margin-top: 14px;
+}
+
+.grid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.card{
+  border-radius: 18px;
+  border: 1px solid var(--border, rgba(255,255,255,0.12));
+  background: rgba(255,255,255,0.04);
+  box-shadow: var(--shadow, 0 14px 32px rgba(0,0,0,0.24));
+  padding: 14px;
+}
+
+.cardTop{
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.avatar{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-weight: 1000;
+  border: 1px solid var(--border, rgba(255,255,255,0.14));
+  background: rgba(255,255,255,0.06);
+}
+
+.cardHead{ display: grid; gap: 6px; }
+
+.cardTitleRow{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.cardTitle{
+  font-weight: 1000;
+  letter-spacing: .01em;
+}
+
+.badge{
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 1000;
+  border: 1px solid var(--border, rgba(255,255,255,0.16));
+}
+
+.badgeFutsal{
+  background: rgba(46, 204, 113, .12);
+  border-color: rgba(46, 204, 113, .45);
+}
+
+.badgeFut7{
+  background: rgba(52, 152, 219, .12);
+  border-color: rgba(52, 152, 219, .45);
+}
+
+.meta{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  opacity: .85;
+}
+
+.metaDot{ opacity: .6; }
+
+.status{
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 1000;
+  border: 1px solid var(--border, rgba(255,255,255,0.16));
+  opacity: .95;
+}
+
+.statusOn{
+  background: rgba(46, 204, 113, .12);
+  border-color: rgba(46, 204, 113, .55);
+}
+
+.statusOff{
+  background: rgba(231, 76, 60, .12);
+  border-color: rgba(231, 76, 60, .55);
+}
+
+.cardBottom{
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.chip{
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border, rgba(255,255,255,0.14));
+  background: rgba(255,255,255,0.05);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.cardActions{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.linkBtn{
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-weight: 1000;
+  opacity: .9;
+}
+
+.smallBtn{
+  border-radius: 999px;
+  border: 1px solid var(--border, rgba(255,255,255,0.14));
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.06);
+  color: inherit;
+  cursor: pointer;
+  font-weight: 1000;
+  font-size: 12px;
+}
+
+.smallBtn:disabled{ opacity: .55; cursor: not-allowed; }
+
+.emptyBox{
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px dashed rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.03);
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.emptyTitle{ font-weight: 1000; }
+.emptySub{ opacity: .72; font-size: 12px; }
+
+.emptyActions{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ===== Modal ===== */
+.modalBackdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 9999;
+}
+
+.modalCard{
+  width: min(760px, 100%);
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(16,16,16,0.92);
+  backdrop-filter: blur(10px);
+  padding: 14px;
+  box-shadow: 0 18px 42px rgba(0,0,0,0.45);
+}
+
+.modalTop{
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.modalTitle{ font-weight: 1000; }
+.modalClose{
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+  color: inherit;
+  cursor: pointer;
+  font-weight: 1000;
+}
+
+.modalGrid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.label{
+  display: grid;
+  gap: 6px;
+  font-weight: 950;
+  font-size: 12px;
+  opacity: .95;
+}
+
+.input, .select{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: inherit;
+  outline: none;
+}
+
+.switchRow{
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.04);
+  font-weight: 900;
+  font-size: 12px;
+  opacity: .92;
+}
+
+.modalError{
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(231, 76, 60, .35);
+  background: rgba(231, 76, 60, .10);
+  font-weight: 900;
+}
+
+.modalActions{
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  align-items: center;
+}
+
+@media (max-width: 1100px){
+  .grid{ grid-template-columns: 1fr; }
+  .controls{ grid-template-columns: 1fr; }
+  .filters{ justify-content: flex-start; }
+  .topbar{ grid-template-columns: 44px 1fr; }
+  .topActions{ grid-column: 1 / -1; justify-content: flex-end; }
+}
+
+@media (max-width: 720px){
+  .modalGrid{ grid-template-columns: 1fr; }
+}
+/* ===== FIX: texto do modal no tema claro ===== */
+.modalCard{
+  color: #fff;                 /* força texto branco no modal */
+}
+
+.modalTitle,
+.label,
+.switchRow,
+.modalError{
+  color: #fff;
+}
+
+.input,
+.select{
+  color: #fff;                 /* texto dentro dos inputs */
+}
+
+.input::placeholder{
+  color: rgba(255,255,255,0.55); /* placeholder visível */
+}

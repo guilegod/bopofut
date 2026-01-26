@@ -8,10 +8,16 @@ export default function AppShell({
   onNav,
   canCreateMatch = false,
   showNav = true,
-  isArenaOwner = false, // ✅ NOVO
+  isArenaOwner = false,
+  isAdmin = false, // ✅ NOVO
   children,
 }) {
-  const navCount = isArenaOwner ? 4 : canCreateMatch ? 5 : 4;
+  // user normal: Home + (Praças?) + Partidas + (Criar?) + Perfil + Wallet
+  const base = 4; // Home, Partidas, Perfil, Wallet
+  const plazas = isAdmin ? 1 : 0;
+  const create = canCreateMatch ? 1 : 0;
+
+  const navCount = isArenaOwner ? 4 : base + plazas + create;
 
   return (
     <div className={styles.shell}>
@@ -62,12 +68,22 @@ export default function AppShell({
             </>
           ) : (
             <>
+
               <NavItem
                 label="Home"
                 icon="🏠"
                 active={active === "home"}
                 onClick={() => onNav("home")}
               />
+              {isAdmin && (
+                <NavItem
+                  label="Praças"
+                  icon="🏞️"
+                  active={active === "publicCourts"}
+                  onClick={() => onNav("publicCourts")}
+                />
+              )}
+
 
               <NavItem
                 label="Partidas"

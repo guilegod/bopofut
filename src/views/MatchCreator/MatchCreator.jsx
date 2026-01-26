@@ -8,286 +8,367 @@ import SummaryCard from "./components/SummaryCard.jsx";
 
 const MANUAL_ID = "__manual__";
 
+function cleanText(v) {
+  return String(v ?? "").replace(/\r?\n/g, "").trim();
+}
+
+function normalizeType(c) {
+  const raw = String(c?.type || c?.courtType || c?.modality || "").toLowerCase();
+  if (raw.includes("fut7") || raw.includes("society") || raw.includes("sint")) return "fut7";
+  if (raw.includes("futsal")) return "futsal";
+  const name = String(c?.name || "").toLowerCase();
+  if (name.includes("fut7") || name.includes("sint")) return "fut7";
+  return "futsal";
+}
+
+function buildArenaAddressFromCourt(c) {
+  if (!c) return "";
+  const city = cleanText(c.city || "");
+  const neighborhood = cleanText(c.neighborhood || "");
+  const address = cleanText(c.address || "");
+  const state = cleanText(c.state || "");
+
+  const left = [city, neighborhood].filter(Boolean).join(" • ");
+  const right = [address, state ? `— ${state}` : ""].filter(Boolean).join(" ");
+  if (left && right) return `${left} • ${right}`;
+  return left || right || "";
+}
+
+function makeMapsUrl(addr) {
+  const a = cleanText(addr);
+  if (!a) return "";
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a)}`;
+}
+
+// parse numérico seguro (não transforma vazio em 0 sem querer)
+function toIntOrEmpty(v) {
+  const s = String(v ?? "").trim();
+  if (!s) return ""; // mantém vazio pro input não travar
+  const n = Number(s.replace(",", "."));
+  if (!Number.isFinite(n)) return "";
+  return Math.round(n);
+}
+
+// para enviar ao backend (null = “não envia” / sem valor)
+function toOptionalInt(v) {
+  const s = String(v ?? "").trim();
+  if (!s) return null;
+  const n = Number(s.replace(",", "."));
+  if (!Number.isFinite(n)) return null;
+  return Math.round(n);
+}
+
 /**
- * MatchCreator (BóPô Fut)
- * - Agora suporta criar partida SEM arena (manual)
- * - Manual: courtId = "__manual__" e exige matchAddress
- * - Arena: courtId = id RAW (mas App manda limpo no POST)
+ * ✅ PREMIUM SUPER: extrai uma data ISO (YYYY-MM-DD) a partir de:
+ * - "2026-01-26"
+ * - "Dia 2026-01-26"
+ * - "26/01/2026"
+ * Retorna "" se não conseguir.
  */
+function extractISODate(anyValue) {
+  const s = cleanText(anyValue);
+  if (!s) return "";
+
+  // 1) já está em ISO
+  const isoMatch = s.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
+  if (isoMatch) return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+
+  // 2) formato BR dd/mm/yyyy
+  const brMatch = s.match(/\b(\d{2})\/(\d{2})\/(\d{4})\b/);
+  if (brMatch) return `${brMatch[3]}-${brMatch[2]}-${brMatch[1]}`;
+
+  return "";
+}
+
+/**
+ * ✅ PREMIUM SUPER: monta startedAt como ISO válido
+ * - aceita dateISO/label em vários formatos
+ * - não depende de timezone manual "-03:00"
+ * - evita parse inconsistente do Date()
+ */
+function buildStartedAtISO(dateISO, dateLabel, time) {
+  const parsedISO =
+    extractISODate(dateISO) ||
+    extractISODate(dateLabel) ||
+    new Date().toISOString().slice(0, 10);
+
+  const hhmm = String(time || "").match(/\b\d{2}:\d{2}\b/)?.[0] || "19:00";
+
+  const [y, m, d] = String(parsedISO).split("-").map(Number);
+  const [hh, mm] = String(hhmm).split(":").map(Number);
+
+  if (!y || !m || !d) return null;
+  if (!Number.isFinite(hh) || !Number.isFinite(mm)) return null;
+
+  // Data local -> ISO (backend recebe certinho)
+  const dt = new Date(y, m - 1, d, hh, mm, 0, 0);
+  if (Number.isNaN(dt.getTime())) return null;
+
+  return dt.toISOString();
+}
+
 export default function MatchCreator({
   courts = [],
   organizerId,
+  user,
   onCreate,
   onBack,
-  defaultType = "futsal", // "futsal" | "fut7"
+  prefill,
 }) {
-  const scrollRef = useRef(null);
-
-  const safeCourts = Array.isArray(courts) ? courts : [];
-  const cleanText = (v) => String(v ?? "").replace(/\r?\n/g, "").trim();
-
-  const inferTypeFromText = (txt) => {
-    const t = cleanText(txt).toLowerCase();
-    if (!t) return "";
-    if (
-      t.includes("fut7") ||
-      t.includes("society") ||
-      t.includes("sint") ||
-      t.includes("sintético") ||
-      t.includes("sintetico")
-    ) {
-      return "fut7";
-    }
-    if (t.includes("futsal") || t.includes("sal")) return "futsal";
-    return "";
-  };
-
-  const normalizeCourtType = (court) => {
-    const raw = (court?.type || court?.surface || court?.category || "")
-      .toString()
-      .toLowerCase();
-
-    if (raw.includes("7") || raw.includes("fut7") || raw.includes("sint") || raw.includes("society"))
-      return "fut7";
-    if (raw.includes("sal") || raw.includes("futsal")) return "futsal";
-
-    return inferTypeFromText(court?.name) || inferTypeFromText(court?.id) || "futsal";
-  };
-
+  // =========================
+  // Normaliza courts + filtro
+  // =========================
   const courtsWithType = useMemo(() => {
-    return safeCourts.map((c) => {
-      const __type = normalizeCourtType(c);
+    return (courts || []).map((c) => ({
+      ...c,
+      __type: normalizeType(c),
+    }));
+  }, [courts]);
 
-      const idRaw = String(c?.id ?? "");
-      const nameRaw = String(c?.name ?? "");
+  const filteredCourts = useMemo(() => {
+    if (user?.role !== "arena_owner") return courtsWithType;
+    return courtsWithType.filter((c) => String(c.arenaOwnerId) === String(user.id));
+  }, [courtsWithType, user]);
 
-      const uiId = cleanText(idRaw);
-      const uiName = cleanText(nameRaw);
+  const firstCourtIdByType = (type) =>
+    filteredCourts.find((c) => c.__type === type)?.id || "";
 
-      const displayName = uiName
-        .replace(/\((.*?)\)/g, "")
-        .replace(/\s{2,}/g, " ")
-        .trim();
+  // =========================
+  // Inicial
+  // =========================
+  const initialType = prefill?.courtType ? String(prefill.courtType) : "futsal";
+  const initialCourtId = prefill?.courtId
+    ? String(prefill.courtId)
+    : firstCourtIdByType(initialType);
 
-      return {
-        ...c,
-        id: idRaw,
-        name: nameRaw,
-        uiId,
-        uiName,
-        displayName,
-        __type,
-      };
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [safeCourts]);
+  const [courtType, setCourtType] = useState(initialType);
+  const [courtId, setCourtId] = useState(initialCourtId || MANUAL_ID);
 
-  const firstCourtIdByType = (type) => courtsWithType.find((c) => c.__type === type)?.id || "";
-
-  const [courtType, setCourtType] = useState(defaultType);
-
-  const [courtId, setCourtId] = useState(() => {
-    const first = firstCourtIdByType(defaultType);
-    return first || MANUAL_ID;
-  });
-
-  // quando trocar tipo: se não tiver quadra daquele tipo, vira manual
   useEffect(() => {
-    const selectedCourt = courtsWithType.find((c) => c.id === courtId) || null;
-
+    // se está manual e trocou tipo, tenta escolher primeira quadra do tipo
+    if (courtId && courtId !== MANUAL_ID) return;
     const first = firstCourtIdByType(courtType);
-
-    if (!first) {
-      if (courtId !== MANUAL_ID) setCourtId(MANUAL_ID);
-      return;
-    }
-
-    if (!selectedCourt) {
-      setCourtId(first);
-      return;
-    }
-
-    if (selectedCourt.__type !== courtType) {
-      setCourtId(first);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [courtType, courtsWithType]);
-
-  const isManual = courtId === MANUAL_ID;
+    if (first) setCourtId(first);
+  }, [courtType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const selectedCourt = useMemo(() => {
-    if (isManual) return null;
-    return courtsWithType.find((c) => c.id === courtId) || null;
-  }, [courtsWithType, courtId, isManual]);
+    if (!courtId || courtId === MANUAL_ID) return null;
+    return filteredCourts.find((c) => String(c.id) === String(courtId)) || null;
+  }, [filteredCourts, courtId]);
 
-  const [formData, setFormData] = useState({
-    courtId: courtId,
+  // =========================
+  // Endereço automático
+  // =========================
+  const arenaAddress = useMemo(
+    () => buildArenaAddressFromCourt(selectedCourt),
+    [selectedCourt]
+  );
 
-    dateLabel: "Hoje",
-    dateISO: "",
-    time: "19:00",
-
-    title: "",
-    maxPlayers: 14,
-    pricePerPlayer: 30,
-
-    matchAddress: "",
-
-    notes: "",
-    visibility: "public",
+  const [useArenaAddress, setUseArenaAddress] = useState(() => {
+    return Boolean(initialCourtId && initialCourtId !== MANUAL_ID);
   });
 
+  // refs para não sobrescrever o que o usuário editou
+  const touched = useRef({
+    matchAddress: false,
+    maxPlayers: false,
+    pricePerPlayer: false,
+    title: false,
+  });
+
+  const [formData, setFormData] = useState(() => ({
+    title: prefill?.title || "",
+    dateLabel: prefill?.dateLabel || "Hoje",
+    dateISO: prefill?.dateISO || "",
+    time: prefill?.time || "19:00",
+
+    maxPlayers: prefill?.maxPlayers ?? 14,
+    pricePerPlayer: prefill?.pricePerPlayer ?? 30,
+
+    visibility: prefill?.visibility || "public",
+    matchAddress: prefill?.matchAddress || "",
+    notes: prefill?.notes || "",
+  }));
+
+  // PATCH mais seguro: se alguém mandar Event sem querer, ignora
+  function patchForm(patch) {
+    if (!patch || typeof patch !== "object") return;
+    if (patch?.target) return;
+
+    setFormData((prev) => ({ ...prev, ...patch }));
+
+    if (patch.matchAddress !== undefined) touched.current.matchAddress = true;
+    if (patch.maxPlayers !== undefined) touched.current.maxPlayers = true;
+    if (patch.pricePerPlayer !== undefined) touched.current.pricePerPlayer = true;
+    if (patch.title !== undefined) touched.current.title = true;
+  }
+
+  // =========================
+  // Auto preencher
+  // =========================
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, courtId }));
-  }, [courtId]);
+    if (!selectedCourt) {
+      setUseArenaAddress(false);
+      return;
+    }
+    setUseArenaAddress((prev) =>
+      prev === false && touched.current.matchAddress ? false : true
+    );
+  }, [selectedCourt?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    if (!selectedCourt) return;
+
+    const capacity = Number(selectedCourt.capacity);
+    const pricePerHour = Number(selectedCourt.pricePerHour);
+
     setFormData((prev) => {
-      if (prev.title?.trim()) return prev;
+      const next = { ...prev };
 
-      // se manual, não tenta montar título pela arena
-      if (isManual) {
-        const prefix = courtType === "fut7" ? "Fut7" : "Futsal";
-        return { ...prev, title: `Pelada ${prefix}` };
+      if (!touched.current.maxPlayers && Number.isFinite(capacity) && capacity > 1) {
+        next.maxPlayers = capacity;
       }
 
-      const niceName = selectedCourt?.displayName || cleanText(selectedCourt?.name) || "";
-      if (!niceName) return prev;
+      if (!touched.current.pricePerPlayer && Number.isFinite(pricePerHour) && pricePerHour > 0) {
+        const div = Number(next.maxPlayers) || capacity || 10;
+        const suggested = Math.max(1, Math.round(pricePerHour / Math.max(2, div)));
+        next.pricePerPlayer = suggested;
+      }
 
-      const prefix = courtType === "fut7" ? "Fut7" : "Futsal";
-      return { ...prev, title: `Pelada ${prefix} - ${niceName}` };
+      if (useArenaAddress) {
+        next.matchAddress = arenaAddress || next.matchAddress || "";
+      }
+
+      return next;
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCourt?.name, selectedCourt?.displayName, courtType, isManual]);
+  }, [selectedCourt?.id, arenaAddress, useArenaAddress]);
 
-  const arenaAddress = useMemo(() => {
-    if (!selectedCourt) return "";
-    const parts = [
-      selectedCourt.address,
-      selectedCourt.neighborhood,
-      selectedCourt.city,
-      selectedCourt.state,
-    ]
-      .map((x) => cleanText(x))
-      .filter(Boolean);
+  useEffect(() => {
+    if (!useArenaAddress) return;
+    if (!arenaAddress) return;
 
-    return parts.join(", ");
-  }, [selectedCourt]);
+    setFormData((prev) => ({
+      ...prev,
+      matchAddress: arenaAddress,
+    }));
+  }, [useArenaAddress, arenaAddress]);
 
-  const mapsQuery = useMemo(() => {
-    const raw = cleanText(formData.matchAddress) || cleanText(arenaAddress);
-    if (!raw) return "";
-    return encodeURIComponent(raw);
-  }, [formData.matchAddress, arenaAddress]);
+  const mapsUrl = useMemo(
+    () => makeMapsUrl(formData.matchAddress || arenaAddress),
+    [formData.matchAddress, arenaAddress]
+  );
 
-  const mapsUrl = mapsQuery ? `https://www.google.com/maps/search/?api=1&query=${mapsQuery}` : "";
-
+  // =========================
+  // Criar
+  // =========================
   const canCreate = useMemo(() => {
-    if (!organizerId) return false;
-    if (!formData.time) return false;
-    if (!formData.maxPlayers || formData.maxPlayers < 2) return false;
-    if (formData.pricePerPlayer < 0) return false;
-    if (formData.dateLabel === "Outra data" && !formData.dateISO) return false;
+    const hasCourt = courtId && courtId !== "";
+    const timeOk = cleanText(formData.time).length >= 4;
+    const titleOk = cleanText(formData.title).length >= 2;
+    const playersOk = Number(toOptionalInt(formData.maxPlayers) ?? 0) >= 2;
 
-    // ✅ regra nova:
-    // - manual: exige endereço
-    // - arena: exige courtId real
-    if (isManual) {
-      return !!cleanText(formData.matchAddress);
-    }
-    return !!formData.courtId && formData.courtId !== MANUAL_ID;
-  }, [formData, organizerId, isManual]);
+    const priceVal = toOptionalInt(formData.pricePerPlayer);
+    const priceOk = priceVal === null ? false : priceVal >= 0;
 
-  const payload = useMemo(() => {
-    return {
-      organizerId,
-      courtId: formData.courtId, // "__manual__" ou id RAW
-      type: courtType,
+    // se escolher "Outra data", precisa dateISO
+    const dateOk = formData.dateLabel !== "Outra data" || Boolean(formData.dateISO);
 
-      title: cleanText(formData.title),
-      dateLabel: formData.dateLabel,
-      dateISO: cleanText(formData.dateISO),
-      time: formData.time,
-      maxPlayers: Number(formData.maxPlayers) || 0,
-      pricePerPlayer: Number(formData.pricePerPlayer) || 0,
-
-      matchAddress: cleanText(formData.matchAddress),
-
-      notes: cleanText(formData.notes),
-      visibility: formData.visibility,
-    };
-  }, [formData, organizerId, courtType]);
-
-  function update(patch) {
-    setFormData((prev) => ({ ...prev, ...patch }));
-  }
+    return Boolean(hasCourt && timeOk && titleOk && playersOk && priceOk && dateOk);
+  }, [courtId, formData]);
 
   async function handleCreate() {
     if (!canCreate) return;
 
-    try {
-      await onCreate?.(payload);
+    const maxPlayersVal = toOptionalInt(formData.maxPlayers);
+    const pricePerPlayerVal = toOptionalInt(formData.pricePerPlayer);
 
-      requestAnimationFrame(() => {
-        scrollRef.current?.scrollTo?.({ top: 0, behavior: "smooth" });
-      });
-    } catch (err) {
-      console.error("MatchCreator onCreate error:", err);
-      alert("Erro ao criar partida. Verifique os dados e tente novamente.");
+    const startedAt = buildStartedAtISO(formData.dateISO, formData.dateLabel, formData.time);
+
+    // DEBUG (pode tirar depois)
+    // console.log("DEBUG startedAt:", {
+    //   dateISO: formData.dateISO,
+    //   dateLabel: formData.dateLabel,
+    //   time: formData.time,
+    //   startedAt,
+    // });
+
+    if (!startedAt) {
+      alert("Escolha uma data válida.");
+      return;
     }
+
+    const payload = {
+      title: cleanText(formData.title),
+      date: startedAt,
+      type: courtType.toUpperCase(),
+      courtId: courtId === MANUAL_ID ? null : courtId,
+      maxPlayers: maxPlayersVal ?? 14,
+      pricePerPlayer: pricePerPlayerVal ?? 0,
+      matchAddress: useArenaAddress
+        ? arenaAddress
+        : cleanText(formData.matchAddress) || arenaAddress || "",
+    };
+
+    await onCreate?.(payload);
   }
 
   return (
-    <div className={styles.page} ref={scrollRef}>
-      <header className={styles.header}>
-        <button className={styles.backBtn} onClick={onBack} type="button" aria-label="Voltar">
+    <div className={styles.page}>
+      <div className={styles.header}>
+        <button type="button" className={styles.back} onClick={onBack}>
           ←
         </button>
-
         <div className={styles.headerText}>
-          <div className={styles.kicker}>Criar Pelada</div>
-          <h1 className={styles.title}>MatchCreator</h1>
+          <div className={styles.kicker}>Criar</div>
+          <div className={styles.title}>Criar pelada</div>
         </div>
-
-        <div className={styles.headerRight}>
-          <span className={styles.badgePremium}>Premium</span>
-        </div>
-      </header>
+      </div>
 
       <div className={styles.grid}>
-        <section className={styles.leftCol}>
+        <main className={styles.main}>
           <CourtSelector
-            courts={courtsWithType}
+            courts={filteredCourts}
             valueCourtType={courtType}
             onChangeCourtType={setCourtType}
             valueCourtId={courtId}
-            onChangeCourtId={setCourtId}
+            onChangeCourtId={(id) => {
+              setCourtId(id);
+              if (id === MANUAL_ID) setUseArenaAddress(false);
+            }}
             manualId={MANUAL_ID}
           />
 
           <DateSelector
             valueLabel={formData.dateLabel}
             valueISO={formData.dateISO}
-            onChange={(next) => update(next)}
+            onChange={(patch) => patchForm(patch)}
           />
 
           <MatchForm
-            formData={formData}
-            onChange={update}
+            formData={{
+              ...formData,
+              maxPlayers: toIntOrEmpty(formData.maxPlayers),
+              pricePerPlayer: toIntOrEmpty(formData.pricePerPlayer),
+            }}
+            onChange={patchForm}
+            patchForm={patchForm}
             arenaAddress={arenaAddress}
             mapsUrl={mapsUrl}
             courtType={courtType}
             selectedCourt={selectedCourt}
+            useArenaAddress={useArenaAddress}
+            onToggleUseArenaAddress={(next) => setUseArenaAddress(Boolean(next))}
           />
-        </section>
+        </main>
 
-        <aside className={styles.rightCol}>
+        <aside className={styles.aside}>
           <SummaryCard
             formData={formData}
             selectedCourt={selectedCourt}
             courtType={courtType}
             arenaAddress={arenaAddress}
             mapsUrl={mapsUrl}
+            useArenaAddress={useArenaAddress}
             canCreate={canCreate}
             onCreate={handleCreate}
           />
