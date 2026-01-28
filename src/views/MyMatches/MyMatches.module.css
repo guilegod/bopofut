@@ -12,6 +12,8 @@
   gap: 18px;
   background: transparent;
   color: var(--text);
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* =========================
@@ -164,6 +166,139 @@
   gap: 14px;
 }
 
+/* =========================================================
+   MATCH CARD (🔥 AQUI É O UPGRADE)
+   - mais compacto no mobile
+   - badge e horário dentro da capa
+   - texto com hierarquia e sem “estourar”
+   ========================================================= */
+.card{
+  width: 100%;
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  gap: 12px;
+
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(15,28,45,.10);
+  background: rgba(255,255,255,.55);
+  box-shadow: 0 14px 28px rgba(15,28,45,.07);
+  cursor: pointer;
+
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+
+.card:hover{
+  transform: translateY(-1px);
+  border-color: rgba(24,195,126,.22);
+  box-shadow: 0 18px 38px rgba(15,28,45,.10);
+}
+
+.card:active{
+  transform: scale(.995);
+}
+
+.imageBox{
+  width: 108px;
+  height: 108px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(15,28,45,.12);
+  background: rgba(255,255,255,.45);
+  box-shadow: 0 10px 22px rgba(15,28,45,.06);
+
+  position: relative; /* ✅ base pros badges */
+  isolation: isolate;
+}
+
+.imageBox img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.badge{
+  position: absolute;
+  top: 10px;
+  left: 10px;
+
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 1000;
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  border: 1px solid rgba(15,28,45,.12);
+  background: rgba(255,255,255,.62);
+  color: rgba(15,28,45,.90);
+
+  z-index: 2;
+}
+
+.time{
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 1000;
+
+  border: 1px solid rgba(15,28,45,.10);
+  background: rgba(255,255,255,.62);
+  color: rgba(15,28,45,.86);
+
+  z-index: 2;
+}
+
+.info{
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.info h3{
+  margin: 0;
+  font-size: 15px;
+  font-weight: 1100;
+  letter-spacing: -0.01em;
+  color: var(--text);
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.info p{
+  margin: 6px 0 0;
+  font-size: 12px;
+  font-weight: 950;
+  color: rgba(15,28,45,.72);
+
+  /* ✅ evita quebrar feio com textos longos */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.info p + p{
+  margin-top: 4px;
+}
+
+/* meta row no card (histórico) */
+.metaRow{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  font-size: 12px;
+  opacity: .92;
+}
+
 /* =========================
    EMPTY STATE
    ========================= */
@@ -227,49 +362,44 @@
   opacity: .6;
 }
 
-/* meta row no card (histórico) */
-.metaRow{
-  display:flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 10px;
-  font-size: 12px;
-  opacity: .92;
-}
-
 /* =========================
-   STATUS BADGES (se usado no MyMatches card)
+   STATUS BADGES (backend)
    ========================= */
-.badge{
-  background: rgba(255,255,255,.20);
-  border: 1px solid rgba(255,255,255,.22);
-  color: rgba(255,255,255,.92);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+.badge_SCHEDULED{
+  background: rgba(255,255,255,.62);
+  border-color: rgba(15,28,45,.12);
+  color: rgba(15,28,45,.90);
 }
 
-.badge_SCHEDULED{
-  background: rgba(255,255,255,.20);
-  border-color: rgba(255,255,255,.22);
-  color: rgba(255,255,255,.92);
+.badge_LIVE{
+  background: rgba(34,197,94,.20);
+  border-color: rgba(34,197,94,.35);
+  color: rgba(5,46,22,.95);
 }
 
 .badge_STARTED{
-  background: rgba(22,163,74,.22);
-  border-color: rgba(34,197,94,.45);
-  color: rgba(240,253,244,.98);
+  background: rgba(34,197,94,.20);
+  border-color: rgba(34,197,94,.35);
+  color: rgba(5,46,22,.95);
 }
 
 .badge_FINISHED{
-  background: rgba(99,102,241,.22);
-  border-color: rgba(129,140,248,.45);
-  color: rgba(238,242,255,.98);
+  background: rgba(99,102,241,.20);
+  border-color: rgba(129,140,248,.40);
+  color: rgba(30,27,75,.95);
 }
 
-.badge_CANCELLED{
-  background: rgba(220,38,38,.22);
-  border-color: rgba(248,113,113,.45);
-  color: rgba(254,242,242,.98);
+.badge_CANCELLED,
+.badge_CANCELED{
+  background: rgba(220,38,38,.18);
+  border-color: rgba(248,113,113,.42);
+  color: rgba(127,29,29,.95);
+}
+
+.badge_EXPIRED{
+  background: rgba(120,120,120,.16);
+  border-color: rgba(120,120,120,.28);
+  color: rgba(31,41,55,.95);
 }
 
 /* =========================
@@ -281,4 +411,16 @@
   .header h2{ font-size: 22px; }
   .filters{ gap: 8px; }
   .filterBtn{ height: 36px; padding: 0 12px; }
+
+  .card{
+    grid-template-columns: 96px minmax(0, 1fr);
+    padding: 11px;
+  }
+  .imageBox{
+    width: 96px;
+    height: 96px;
+    border-radius: 14px;
+  }
+  .info h3{ font-size: 14px; }
+  .info p{ font-size: 11px; }
 }

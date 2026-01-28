@@ -34,3 +34,16 @@ export async function me(token) {
     token,
   });
 }
+export async function forgotPassword(email) {
+  return apiRequest("/auth/forgot", {
+    method: "POST",
+    body: { email },
+  });
+}
+
+export async function resetPassword({ token, password }) {
+  return apiRequest("/auth/reset", {
+    method: "POST",
+    body: { token, password },
+  });
+}

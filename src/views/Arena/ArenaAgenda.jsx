@@ -1,3 +1,4 @@
+// ArenaAgenda.jsx (ATUALIZADO COMPLETO)
 import { useEffect, useMemo, useState } from "react";
 import styles from "./ArenaAgenda.module.css";
 
@@ -87,7 +88,7 @@ const HOURS = [
 export default function ArenaAgenda({
   user,
   courts = [],
-  matches = [], // ✅ NOVO: partidas reais do app
+  matches = [], // ✅ partidas reais do app
   initialCourtId = null,
   onBack,
   onOpenFinance,
@@ -115,7 +116,9 @@ export default function ArenaAgenda({
     return String((active || list[0])?.id || "");
   }, [courts]);
 
-  const [courtId, setCourtId] = useState(String(initialCourtId || defaultCourtId || ""));
+  const [courtId, setCourtId] = useState(
+    String(initialCourtId || defaultCourtId || "")
+  );
   const [dayISO, setDayISO] = useState(day0ISO);
   const [query, setQuery] = useState("");
 
@@ -202,7 +205,8 @@ export default function ArenaAgenda({
     setAvailabilityState((prev) => {
       const base = prev || ensureDefaultAvailability(courtId);
       const daysObj = { ...(base.days || {}) };
-      const cur = daysObj[dow] || { enabled: true, open: "09:00", close: "23:00" };
+      const cur =
+        daysObj[dow] || { enabled: true, open: "09:00", close: "23:00" };
       daysObj[dow] = { ...cur, ...patch };
       return { ...base, days: daysObj };
     });
@@ -244,11 +248,16 @@ export default function ArenaAgenda({
     customerPhone: "",
   });
 
-    // ✅ UI premium: “colapsar” horários por hover (com opção de fixar)
+  // ✅ controle do colapso (SEM hover!)
   const [avPinned, setAvPinned] = useState(false);
-  const [avHover, setAvHover] = useState(false);
-  const avOpen = avPinned || avHover;
+  const [avCollapsed, setAvCollapsed] = useState(true); // começa fechado
 
+  // ✅ abre se: seta abriu OU se tá fixado
+  const avOpen = !avCollapsed || avPinned;
+
+  function toggleAvailability() {
+    setAvCollapsed((v) => !v);
+  }
 
   function openModal(hour, mode) {
     if (!courtId) return;
@@ -271,7 +280,8 @@ export default function ArenaAgenda({
   function saveModal() {
     if (!courtId || !dayISO || !modalHour) return;
 
-    const title = clampStr(form.title) || (modalMode === "block" ? "Bloqueio" : "Reserva");
+    const title =
+      clampStr(form.title) || (modalMode === "block" ? "Bloqueio" : "Reserva");
     const price = modalMode === "block" ? 0 : Number(form.price || 0);
 
     const newItem = {
@@ -328,25 +338,40 @@ export default function ArenaAgenda({
   const filteredCourtList = useMemo(() => {
     const q = String(query || "").trim().toLowerCase();
     if (!q) return courts;
-    return (courts || []).filter((c) => String(c?.name || "").toLowerCase().includes(q));
+    return (courts || []).filter((c) =>
+      String(c?.name || "").toLowerCase().includes(q)
+    );
   }, [courts, query]);
 
   // ✅ Converte matches reais em "itens" da agenda
   const matchItems = useMemo(() => {
     const list = Array.isArray(matches) ? matches : [];
-    console.log("[Agenda] matches.length", Array.isArray(matches) ? matches.length : matches);
-    console.log("[Agenda] selected courtId/dayISO", courtId, dayISO);
 
     return list
       .map((m) => {
         const mCourtId = String(m?.courtId || m?.court?.id || "");
-        const mDayISO = toISODateOnlyAny(m?.dateISO || m?.date || m?.startAt || m?.startsAt || m?.start || m?.dayISO);
+        const mDayISO = toISODateOnlyAny(
+          m?.dateISO ||
+            m?.date ||
+            m?.startAt ||
+            m?.startsAt ||
+            m?.start ||
+            m?.dayISO
+        );
 
-        const hour = String(m?.time || m?.hour || "").trim() ||(m?.dateISO? new Date(m.dateISO).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
-    : m?.date
-      ? new Date(m.date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
-      : "");
-
+        const hour =
+          String(m?.time || m?.hour || "").trim() ||
+          (m?.dateISO
+            ? new Date(m.dateISO).toLocaleTimeString("pt-BR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : m?.date
+            ? new Date(m.date).toLocaleTimeString("pt-BR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "");
 
         if (!mCourtId || !mDayISO || !hour) return null;
 
@@ -356,7 +381,6 @@ export default function ArenaAgenda({
           m?.createdBy?.name ||
           "Organizador";
 
-
         const organizerRoleRaw =
           m?.organizer?.role ||
           m?.organizerRole ||
@@ -364,7 +388,8 @@ export default function ArenaAgenda({
           m?.createdBy?.role ||
           "";
         const organizerRole = String(organizerRoleRaw || "").toLowerCase();
-        const priceSource = organizerRole === "arena_owner" ? "arena" : "organizer";
+        const priceSource =
+          organizerRole === "arena_owner" ? "arena" : "organizer";
         const presences = Array.isArray(m?.presences) ? m.presences : [];
         const playersNow = presences.length;
         const maxPlayers = Number(m?.maxPlayers || 0);
@@ -374,22 +399,18 @@ export default function ArenaAgenda({
           String(m?.status || "").toUpperCase() === "CANCELLED" ||
           m?.canceled === true ||
           !!m?.canceledAt;
-console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour });
 
         return {
           id: `match-${m.id}`,
           kind: "booking",
-          source: "match", // ✅ veio do backend (pelada/reserva real)
+          source: "match",
           courtId: mCourtId,
           dayISO: mDayISO,
           hour,
           title: m?.title ? `Pelada: ${m.title}` : "Pelada (App)",
           status: canceled ? "CANCELED" : "CONFIRMED",
           price: Number(m?.pricePerPlayer || m?.price || 0),
-          customer: {
-            name: organizerName,
-            phone: "",
-          },
+          customer: { name: organizerName, phone: "" },
           extra: {
             playersNow,
             maxPlayers,
@@ -402,20 +423,16 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
       .filter(Boolean);
   }, [matches]);
 
-  // ✅ monta mapa por hora juntando:
-  // - itens locais (manual/bloqueio)
-  // - partidas reais (match) por cima (prioridade)
+  // ✅ mapa por hora juntando itens locais + matchs
   const mapByHour = useMemo(() => {
     const map = new Map();
 
-    // 1) locais primeiro
     for (const it of items) {
       if (String(it.courtId) !== String(courtId)) continue;
       if (it.dayISO !== dayISO) continue;
       map.set(it.hour, it);
     }
 
-    // 2) matchs por cima (ocupam o horário de verdade)
     for (const it of matchItems) {
       if (String(it.courtId) !== String(courtId)) continue;
       if (it.dayISO !== dayISO) continue;
@@ -431,7 +448,11 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
     <div className={styles.page}>
       {/* Header */}
       <div className={styles.header}>
-        <button type="button" className={styles.backBtn} onClick={() => onBack?.()}>
+        <button
+          type="button"
+          className={styles.backBtn}
+          onClick={() => onBack?.()}
+        >
           ←
         </button>
 
@@ -443,19 +464,30 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
         </div>
 
         <div className={styles.headActions}>
-          <button type="button" className={styles.ghostBtn} onClick={() => onOpenPromotions?.()}>
+          <button
+            type="button"
+            className={styles.ghostBtn}
+            onClick={() => onOpenPromotions?.()}
+          >
             🏷️ Promoções
           </button>
-          <button type="button" className={styles.ghostBtn} onClick={() => onOpenFinance?.()}>
+          <button
+            type="button"
+            className={styles.ghostBtn}
+            onClick={() => onOpenFinance?.()}
+          >
             💰 Financeiro
           </button>
-          <button type="button" className={styles.primaryBtn} onClick={() => onOpenCourtSettings?.()}>
+          <button
+            type="button"
+            className={styles.primaryBtn}
+            onClick={() => onOpenCourtSettings?.()}
+          >
             🏟️ Quadras
           </button>
         </div>
       </div>
 
-      {/* Empty state (sem quadras) */}
       {!hasCourts ? (
         <div className={styles.emptyWrap}>
           <div className={styles.emptyCard}>
@@ -464,7 +496,11 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
               Para usar a agenda, você precisa cadastrar pelo menos 1 quadra.
             </div>
 
-            <button type="button" className={styles.primaryBtn} onClick={() => onOpenCourtSettings?.()}>
+            <button
+              type="button"
+              className={styles.primaryBtn}
+              onClick={() => onOpenCourtSettings?.()}
+            >
               🏟️ Cadastrar / Gerenciar Quadras
             </button>
           </div>
@@ -486,7 +522,11 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
             <div className={styles.selectRow}>
               <label className={styles.label}>
                 Quadra
-                <select className={styles.select} value={courtId} onChange={(e) => setCourtId(e.target.value)}>
+                <select
+                  className={styles.select}
+                  value={courtId}
+                  onChange={(e) => setCourtId(e.target.value)}
+                >
                   {filteredCourtList.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c?.name || "Quadra"}
@@ -497,7 +537,11 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
 
               <label className={styles.label}>
                 Dia
-                <select className={styles.select} value={dayISO} onChange={(e) => setDayISO(e.target.value)}>
+                <select
+                  className={styles.select}
+                  value={dayISO}
+                  onChange={(e) => setDayISO(e.target.value)}
+                >
                   {days.map((d) => {
                     const iso = toISODateOnly(d);
                     return (
@@ -514,14 +558,31 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
           {/* Court summary */}
           <div className={styles.summary}>
             <div className={styles.summaryLeft}>
-              <div className={styles.summaryName}>{selectedCourt?.name || "Quadra"}</div>
+              <div className={styles.summaryName}>
+                {selectedCourt?.name || "Quadra"}
+              </div>
               <div className={styles.summaryMeta}>
-                <span className={styles.chip}>📍 {selectedCourt?.address || "Endereço não informado"}</span>
                 <span className={styles.chip}>
-                  🕒 {selectedCourt?.pricePerHour ? moneyBRL(selectedCourt.pricePerHour) : "R$ —"}/h
+                  📍 {selectedCourt?.address || "Endereço não informado"}
                 </span>
                 <span className={styles.chip}>
-                  ✅ Partidas do App: <b>{matchItems.filter((x) => x.dayISO === dayISO && String(x.courtId) === String(courtId)).length}</b>
+                  🕒{" "}
+                  {selectedCourt?.pricePerHour
+                    ? moneyBRL(selectedCourt.pricePerHour)
+                    : "R$ —"}
+                  /h
+                </span>
+                <span className={styles.chip}>
+                  ✅ Partidas do App:{" "}
+                  <b>
+                    {
+                      matchItems.filter(
+                        (x) =>
+                          x.dayISO === dayISO &&
+                          String(x.courtId) === String(courtId)
+                      ).length
+                    }
+                  </b>
                 </span>
               </div>
             </div>
@@ -542,24 +603,26 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
             </div>
           </div>
 
-                    {/* ✅ Disponibilidade padrão (colapsável) */}
+          {/* ✅ Disponibilidade padrão (colapsável — SEM HOVER) */}
           <div
-            className={`${styles.availabilityWrap} ${avOpen ? "" : styles.availabilityCollapsed}`}
-            onMouseEnter={() => setAvHover(true)}
-            onMouseLeave={() => setAvHover(false)}
+            className={`${styles.availabilityWrap} ${
+              avOpen ? "" : styles.availabilityCollapsed
+            }`}
           >
             <div className={styles.availabilityHead}>
               <div className={styles.availabilityTitle}>
                 ⏱️ Disponibilidade padrão (por quadra)
                 <span className={styles.availabilityHint}>
-                  (passe o mouse para expandir • clique no 📌 para fixar)
+                  (clique na setinha para mostrar/esconder • 📌 fixa aberto)
                 </span>
               </div>
 
               <div className={styles.availabilityActions}>
                 <button
                   type="button"
-                  className={`${styles.pinBtn} ${avPinned ? styles.pinActive : ""}`}
+                  className={`${styles.pinBtn} ${
+                    avPinned ? styles.pinActive : ""
+                  }`}
                   onClick={() => setAvPinned((v) => !v)}
                   title={avPinned ? "Desafixar" : "Fixar aberto"}
                 >
@@ -575,9 +638,15 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
                   💾 Salvar horários
                 </button>
 
-                <span className={styles.chevron} aria-hidden="true">
+                <button
+                  type="button"
+                  className={styles.collapseBtn}
+                  onClick={toggleAvailability}
+                  title={avOpen ? "Esconder horários" : "Mostrar horários"}
+                  aria-expanded={avOpen}
+                >
                   {avOpen ? "▾" : "▸"}
-                </span>
+                </button>
               </div>
             </div>
 
@@ -609,7 +678,13 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
 
               <div className={styles.avGrid}>
                 {week.map((w) => {
-                  const cfg = availability?.days?.[w.dow] || { enabled: true, open: "09:00", close: "23:00" };
+                  const cfg =
+                    availability?.days?.[w.dow] || {
+                      enabled: true,
+                      open: "09:00",
+                      close: "23:00",
+                    };
+
                   return (
                     <div key={w.dow} className={styles.avRow}>
                       <div className={styles.avDow}>{w.label}</div>
@@ -618,7 +693,9 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
                         <span className={styles.avLabel}>Abre</span>
                         <input
                           value={cfg.open}
-                          onChange={(e) => updateAvDay(w.dow, { open: e.target.value })}
+                          onChange={(e) =>
+                            updateAvDay(w.dow, { open: e.target.value })
+                          }
                           placeholder="09:00"
                           className={styles.avInput}
                         />
@@ -628,7 +705,9 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
                         <span className={styles.avLabel}>Fecha</span>
                         <input
                           value={cfg.close}
-                          onChange={(e) => updateAvDay(w.dow, { close: e.target.value })}
+                          onChange={(e) =>
+                            updateAvDay(w.dow, { close: e.target.value })
+                          }
                           placeholder="23:00"
                           className={styles.avInput}
                         />
@@ -636,8 +715,12 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
 
                       <button
                         type="button"
-                        onClick={() => updateAvDay(w.dow, { enabled: !cfg.enabled })}
-                        className={`${styles.avToggle} ${cfg.enabled ? styles.avOn : styles.avOff}`}
+                        onClick={() =>
+                          updateAvDay(w.dow, { enabled: !cfg.enabled })
+                        }
+                        className={`${styles.avToggle} ${
+                          cfg.enabled ? styles.avOn : styles.avOff
+                        }`}
                       >
                         {cfg.enabled ? "✅ Aberto" : "🚫 Fechado"}
                       </button>
@@ -647,7 +730,6 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
               </div>
             </div>
           </div>
-
 
           {/* Grid */}
           <div className={styles.grid}>
@@ -673,35 +755,52 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
 
                     {!it ? (
                       <div className={styles.slotActions}>
-                        <button type="button" className={styles.slotBtn} onClick={() => openModal(h, "booking")}>
-                          + Reserva
+                        <button
+                          type="button"
+                          className={styles.iconBtn}
+                          onClick={() => openModal(h, "booking")}
+                          aria-label="Criar reserva"
+                          title="Criar reserva"
+                        >
+                          +
                         </button>
-                        <button type="button" className={styles.slotBtnGhost} onClick={() => openModal(h, "block")}>
-                          ⛔ Bloquear
+
+                        <button
+                          type="button"
+                          className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
+                          onClick={() => openModal(h, "block")}
+                          aria-label="Bloquear horário"
+                          title="Bloquear horário"
+                        >
+                          ⛔
                         </button>
                       </div>
                     ) : (
                       <div className={styles.slotActions}>
                         {it.kind === "booking" ? (
                           <>
-                            {/* ✅ Match real: não deixa apagar pelo demo */}
                             {isFromMatch ? (
-                              <span className={styles.metaPill} style={{ opacity: 0.9 }}>
-                                ⚽ Reserva do App
+                              <span className={styles.badgeMini} title="Reserva vinda do App">
+                                ⚽ App
                               </span>
                             ) : (
                               <>
                                 <button
                                   type="button"
-                                  className={styles.slotBtnGhost}
+                                  className={styles.iconBtn}
                                   onClick={() => toggleCancel(it.id)}
+                                  title={it.status === "CANCELED" ? "Reativar" : "Cancelar"}
+                                  aria-label={it.status === "CANCELED" ? "Reativar reserva" : "Cancelar reserva"}
                                 >
-                                  {it.status === "CANCELED" ? "↩ Reativar" : "✖ Cancelar"}
+                                  {it.status === "CANCELED" ? "↩" : "✖"}
                                 </button>
+
                                 <button
                                   type="button"
-                                  className={styles.slotBtnDanger}
+                                  className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
                                   onClick={() => removeItem(it.id)}
+                                  title="Excluir"
+                                  aria-label="Excluir reserva"
                                 >
                                   🗑
                                 </button>
@@ -709,8 +808,14 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
                             )}
                           </>
                         ) : (
-                          <button type="button" className={styles.slotBtnGhost} onClick={() => removeItem(it.id)}>
-                            🔓 Desbloquear
+                          <button
+                            type="button"
+                            className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
+                            onClick={() => removeItem(it.id)}
+                            title="Desbloquear"
+                            aria-label="Desbloquear horário"
+                          >
+                            🔓
                           </button>
                         )}
                       </div>
@@ -736,32 +841,41 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
                                 : "✅ Confirmado"}
                             </span>
 
-                            {/* ✅ se for match, mostramos preço por atleta (se existir) */}
                             <span className={styles.metaPill}>
-                              💸 {it.price ? `${moneyBRL(it.price)} / atleta` : "—"}
+                              💸{" "}
+                              {it.price ? `${moneyBRL(it.price)} / atleta` : "—"}
                             </span>
-
 
                             {isFromMatch ? (
                               <span className={styles.metaPill}>
-                                {it?.extra?.priceSource === "arena" ? "🏟️ Preço da Arena" : "👤 Preço do Organizador"}
+                                {it?.extra?.priceSource === "arena"
+                                  ? "🏟️ Preço da Arena"
+                                  : "👤 Preço do Organizador"}
                               </span>
                             ) : null}
-                            <span className={styles.metaPill}>👤 {it.customer?.name || "Cliente"}</span>
+
+                            <span className={styles.metaPill}>
+                              👤 {it.customer?.name || "Cliente"}
+                            </span>
 
                             {it.extra?.maxPlayers ? (
                               <span className={styles.metaPill}>
-                                👥 {Number(it.extra?.playersNow || 0)}/{Number(it.extra?.maxPlayers || 0)}
+                                👥 {Number(it.extra?.playersNow || 0)}/
+                                {Number(it.extra?.maxPlayers || 0)}
                               </span>
                             ) : null}
 
                             {it.customer?.phone ? (
-                              <span className={styles.metaPill}>📱 {it.customer.phone}</span>
+                              <span className={styles.metaPill}>
+                                📱 {it.customer.phone}
+                              </span>
                             ) : null}
                           </div>
                         ) : (
                           <div className={styles.itemMeta}>
-                            <span className={styles.metaPill}>🔧 Motivo: {it.title}</span>
+                            <span className={styles.metaPill}>
+                              🔧 Motivo: {it.title}
+                            </span>
                           </div>
                         )}
                       </>
@@ -780,9 +894,16 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
           <div className={styles.modal}>
             <div className={styles.modalHead}>
               <div className={styles.modalTitle}>
-                {modalMode === "block" ? "⛔ Bloquear Horário" : "➕ Criar Reserva"} • {modalHour}
+                {modalMode === "block"
+                  ? "⛔ Bloquear Horário"
+                  : "➕ Criar Reserva"}{" "}
+                • {modalHour}
               </div>
-              <button type="button" className={styles.modalClose} onClick={closeModal}>
+              <button
+                type="button"
+                className={styles.modalClose}
+                onClick={closeModal}
+              >
                 ✕
               </button>
             </div>
@@ -793,8 +914,14 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
                 <input
                   className={styles.input}
                   value={form.title}
-                  onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-                  placeholder={modalMode === "block" ? "Ex: Manutenção" : "Ex: Reserva Manual"}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, title: e.target.value }))
+                  }
+                  placeholder={
+                    modalMode === "block"
+                      ? "Ex: Manutenção"
+                      : "Ex: Reserva Manual"
+                  }
                 />
               </label>
 
@@ -806,7 +933,9 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
                       <input
                         className={styles.input}
                         value={form.price}
-                        onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
+                        onChange={(e) =>
+                          setForm((p) => ({ ...p, price: e.target.value }))
+                        }
                         placeholder="Ex: 180"
                         inputMode="numeric"
                       />
@@ -817,7 +946,12 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
                       <input
                         className={styles.input}
                         value={form.customerName}
-                        onChange={(e) => setForm((p) => ({ ...p, customerName: e.target.value }))}
+                        onChange={(e) =>
+                          setForm((p) => ({
+                            ...p,
+                            customerName: e.target.value,
+                          }))
+                        }
                         placeholder="Nome"
                       />
                     </label>
@@ -828,27 +962,42 @@ console.log("[Agenda] match ->", { courtId: m?.courtId, dayISO: mDayISO, hour })
                     <input
                       className={styles.input}
                       value={form.customerPhone}
-                      onChange={(e) => setForm((p) => ({ ...p, customerPhone: e.target.value }))}
+                      onChange={(e) =>
+                        setForm((p) => ({
+                          ...p,
+                          customerPhone: e.target.value,
+                        }))
+                      }
                       placeholder="(xx) xxxxx-xxxx"
                     />
                   </label>
 
                   <div className={styles.hint}>
-                    * Reserva manual entra como <b>Pendente</b> (depois vira Confirmada quando o pagamento for ok).
+                    * Reserva manual entra como <b>Pendente</b> (depois vira
+                    Confirmada quando o pagamento for ok).
                   </div>
                 </>
               ) : (
                 <div className={styles.hint}>
-                  * Bloqueio impede reservas nesse horário (manutenção, evento, feriado, etc.).
+                  * Bloqueio impede reservas nesse horário (manutenção, evento,
+                  feriado, etc.).
                 </div>
               )}
             </div>
 
             <div className={styles.modalFoot}>
-              <button type="button" className={styles.ghostBtn} onClick={closeModal}>
+              <button
+                type="button"
+                className={styles.ghostBtn}
+                onClick={closeModal}
+              >
                 Cancelar
               </button>
-              <button type="button" className={styles.primaryBtn} onClick={saveModal}>
+              <button
+                type="button"
+                className={styles.primaryBtn}
+                onClick={saveModal}
+              >
                 Salvar
               </button>
             </div>

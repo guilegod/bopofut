@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styles from "./ArenaDashboard.module.css";
 
 export default function ArenaDashboard({
@@ -20,11 +20,12 @@ export default function ArenaDashboard({
   const [query, setQuery] = useState("");
   const [courtFilter, setCourtFilter] = useState("ALL"); // ALL | ACTIVE | INACTIVE
 
+  const isMobile = useIsMobile();
+
   // ✅ quadra padrão para abrir agenda (quando não veio uma específica)
   const defaultCourt = useMemo(() => {
     const list = Array.isArray(courts) ? courts : [];
     if (list.length === 0) return null;
-
     const active = list.find((c) => c?.isActive !== false);
     return active || list[0] || null;
   }, [courts]);
@@ -122,34 +123,6 @@ export default function ArenaDashboard({
       .slice(0, 10);
   }, [kpis]);
 
-  // ==========================================
-  // Lista de quadras + filtros
-  // ==========================================
-  const filteredCourts = useMemo(() => {
-    const q = String(query || "").trim().toLowerCase();
-
-    return (courts || [])
-      .map((c) => ({
-        ...c,
-        __active: c?.isActive !== false,
-        __name: c?.name || "Quadra",
-        __type: c?.type || inferTypeFromText(c?.name) || "fut7",
-        __pricePerHour: Number(c?.pricePerHour || 0),
-      }))
-      .filter((c) => {
-        if (courtFilter === "ACTIVE" && !c.__active) return false;
-        if (courtFilter === "INACTIVE" && c.__active) return false;
-
-        if (!q) return true;
-
-        const hay = `${c.__name} ${c?.address || ""} ${c.__type}`.toLowerCase();
-        return hay.includes(q);
-      })
-      .sort((a, b) =>
-        a.__active === b.__active ? a.__name.localeCompare(b.__name, "pt-BR") : a.__active ? -1 : 1
-      );
-  }, [courts, query, courtFilter]);
-
   const courtById = useMemo(() => {
     const map = new Map();
     for (const c of courts || []) map.set(String(c.id), c);
@@ -157,7 +130,7 @@ export default function ArenaDashboard({
   }, [courts]);
 
   // ==========================================
-  // Extras “Premium”
+  // Saúde + Mês (pra “Strava vibe”: número forte e etiqueta curta)
   // ==========================================
   const health = useMemo(() => {
     const total = Math.max(1, kpis.totalCourts);
@@ -166,7 +139,6 @@ export default function ArenaDashboard({
   }, [kpis]);
 
   const monthRevenue = useMemo(() => {
-    // estimativa simples: somar partidas do mês atual
     const list = Array.isArray(kpis?.arenaMatches) ? kpis.arenaMatches : [];
     const now = new Date();
     const y = now.getFullYear();
@@ -185,384 +157,478 @@ export default function ArenaDashboard({
     return sum;
   }, [kpis]);
 
+  // ==========================================
+  // Lista de quadras (modo “rows”, sem cardão)
+  // ==========================================
+  const filteredCourts = useMemo(() => {
+    const q = String(query || "").trim().toLowerCase();
+
+    return (courts || [])
+      .map((c) => ({
+        ...c,
+        __active: c?.isActive !== false,
+        __name: c?.name || "Quadra",
+        __type: c?.type || inferTypeFromText(c?.name) || "fut7",
+        __pricePerHour: Number(c?.pricePerHour || 0),
+      }))
+      .filter((c) => {
+        if (courtFilter === "ACTIVE" && !c.__active) return false;
+        if (courtFilter === "INACTIVE" && c.__active) return false;
+
+        if (!q) return true;
+        const hay = `${c.__name} ${c?.address || ""} ${c.__type}`.toLowerCase();
+        return hay.includes(q);
+      })
+      .sort((a, b) =>
+        a.__active === b.__active ? a.__name.localeCompare(b.__name, "pt-BR") : a.__active ? -1 : 1
+      );
+  }, [courts, query, courtFilter]);
+
   const initials = useMemo(() => getInitials(safeUser?.name || "Arena"), [safeUser?.name]);
 
   return (
     <div className={styles.page}>
-      {/* ====== Topbar Premium ====== */}
-      <div className={styles.topbar}>
-        <button type="button" className={styles.backBtn} onClick={() => onBack?.()} aria-label="Voltar">
-          ←
-        </button>
+      {/* =========================
+          Header “Strava-style”
+         ========================= */}
+      <header className={styles.header}>
+        <div className={styles.headerLeft}>
+          <button type="button" className={styles.iconBtn} onClick={() => onBack?.()} aria-label="Voltar">
+            ←
+          </button>
 
-        <div className={styles.hero}>
-          <div className={styles.avatar}>{initials}</div>
+          <div className={styles.headerMain}>
+            <div className={styles.headerTopRow}>
+              <div className={styles.avatar}>{initials}</div>
 
-          <div className={styles.heroText}>
-            <div className={styles.titleRow}>
-              <div className={styles.title}>Painel da Arena</div>
-              <span className={styles.rolePill}>
-                {String(safeUser?.role || "").toLowerCase() === "arena_owner" ? "ARENA OWNER" : "PAINEL"}
-              </span>
+              <div className={styles.headerText}>
+                <div className={styles.titleLine}>
+                  <div className={styles.title}>Painel da Arena</div>
+                  <span className={styles.pill}>
+                    {String(safeUser?.role || "").toLowerCase() === "arena_owner" ? "ARENA OWNER" : "PAINEL"}
+                  </span>
+                </div>
+
+                <div className={styles.subtitle}>
+                  {safeUser?.name ? `Bem-vindo, ${safeUser.name}` : "Bem-vindo"} • Saúde {health.pct}% • {health.label}
+                </div>
+              </div>
             </div>
 
-            <div className={styles.subtitle}>
-              {safeUser?.name ? `Bem-vindo, ${safeUser.name}` : "Bem-vindo"} • Reservas, quadras e agenda
-            </div>
-
-            <div className={styles.heroMeta}>
-              <span className={styles.metaPill}>🏟️ {kpis.activeCourts}/{kpis.totalCourts} ativas</span>
-              <span className={styles.metaPill}>📊 Saúde: {health.pct}%</span>
-              <span className={styles.metaPill}>💵 Mês: {formatMoneyBRL(monthRevenue)}</span>
+            {/* Strip de métricas (horizontal no mobile) */}
+            <div className={styles.metricsStrip} role="group" aria-label="Resumo rápido">
+              <MetricChip label="Ativas" value={`${kpis.activeCourts}/${kpis.totalCourts}`} />
+              <MetricChip label="Ao vivo" value={kpis.started} tone="hot" />
+              <MetricChip label="Agendadas" value={kpis.scheduled} />
+              <MetricChip label="Mês" value={formatMoneyBRL(monthRevenue)} tone="good" />
             </div>
           </div>
         </div>
 
-        <div className={styles.topActions}>
+        <div className={styles.headerRight}>
           <button type="button" className={styles.ghostBtn} onClick={() => onOpenAccountSettings?.()}>
             ⚙ Conta
           </button>
 
           <button type="button" className={styles.primaryBtn} onClick={() => onOpenCourtSettings?.()}>
-            🏟️ Gerenciar Quadras
+            🏟️ Quadras
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* ===== Tabs ===== */}
-      <div className={styles.tabs}>
-        <Tab active={activeTab === "overview"} onClick={() => setActiveTab("overview")}>
-          Resumo
-        </Tab>
-        <Tab active={activeTab === "agenda"} onClick={() => setActiveTab("agenda")}>
-          Agenda
-        </Tab>
-        <Tab active={activeTab === "courts"} onClick={() => setActiveTab("courts")}>
-          Quadras
-        </Tab>
-        <Tab active={activeTab === "money"} onClick={() => setActiveTab("money")}>
-          Financeiro
-        </Tab>
-      </div>
+      {/* =========================
+          Tabs (top no desktop / bottom no mobile)
+         ========================= */}
+      {!isMobile ? (
+        <nav className={styles.tabsTop} aria-label="Navegação do painel">
+          <SegTab active={activeTab === "overview"} onClick={() => setActiveTab("overview")}>
+            Resumo
+          </SegTab>
+          <SegTab active={activeTab === "agenda"} onClick={() => setActiveTab("agenda")}>
+            Agenda
+          </SegTab>
+          <SegTab active={activeTab === "courts"} onClick={() => setActiveTab("courts")}>
+            Quadras
+          </SegTab>
+          <SegTab active={activeTab === "money"} onClick={() => setActiveTab("money")}>
+            Financeiro
+          </SegTab>
+        </nav>
+      ) : null}
 
-      {/* ===== Overview ===== */}
-      {activeTab === "overview" ? (
-        <>
-          {/* KPIs */}
-          <section className={styles.kpis}>
-            <KpiCard icon="🏟️" label="Quadras" value={kpis.totalCourts} hint="Total" tone="neutral" />
-            <KpiCard icon="✅" label="Ativas" value={kpis.activeCourts} hint="Operando" tone="good" />
-            <KpiCard icon="⏸️" label="Inativas" value={kpis.inactiveCourts} hint="Pausadas" tone="warn" />
-            <KpiCard icon="📅" label="Agendadas" value={kpis.scheduled} hint="Futuras" tone="info" />
-            <KpiCard icon="🔴" label="Ao vivo" value={kpis.started} hint="Agora" tone="hot" />
-            <KpiCard icon="🏁" label="Finalizadas" value={kpis.finished} hint="Passadas" tone="neutral" />
-            <KpiCard icon="👥" label="Jogadores" value={kpis.totalPlayers} hint="Presenças" tone="neutral" />
-            <KpiCard icon="💰" label="Receita" value={formatMoneyBRL(kpis.revenue)} hint="Estimativa" tone="good" />
-            <KpiCard icon="🤝" label="Comissão" value={formatMoneyBRL(kpis.commission)} hint="Estimativa" tone="neutral" />
-          </section>
+      {/* =========================
+          Content
+         ========================= */}
+      <main className={styles.content}>
+        {activeTab === "overview" ? (
+          <>
+            {/* KPIs em grid (Strava vibe) */}
+            <section className={styles.statsSection}>
+              <div className={styles.statsGrid}>
+                <StatTile
+                  icon="🏟️"
+                  label="Quadras"
+                  value={kpis.totalCourts}
+                  hint={`${kpis.activeCourts} ativas`}
+                  tone="neutral"
+                />
+                <StatTile
+                  icon="✅"
+                  label="Ativas"
+                  value={kpis.activeCourts}
+                  hint={`${health.pct}% saúde`}
+                  tone="good"
+                />
+                <StatTile
+                  icon="🔴"
+                  label="Ao vivo"
+                  value={kpis.started}
+                  hint={kpis.started ? "rolando agora" : "nenhuma agora"}
+                  tone="hot"
+                />
+                <StatTile
+                  icon="📅"
+                  label="Agendadas"
+                  value={kpis.scheduled}
+                  hint={kpis.scheduled ? "tem jogo marcado" : "sem agenda"}
+                  tone="neutral"
+                />
 
-          {/* Próximas reservas */}
-          <section className={styles.section}>
-            <div className={styles.sectionHead}>
-              <div>
-                <div className={styles.sectionTitle}>Próximas reservas</div>
-                <div className={styles.sectionHint}>Partidas marcadas nas suas quadras (puxado do backend)</div>
+                <StatTile icon="👥" label="Jogadores" value={kpis.totalPlayers} hint="presenças" tone="neutral" />
+                <StatTile
+                  icon="💰"
+                  label="Receita"
+                  value={formatMoneyBRL(kpis.revenue)}
+                  hint="estimada"
+                  tone="good"
+                />
+                <StatTile
+                  icon="🤝"
+                  label="Comissão"
+                  value={formatMoneyBRL(kpis.commission)}
+                  hint="12%"
+                  tone="neutral"
+                />
+                <StatTile icon="🏁" label="Finalizadas" value={kpis.finished} hint="últimas" tone="neutral" />
               </div>
+            </section>
 
-              <button type="button" className={styles.ghostBtn} onClick={() => openAgenda()}>
-                🗓️ Abrir agenda
-              </button>
-            </div>
-
-            {upcoming.length === 0 ? (
-              <div className={styles.empty}>
-                <div className={styles.emptyTitle}>Sem reservas ainda</div>
-                <div className={styles.emptySub}>
-                  Quando alguém criar uma pelada nas suas quadras, ela aparece aqui ✅
+            {/* Próximas reservas */}
+            <section className={styles.section}>
+              <div className={styles.sectionHeadRow}>
+                <div>
+                  <div className={styles.sectionTitle}>Próximas reservas</div>
+                  <div className={styles.sectionHint}>Partidas marcadas nas suas quadras.</div>
                 </div>
+
+                <button type="button" className={styles.primaryBtn} onClick={() => openAgenda()}>
+                  Abrir agenda →
+                </button>
               </div>
-            ) : (
-              <div className={styles.resGrid}>
-                {upcoming.map((m) => {
-                  const c = courtById.get(String(m.courtId || "")) || null;
-                  const courtName = c?.name || "Quadra";
-                  const who = m?.organizer?.name || "Organizador";
-                  const players = (m?.presences || []).length || 0;
 
-                  const badge = getStatusBadge(m.__status);
+              {upcoming.length === 0 ? (
+                <EmptyBlock
+                  title="Sem reservas ainda"
+                  sub="Quando alguém criar uma pelada nas suas quadras, ela aparece aqui."
+                  ctaText="Abrir agenda"
+                  onCta={() => openAgenda()}
+                />
+              ) : (
+                <div className={styles.list}>
+                  {upcoming.map((m) => {
+                    const c = courtById.get(String(m.courtId || "")) || null;
+                    const courtName = c?.name || "Quadra";
+                    const who = m?.organizer?.name || "Organizador";
+                    const players = (m?.presences || []).length || 0;
+                    const badge = getStatusBadge(m.__status);
 
-                  return (
-                    <div key={m.id} className={styles.resCard}>
-                      <div className={styles.resTop}>
-                        <div className={styles.resDate}>
-                          <div className={styles.resDay}>{m.__day}</div>
-                          <div className={styles.resTime}>{m.__time}</div>
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        className={styles.row}
+                        onClick={() => openAgenda(c || defaultCourt)}
+                        title="Abrir agenda desta quadra"
+                      >
+                        <div className={styles.rowLeft}>
+                          <div className={styles.rowTimeBox}>
+                            <div className={styles.rowDay}>{m.__day}</div>
+                            <div className={styles.rowTime}>{m.__time}</div>
+                          </div>
+
+                          <div className={styles.rowMain}>
+                            <div className={styles.rowTitle}>
+                              ⚽ {m.title || "Pelada"} • {courtName}
+                            </div>
+                            <div className={styles.rowMeta}>
+                              <span>👤 {who}</span>
+                              <span className={styles.dot}>•</span>
+                              <span>👥 {players} confirmados</span>
+                              <span className={styles.dot}>•</span>
+                              <span>
+                                🎟️ {m?.pricePerPlayer ? `${moneyBRL(m.pricePerPlayer)}/jog` : "preço n/ informado"}
+                              </span>
+                            </div>
+                          </div>
                         </div>
 
-                        <span className={`${styles.resBadge} ${styles[badge.className]}`}>
-                          {badge.text}
-                        </span>
-                      </div>
+                        <div className={styles.rowRight}>
+                          <span className={`${styles.badge} ${styles[badge.className]}`}>{badge.text}</span>
+                          <span className={styles.chev}>›</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
 
-                      <div className={styles.resMain}>⚽ {m.title || "Pelada"} • {courtName}</div>
-
-                      <div className={styles.resMeta}>
-                        <span className={styles.metaChip}>👤 {who}</span>
-                        <span className={styles.metaChip}>👥 {players} confirmados</span>
-                        {m?.pricePerPlayer ? (
-                          <span className={styles.metaChip}>🎟️ {moneyBRL(m.pricePerPlayer)}/jog</span>
-                        ) : (
-                          <span className={styles.metaChip}>🎟️ preço n/ informado</span>
-                        )}
-                      </div>
-
-                      <div className={styles.resActions}>
-                        <button
-                          type="button"
-                          className={styles.ghostBtn}
-                          onClick={() => openAgenda(c || defaultCourt)}
-                          title="Abrir agenda dessa quadra"
-                        >
-                          Ver agenda
-                        </button>
-
-                        <button
-                          type="button"
-                          className={styles.primaryBtn}
-                          onClick={() => openAgenda(c || defaultCourt)}
-                          title="Abrir agenda (atalho)"
-                        >
-                          Abrir →
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+            {/* Atalhos */}
+            <section className={styles.section}>
+              <div className={styles.sectionHead}>
+                <div className={styles.sectionTitle}>Atalhos</div>
+                <div className={styles.sectionHint}>Acesso rápido pro dono da arena.</div>
               </div>
-            )}
-          </section>
 
-          {/* Ações rápidas */}
+              <div className={styles.tiles}>
+                <Tile icon="🗓️" title="Agenda" sub="Horários, reservas, bloqueios" onClick={() => openAgenda()} />
+                <Tile icon="🏟️" title="Quadras" sub="Cadastrar/editar quadras" onClick={() => onOpenCourtSettings?.()} />
+                <Tile icon="💰" title="Financeiro" sub="Receita e repasses" onClick={() => onOpenFinance?.()} />
+                <Tile icon="🏷️" title="Promoções" sub="Cupons e pacotes" onClick={() => onOpenPromotions?.()} />
+                <Tile icon="🏆" title="Campeonatos" sub="Tabelas e inscrições" onClick={() => onOpenTournaments?.()} />
+              </div>
+            </section>
+          </>
+        ) : null}
+
+        {activeTab === "agenda" ? (
           <section className={styles.section}>
             <div className={styles.sectionHead}>
-              <div>
-                <div className={styles.sectionTitle}>Atalhos rápidos</div>
-                <div className={styles.sectionHint}>Acesse rápido as áreas que você mais usa.</div>
-              </div>
+              <div className={styles.sectionTitle}>Agenda & Horários</div>
+              <div className={styles.sectionHint}>Aqui você abre a agenda (reservas reais + seus bloqueios/manuais).</div>
             </div>
 
-            <div className={styles.quickRow}>
-              <QuickCard
-                icon="🗓️"
-                title="Agenda & Horários"
-                sub="Reservas reais + bloqueios/manuais"
-                onClick={() => openAgenda()}
-              />
-              <QuickCard
-                icon="💰"
-                title="Financeiro"
-                sub="Receita, repasses, relatórios"
-                onClick={() => onOpenFinance?.()}
-              />
-              <QuickCard
-                icon="🏷️"
-                title="Promoções"
-                sub="Cupons, pacotes e regras"
-                onClick={() => onOpenPromotions?.()}
-              />
-              <QuickCard
-                icon="🏆"
-                title="Campeonatos"
-                sub="Inscrições, tabelas e premiações"
-                onClick={() => onOpenTournaments?.()}
-              />
-            </div>
-          </section>
-        </>
-      ) : null}
+            <div className={styles.panelBox}>
+              <button type="button" className={styles.primaryBtn} onClick={() => openAgenda()}>
+                🗓️ Abrir agenda agora
+              </button>
 
-      {/* ===== Agenda tab ===== */}
-      {activeTab === "agenda" ? (
-        <section className={styles.panel}>
-          <div className={styles.panelTitle}>Agenda & Horários</div>
-          <div className={styles.panelSub}>
-            Aqui a agenda vai mostrar <b>Reservado</b> com dados reais (organizador, telefone, jogadores) + seus
-            bloqueios/manuais.
-          </div>
-
-          <div className={styles.panelActions}>
-            <button type="button" className={styles.primaryBtn} onClick={() => openAgenda()}>
-              🗓️ Abrir agenda agora
-            </button>
-            <button type="button" className={styles.ghostBtn} onClick={() => onOpenCourtSettings?.()}>
-              🏟️ Gerenciar quadras
-            </button>
-          </div>
-        </section>
-      ) : null}
-
-      {/* ===== Courts tab ===== */}
-      {activeTab === "courts" ? (
-        <>
-          <section className={styles.filters}>
-            <div className={styles.searchWrap}>
-              <span className={styles.searchIcon}>⌕</span>
-              <input
-                className={styles.search}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar quadra por nome, tipo ou endereço..."
-              />
-            </div>
-
-            <div className={styles.pills}>
-              <Pill active={courtFilter === "ALL"} onClick={() => setCourtFilter("ALL")}>
-                Todas
-              </Pill>
-              <Pill active={courtFilter === "ACTIVE"} onClick={() => setCourtFilter("ACTIVE")}>
-                Ativas
-              </Pill>
-              <Pill active={courtFilter === "INACTIVE"} onClick={() => setCourtFilter("INACTIVE")}>
-                Inativas
-              </Pill>
-
-              <button type="button" className={styles.primaryBtn} onClick={() => onOpenCourtSettings?.()}>
-                🏟️ Gerenciar
+              <button type="button" className={styles.ghostBtn} onClick={() => onOpenCourtSettings?.()}>
+                🏟️ Gerenciar quadras
               </button>
             </div>
           </section>
+        ) : null}
 
+        {activeTab === "courts" ? (
           <section className={styles.section}>
-            <div className={styles.sectionHead}>
+            <div className={styles.sectionHeadRow}>
               <div>
                 <div className={styles.sectionTitle}>Suas quadras</div>
-                <div className={styles.sectionHint}>Clique em uma quadra para abrir a agenda dela.</div>
+                <div className={styles.sectionHint}>Toque numa quadra pra abrir a agenda dela.</div>
+              </div>
+
+              <button type="button" className={styles.primaryBtn} onClick={() => onOpenCourtSettings?.()}>
+                🏟️ Gerenciar →
+              </button>
+            </div>
+
+            <div className={styles.controls}>
+              <div className={styles.searchWrap}>
+                <span className={styles.searchIcon}>⌕</span>
+                <input
+                  className={styles.search}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Buscar por nome, tipo ou endereço..."
+                />
+              </div>
+
+              <div className={styles.filterStrip} role="group" aria-label="Filtros de quadras">
+                <SegPill active={courtFilter === "ALL"} onClick={() => setCourtFilter("ALL")}>
+                  Todas
+                </SegPill>
+                <SegPill active={courtFilter === "ACTIVE"} onClick={() => setCourtFilter("ACTIVE")}>
+                  Ativas
+                </SegPill>
+                <SegPill active={courtFilter === "INACTIVE"} onClick={() => setCourtFilter("INACTIVE")}>
+                  Inativas
+                </SegPill>
               </div>
             </div>
 
             {filteredCourts.length === 0 ? (
-              <div className={styles.empty}>
-                <div className={styles.emptyTitle}>Nenhuma quadra encontrada</div>
-                <div className={styles.emptySub}>Ajuste o filtro ou cadastre novas quadras no gerenciamento.</div>
-
-                <button type="button" className={styles.primaryBtn} onClick={() => onOpenCourtSettings?.()}>
-                  🏟️ Cadastrar / Gerenciar Quadras
-                </button>
-              </div>
+              <EmptyBlock
+                title="Nenhuma quadra encontrada"
+                sub="Ajuste a busca/filtro ou cadastre novas quadras."
+                ctaText="Cadastrar / Gerenciar"
+                onCta={() => onOpenCourtSettings?.()}
+              />
             ) : (
-              <div className={styles.courtsGrid}>
+              <div className={styles.list}>
                 {filteredCourts.map((c) => (
                   <button
                     key={c.id || c.__name}
                     type="button"
-                    className={styles.courtCard}
+                    className={styles.row}
                     onClick={() => openAgenda(c)}
                     title="Abrir agenda desta quadra"
                   >
-                    <div className={styles.courtTop}>
-                      <div className={styles.courtName}>{c.__name}</div>
-                      <div className={`${styles.status} ${c.__active ? styles.statusOn : styles.statusOff}`}>
-                        {c.__active ? "ATIVA" : "INATIVA"}
+                    <div className={styles.rowLeft}>
+                      <div className={`${styles.statusDot} ${c.__active ? styles.dotOn : styles.dotOff}`} />
+                      <div className={styles.rowMain}>
+                        <div className={styles.rowTitle}>{c.__name}</div>
+                        <div className={styles.rowMeta}>
+                          <span>⚽ {formatType(c.__type)}</span>
+                          <span className={styles.dot}>•</span>
+                          <span>📍 {c?.address ? c.address : "Endereço não informado"}</span>
+                          <span className={styles.dot}>•</span>
+                          <span>🕒 {c.__pricePerHour ? `${formatMoneyBRL(c.__pricePerHour)}/h` : "R$ —/h"}</span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className={styles.courtMeta}>
-                      <span className={styles.metaChip}>⚽ {formatType(c.__type)}</span>
-                      <span className={styles.metaChip}>📍 {c?.address ? c.address : "Endereço não informado"}</span>
-                      <span className={styles.metaChip}>
-                        🕒 {c.__pricePerHour ? formatMoneyBRL(c.__pricePerHour) : "R$ —"}/h
+                    <div className={styles.rowRight}>
+                      <span className={`${styles.pillSmall} ${c.__active ? styles.pillOn : styles.pillOff}`}>
+                        {c.__active ? "ATIVA" : "INATIVA"}
                       </span>
-                    </div>
-
-                    <div className={styles.courtCta}>
-                      <span className={styles.ctaText}>Abrir agenda</span>
-                      <span className={styles.ctaArrow}>→</span>
+                      <span className={styles.chev}>›</span>
                     </div>
                   </button>
                 ))}
               </div>
             )}
           </section>
-        </>
-      ) : null}
+        ) : null}
 
-      {/* ===== Money tab ===== */}
-      {activeTab === "money" ? (
-        <section className={styles.panel}>
-          <div className={styles.panelTitle}>Financeiro</div>
-          <div className={styles.panelSub}>
-            Em breve: repasses, PIX, mensalidade e relatórios aqui. Por enquanto, abre o módulo Financeiro.
-          </div>
+        {activeTab === "money" ? (
+          <section className={styles.section}>
+            <div className={styles.sectionHead}>
+              <div className={styles.sectionTitle}>Financeiro</div>
+              <div className={styles.sectionHint}>Relatórios e repasses (por enquanto abre o módulo Financeiro).</div>
+            </div>
 
-          <div className={styles.panelActions}>
-            <button type="button" className={styles.primaryBtn} onClick={() => onOpenFinance?.()}>
-              💰 Abrir financeiro
-            </button>
-          </div>
-        </section>
+            <div className={styles.panelBox}>
+              <button type="button" className={styles.primaryBtn} onClick={() => onOpenFinance?.()}>
+                💰 Abrir financeiro
+              </button>
+            </div>
+          </section>
+        ) : null}
+      </main>
+
+      {/* Bottom tabs no mobile */}
+      {isMobile ? (
+        <nav className={styles.tabsBottom} aria-label="Navegação do painel (mobile)">
+          <BottomTab active={activeTab === "overview"} onClick={() => setActiveTab("overview")} icon="🏠" label="Resumo" />
+          <BottomTab active={activeTab === "agenda"} onClick={() => setActiveTab("agenda")} icon="🗓️" label="Agenda" />
+          <BottomTab active={activeTab === "courts"} onClick={() => setActiveTab("courts")} icon="🏟️" label="Quadras" />
+          <BottomTab active={activeTab === "money"} onClick={() => setActiveTab("money")} icon="💰" label="Grana" />
+        </nav>
       ) : null}
     </div>
   );
 }
 
 /* ===========================
-   Components
+   UI Pieces
    =========================== */
 
-function KpiCard({ icon, label, value, hint, tone = "neutral" }) {
-  const toneClass =
-    tone === "good"
-      ? styles.kpiGood
-      : tone === "warn"
-      ? styles.kpiWarn
-      : tone === "info"
-      ? styles.kpiInfo
-      : tone === "hot"
-      ? styles.kpiHot
-      : styles.kpiNeutral;
+function MetricChip({ label, value, tone = "neutral" }) {
+  const toneClass = tone === "good" ? styles.metricGood : tone === "hot" ? styles.metricHot : styles.metricNeutral;
 
   return (
-    <div className={`${styles.kpi} ${toneClass}`}>
-      <div className={styles.kpiIcon}>{icon}</div>
+    <div className={`${styles.metricChip} ${toneClass}`}>
+      <div className={styles.metricLabel}>{label}</div>
+      <div className={styles.metricValue}>{value}</div>
+    </div>
+  );
+}
 
-      <div className={styles.kpiBody}>
-        <div className={styles.kpiTop}>
-          <div className={styles.kpiLabel}>{label}</div>
-          <div className={styles.kpiHint}>{hint}</div>
-        </div>
+function SegTab({ active, onClick, children }) {
+  return (
+    <button type="button" onClick={onClick} className={`${styles.segTab} ${active ? styles.segTabActive : ""}`}>
+      {children}
+    </button>
+  );
+}
 
-        <div className={styles.kpiValue}>{value}</div>
-        <div className={styles.kpiSpark} />
+function SegPill({ active, onClick, children }) {
+  return (
+    <button type="button" onClick={onClick} className={`${styles.segPill} ${active ? styles.segPillActive : ""}`}>
+      {children}
+    </button>
+  );
+}
+
+function StatTile({ icon, label, value, hint, tone = "neutral" }) {
+  const toneClass = tone === "good" ? styles.statGood : tone === "hot" ? styles.statHot : styles.statNeutral;
+
+  return (
+    <div className={`${styles.statTile} ${toneClass}`}>
+      <div className={styles.statTop}>
+        <span className={styles.statIcon} aria-hidden="true">
+          {icon}
+        </span>
+        <span className={styles.statLabel}>{label}</span>
+      </div>
+
+      <div className={styles.statValue}>{value}</div>
+
+      <div className={styles.statBottom}>
+        <span className={styles.statHint}>{hint}</span>
+        <span className={styles.statBar} />
       </div>
     </div>
   );
 }
 
-function Pill({ active, onClick, children }) {
+function Tile({ icon, title, sub, onClick }) {
   return (
-    <button type="button" onClick={onClick} className={`${styles.pill} ${active ? styles.pillActive : ""}`}>
-      {children}
-    </button>
-  );
-}
-
-function Tab({ active, onClick, children }) {
-  return (
-    <button type="button" onClick={onClick} className={`${styles.tab} ${active ? styles.tabActive : ""}`}>
-      {children}
-    </button>
-  );
-}
-
-function QuickCard({ icon, title, sub, onClick }) {
-  return (
-    <button type="button" className={styles.quickCard} onClick={onClick}>
-      <div className={styles.quickIcon}>{icon}</div>
-      <div className={styles.quickText}>
-        <div className={styles.quickTitle}>{title}</div>
-        <div className={styles.quickSub}>{sub}</div>
+    <button type="button" className={styles.tile} onClick={onClick}>
+      <div className={styles.tileIcon} aria-hidden="true">
+        {icon}
       </div>
-      <div className={styles.quickArrow}>→</div>
+
+      <div className={styles.tileText}>
+        <div className={styles.tileTitle}>{title}</div>
+        <div className={styles.tileSub}>{sub}</div>
+      </div>
+
+      <div className={styles.tileChev} aria-hidden="true">
+        ›
+      </div>
+    </button>
+  );
+}
+
+function EmptyBlock({ title, sub, ctaText, onCta }) {
+  return (
+    <div className={styles.empty}>
+      <div className={styles.emptyTitle}>{title}</div>
+      <div className={styles.emptySub}>{sub}</div>
+
+      {ctaText ? (
+        <button type="button" className={styles.primaryBtn} onClick={onCta}>
+          {ctaText}
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+function BottomTab({ active, onClick, icon, label }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`${styles.bottomTab} ${active ? styles.bottomTabActive : ""}`}
+      aria-current={active ? "page" : undefined}
+    >
+      <div className={styles.bottomIcon} aria-hidden="true">
+        {icon}
+      </div>
+      <div className={styles.bottomLabel}>{label}</div>
     </button>
   );
 }
@@ -570,6 +636,28 @@ function QuickCard({ icon, title, sub, onClick }) {
 /* ===========================
    Helpers
    =========================== */
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia ? window.matchMedia("(max-width: 780px)") : null;
+    const apply = () => setIsMobile(!!mq?.matches);
+
+    apply();
+    if (!mq) return;
+
+    if (mq.addEventListener) mq.addEventListener("change", apply);
+    else mq.addListener?.(apply);
+
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener("change", apply);
+      else mq.removeListener?.(apply);
+    };
+  }, []);
+
+  return isMobile;
+}
 
 function getInitials(name) {
   const n = String(name || "").trim();

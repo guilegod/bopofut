@@ -1,7 +1,7 @@
 import { useState } from "react";
 import styles from "./Login.module.css";
 
-export default function Login({ onLoginSuccess, onGoRegister }) {
+export default function Login({ onLoginSuccess, onGoRegister, onGoForgotPassword }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,8 +35,8 @@ export default function Login({ onLoginSuccess, onGoRegister }) {
     <div className={styles.page}>
       <div className={styles.card}>
         <div className={styles.brand}>
-          <div className={styles.logo}>BÓPÔ</div>
-          <div className={styles.subtitle}>Entre para ver e criar peladas</div>
+          <div className={styles.logo}>BoraPo</div>
+          <div className={styles.subtitle}>Entre para ver peladas e fazer reservas!</div>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
@@ -65,6 +65,16 @@ export default function Login({ onLoginSuccess, onGoRegister }) {
             />
           </div>
 
+          {/* 🔑 Esqueci minha senha */}
+          <button
+            className={styles.link}
+            type="button"
+            onClick={onGoForgotPassword}
+            disabled={loading}
+          >
+            Esqueci minha senha
+          </button>
+
           {error ? <div className={styles.error}>{error}</div> : null}
 
           <button className={styles.primary} type="submit" disabled={loading}>
@@ -82,7 +92,7 @@ export default function Login({ onLoginSuccess, onGoRegister }) {
         </form>
 
         <div className={styles.hint}>
-          Dica: o menu <b>Criar</b> aparece automaticamente para quem for <b>owner</b>.
+          Dica: <b>BoraPo</b> junte-se a nossa turma, <b>Participe!</b>
         </div>
       </div>
     </div>

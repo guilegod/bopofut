@@ -1,4 +1,4 @@
-import styles from "../MyMatches.module.css";
+import styles from "./MatchCard.module.css";
 
 function statusKey(s) {
   return String(s || "SCHEDULED").toUpperCase().trim();

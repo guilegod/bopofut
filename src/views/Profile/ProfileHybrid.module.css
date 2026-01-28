@@ -351,3 +351,10 @@
   flex-wrap: wrap;
   justify-content: flex-end;
 }
+.ghostBtnActive{
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+  background:
+    radial-gradient(180px 120px at 50% 0%, color-mix(in srgb, var(--primary) 18%, transparent), transparent 62%),
+    color-mix(in srgb, var(--surface-2) 92%, transparent);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--primary) 16%, transparent);
+}

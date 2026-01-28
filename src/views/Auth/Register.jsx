@@ -2,8 +2,8 @@ import { useState } from "react";
 import styles from "./Register.module.css";
 
 export default function Register({ onRegisterSuccess, onGoLogin }) {
-  const [name, setName] = useState("Saauce");
-  const [email, setEmail] = useState("saauce@bopo.com");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

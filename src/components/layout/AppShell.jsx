@@ -1,9 +1,15 @@
 import styles from "./AppShell.module.css";
 
 export default function AppShell({
+  // ✅ legacy
   title,
   showBack,
   onBack,
+
+  // ✅ new (preferred)
+  header, // ReactNode: custom header (replaces default)
+  showTopBar = true,
+
   active,
   onNav,
   canCreateMatch = false,
@@ -21,19 +27,25 @@ export default function AppShell({
 
   return (
     <div className={styles.shell}>
-      <header className={styles.topbar}>
-        <button
-          className={`${styles.backBtn} ${showBack ? styles.backShow : styles.backHide}`}
-          onClick={onBack}
-          aria-label="Voltar"
-          type="button"
-        >
-          ←
-        </button>
+      {showTopBar ? (
+        header ? (
+          <header className={`${styles.topbar} ${styles.topbarCustom}`}>{header}</header>
+        ) : (
+          <header className={styles.topbar}>
+            <button
+              className={`${styles.backBtn} ${showBack ? styles.backShow : styles.backHide}`}
+              onClick={onBack}
+              aria-label="Voltar"
+              type="button"
+            >
+              ←
+            </button>
 
-        <div className={styles.title}>{title}</div>
-        <div className={styles.rightSlot} />
-      </header>
+            <div className={styles.title}>{title}</div>
+            <div className={styles.rightSlot} />
+          </header>
+        )
+      ) : null}
 
       <main className={styles.content}>{children}</main>
 
@@ -68,13 +80,13 @@ export default function AppShell({
             </>
           ) : (
             <>
-
               <NavItem
                 label="Home"
                 icon="🏠"
                 active={active === "home"}
                 onClick={() => onNav("home")}
               />
+
               {isAdmin && (
                 <NavItem
                   label="Praças"
@@ -83,7 +95,6 @@ export default function AppShell({
                   onClick={() => onNav("publicCourts")}
                 />
               )}
-
 
               <NavItem
                 label="Partidas"

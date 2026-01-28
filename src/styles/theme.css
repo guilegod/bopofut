@@ -1,115 +1,129 @@
 /* =========================================================
-   THEME — BÓPÔ FUT (Premium Claro • Clube & Estádio)
-   Identidade: porcelana clara + azul petróleo + dourado suave
-   Objetivo: PREMIUM sem ficar dark, e sem sumir inputs
+   THEME — BoraPô (Light + Dark)
+   - Light: bege/areia premium (menos branco estourado)
+   - Dark: estádio à noite (contraste bom sem “sumir” inputs)
+   Ativação: <html data-theme="dark">
    ========================================================= */
 
 :root{
-  /* Background (claro, porém mais “encorpado”) */
-  --bg: #E9EEF6;
-  --bg-2: #E2E9F4;
-  --bg-3: #D9E3F1;
-  --bg-soft: rgba(15, 28, 45, .04);
+  /* Background (light) — um pouco mais escuro */
+  --bg:   #ECE6DA;
+  --bg-2: #E6DECF;
+  --bg-3: #DED3C0;
+  --bg-soft: rgba(15, 28, 45, .06);
 
-  /* Surfaces */
-  --surface: rgba(255,255,255,.74);
-  --surface-2: rgba(255,255,255,.88);
-  --surface-3: rgba(255,255,255,.96);
-  --surface-soft: rgba(255,255,255,.66);
-  --surface-solid: #FFFFFF;
+  /* Surfaces (menos branco estourado) */
+  --surface: rgba(255,255,255,.52);
+  --surface-2: rgba(255,255,255,.64);
+  --surface-3: rgba(255,255,255,.72);
+  --surface-soft: rgba(255,255,255,.46);
+  --surface-solid: #FAF6EF;
 
-  /* Borders */
-  --border: rgba(15, 28, 45, .12);
-  --border-2: rgba(15, 28, 45, .18);
-  --border-strong: rgba(15, 28, 45, .26);
+  /* Borders (um tiquinho mais visíveis no claro) */
+  --border: rgba(18, 24, 30, .14);
+  --border-2: rgba(18, 24, 30, .20);
+  --border-strong: rgba(18, 24, 30, .28);
 
-  /* Text */
-  --text: #0F1C2D;
-  --muted: rgba(15, 28, 45, .70);
-  --muted-2: rgba(15, 28, 45, .52);
+  /* Text (um pouco menos “preto” duro) */
+  --text: #121A22;
+  --muted: rgba(18, 26, 34, .68);
+  --muted-2: rgba(18, 26, 34, .50);
 
-  /* Brand */
-  --primary: #18C37E;
-  --primary-2: #12A66B;
-  --primary-3: #0C7E53;
-  --primary-soft: rgba(24,195,126,.14);
-
-  --accent: #C9A24E;
-  --accent-2: #B98A2C;
-  --accent-3: #8E6412;
-  --accent-soft: rgba(201,162,78,.18);
-  --on-accent: #0F1C2D;
-
-  /* Status */
-  --danger: #E54848;
-  --danger-2: #C93636;
-  --danger-soft: rgba(229,72,72,.14);
-
-  --info: #2F7EEA;
-  --info-2: #1F63C6;
-  --info-soft: rgba(47,126,234,.14);
-
-  --success: var(--primary);
-  --success-soft: var(--primary-soft);
-  --warning: #E0B24D;
-  --warning-soft: rgba(224,178,77,.18);
-
-  /* Shadows (premium, sem “peso” demais) */
-  --shadow-sm: 0 10px 26px rgba(15, 28, 45, .10);
-  --shadow-md: 0 16px 46px rgba(15, 28, 45, .14);
-  --shadow-lg: 0 26px 84px rgba(15, 28, 45, .18);
-
-  /* Radius */
-  --r-sm: 12px;
-  --r-md: 16px;
-  --r-lg: 22px;
-  --r-xl: 28px;
-
-  /* Layout */
-  --app-max: 1100px;
-  --bottom-nav-h: 84px;
-
-  /* Effects */
-  --glass: blur(10px);
-
-  /* Inputs (resolve select branco / texto sumindo) */
-  --input-bg: rgba(255,255,255,.92);
-  --input-border: rgba(15, 28, 45, .18);
-  --input-border-focus: rgba(24,195,126,.52);
+  /* Inputs (menos branco) */
+  --input-bg: rgba(250,246,239,.86);
+  --input-border: rgba(18, 24, 30, .20);
+  --input-border-focus: rgba(24,195,126,.44);
   --input-text: var(--text);
-  --input-placeholder: rgba(15, 28, 45, .48);
+  --input-placeholder: rgba(18, 26, 34, .44);
 
-  /* Compat (legado) */
-  --paper: #E8D5B5;
-  --earth: #A67C52;
-  --grass: #2D5A27;
-  --ink: #2D2926;
-  --spice: #D94D2B;
+  /* Shadows (mais suaves no claro) */
+  --shadow-sm: 0 10px 26px rgba(12, 16, 22, .08);
+  --shadow-md: 0 16px 46px rgba(12, 16, 22, .11);
+  --shadow-lg: 0 26px 84px rgba(12, 16, 22, .14);
+
+  /* ... o que você já tem ... */
+
+  /* ✅ Brand tokens (LIGHT) — estavam faltando */
+  --primary: #2EDC8F;
+  --primary-2: #1BCB83;
+  --primary-3: #10B374;
+  --primary-soft: rgba(46,220,143,.16);
+
+  --accent: #F7C966;
+  --accent-2: #E9B23D;
+  --accent-3: #B7831A;
+  --accent-soft: rgba(247,201,102,.16);
+
+  /* texto em cima do accent */
+  --on-accent: #121A22;
+
+  /* (opcional, mas bom ter) texto em cima do primary */
+  --on-primary: #061b12;
+
 }
 
-/* Fundo do app (claro premium com glow sutil) */
+/* DARK */
+html[data-theme="dark"]{
+  --bg:   #0B1016;
+  --bg-2: #0E151D;
+  --bg-3: #121B25;
+  --bg-soft: rgba(255,255,255,.04);
+
+  --surface: rgba(18,27,37,.62);
+  --surface-2: rgba(18,27,37,.78);
+  --surface-3: rgba(18,27,37,.90);
+  --surface-soft: rgba(18,27,37,.56);
+  --surface-solid: #121B25;
+
+  --border: rgba(255,255,255,.10);
+  --border-2: rgba(255,255,255,.16);
+  --border-strong: rgba(255,255,255,.24);
+
+  --text: #EEF5FF;
+  --muted: rgba(238,245,255,.72);
+  --muted-2: rgba(238,245,255,.52);
+
+  --primary: #38D98B;
+  --primary-2: #1FD08B;
+  --primary-3: #0FB173;
+  --primary-soft: rgba(56,217,139,.16);
+
+  --accent: #F7C966;
+  --accent-2: #E9B23D;
+  --accent-3: #B7831A;
+  --accent-soft: rgba(247,201,102,.16);
+  --on-accent: #0B1016;
+
+  --info: #60A5FA;
+  --info-2: #3B82F6;
+  --info-soft: rgba(96,165,250,.16);
+
+  --danger: #FB5B5B;
+  --danger-2: #E94848;
+  --danger-soft: rgba(251,91,91,.16);
+
+  --warning: #FBBF24;
+  --warning-soft: rgba(251,191,36,.16);
+
+  --shadow-sm: 0 10px 26px rgba(0,0,0,.34);
+  --shadow-md: 0 16px 46px rgba(0,0,0,.38);
+  --shadow-lg: 0 26px 84px rgba(0,0,0,.44);
+
+  --input-bg: rgba(18,27,37,.86);
+  --input-border: rgba(255,255,255,.16);
+  --input-border-focus: rgba(56,217,139,.56);
+  --input-text: var(--text);
+  --input-placeholder: rgba(238,245,255,.40);
+}
+
+/* Fundo do app (glow BoraPô) */
 body{
   color: var(--text);
   background:
-    radial-gradient(1000px 700px at 16% -10%, rgba(201,162,78,.16), transparent 60%),
-    radial-gradient(1000px 700px at 90% 0%, rgba(24,195,126,.10), transparent 62%),
+    radial-gradient(1000px 700px at 16% -10%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 62%),
+    radial-gradient(1000px 700px at 90% 0%,  color-mix(in srgb, var(--primary) 8%,  transparent), transparent 65%),
+    radial-gradient(900px 600px  at 65% 110%, color-mix(in srgb, var(--info) 6%,    transparent), transparent 62%),
     linear-gradient(180deg, var(--bg-2), var(--bg));
   background-attachment: fixed;
 }
 
-/* Inputs globais (pra nenhum module “sumir”) */
-input, select, textarea{
-  background: var(--input-bg);
-  border: 1px solid var(--input-border);
-  color: var(--input-text);
-}
-
-input::placeholder, textarea::placeholder{
-  color: var(--input-placeholder);
-}
-
-input:focus, select:focus, textarea:focus{
-  outline: none;
-  border-color: var(--input-border-focus);
-  box-shadow: 0 0 0 4px rgba(24,195,126,.14);
-}

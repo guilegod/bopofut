@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 
 import AppShell from "./components/layout/AppShell.jsx";
+import TopProfileHeader from "./components/layout/TopProfileHeader.jsx";
+
 
 import Home from "./views/Home/Home.jsx";
 import MatchDetails from "./views/MatchDetails/MatchDetails.jsx";
@@ -29,6 +31,9 @@ import ArenaAgenda from "./views/Arena/ArenaAgenda.jsx";
 // ✅ Auth Views
 import Login from "./views/Auth/Login.jsx";
 import Register from "./views/Auth/Register.jsx";
+import ForgotPassword from "./views/Auth/ForgotPassword.jsx";
+import ResetPassword from "./views/Auth/ResetPassword.jsx";
+
 
 // ✅ Auth Service
 import {
@@ -220,6 +225,30 @@ export default function App() {
   // =========================================================
   // USER BASE
   // =========================================================
+  // =======================
+  // Theme (global) — light/dark
+  // =======================
+  const [theme, setTheme] = useState(() => localStorage.getItem("borapo_theme") || "light");
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme === "dark" ? "dark" : "";
+    localStorage.setItem("borapo_theme", theme);
+  }, [theme]);
+
+  function toggleTheme() {
+    setTheme((t) => (t === "dark" ? "light" : "dark"));
+  }
+
+  function safeCopy(text, ok = "Copiado ✅") {
+    try {
+      navigator.clipboard?.writeText(String(text || ""));
+      alert(ok);
+    } catch {
+      alert("Não consegui copiar automaticamente 😬");
+    }
+  }
+
+
   const baseUser = useMemo(
     () => ({
       id: null,
@@ -485,42 +514,58 @@ async function loadMatches(tokenParam) {
   // =========================================================
   // AUTH BOOT
   // =========================================================
-  useEffect(() => {
-    async function boot() {
+ useEffect(() => {
+  async function boot() {
+    try {
+      // ✅ 1) Se veio por link de reset (/?token=xxxx), vai direto pra tela
       try {
-        const token = getToken();
-
-        if (!token) {
-          setView("login");
+        const params = new URLSearchParams(window.location.search);
+        const resetToken = params.get("token");
+        if (resetToken && String(resetToken).trim().length >= 20) {
+          resetBackStack();
+          setView("resetPassword");
           return;
         }
-
-        const data = await apiMe(token);
-        const nextUser = { ...baseUser, ...data.user };
-        setUser(nextUser);
-
-        if (pendingDeepLinkCourtId) {
-          setSelectedPublicCourtId(pendingDeepLinkCourtId);
-          resetBackStack();
-          setView("publicCourtPage");
-          setPendingDeepLinkCourtId(null);
-        } else {
-          resetBackStack();
-          setView(nextUser.role === "arena_owner" ? "arenaPanel" : "home");
-        }
-
-        await loadCourts(token);
-        await loadMatches(token);
       } catch {
-        clearToken();
-        setView("login");
-      } finally {
-        setAuthLoading(false);
+        // ignore
       }
+
+      // ✅ 2) fluxo normal
+      const token = getToken();
+
+      if (!token) {
+        setView("login");
+        return;
+      }
+
+      const data = await apiMe(token);
+      const nextUser = { ...baseUser, ...data.user };
+      setUser(nextUser);
+
+      if (pendingDeepLinkCourtId) {
+        setSelectedPublicCourtId(pendingDeepLinkCourtId);
+        resetBackStack();
+        setView("publicCourtPage");
+        setPendingDeepLinkCourtId(null);
+      } else {
+        resetBackStack();
+        setView(nextUser.role === "arena_owner" ? "arenaPanel" : "home");
+      }
+
+      await loadCourts(token);
+      await loadMatches(token);
+    } catch {
+      clearToken();
+      setView("login");
+    } finally {
+      setAuthLoading(false);
     }
-    boot();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingDeepLinkCourtId]);
+  }
+
+  boot();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [pendingDeepLinkCourtId]);
+
 
   // =========================================================
   // AUTH HANDLERS
@@ -644,6 +689,8 @@ async function loadMatches(tokenParam) {
     if (view === "wallet") return setView("profile");
     if (view === "matchCreator") return popBackOr("home");
     if (view === "register") return setView("login");
+    if (view === "forgotPassword") return setView("login");
+
 
     return setView(isArenaOwner ? "arenaPanel" : "home");
   }
@@ -803,6 +850,7 @@ async function onCreateMatch(payload) {
     view === "editProfile" ||
     view === "matchCreator" ||
     view === "register" ||
+    view === "forgotPassword" ||
     view === "arenaAgenda" ||
     view === "arenaFinance" ||
     view === "arenaPromotions" ||
@@ -823,6 +871,8 @@ async function onCreateMatch(payload) {
       ? "Entrar"
       : view === "register"
       ? "Criar conta"
+      : view === "forgotPassword"
+      ? "Recuperar senha"
       : view === "arenaPanel"
       ? "Painel da Arena"
       : view === "arenaAgenda"
@@ -885,12 +935,35 @@ async function onCreateMatch(payload) {
     ? "publicCourts"
     : view;
 
-  const isAuthView = view === "login" || view === "register";
+  const isAuthView = view === "login" || view === "register" || view === "forgotPassword";
   const adminMatch = adminMatchId ? matches.find((m) => m.id === adminMatchId) || null : null;
   const loadingAny = matchesLoading || courtsLoading;
 
+    const isProfileView = view === "profile" || view === "playerProfile";
+  const profileTargetId = view === "playerProfile" ? viewedUserId : user?.id;
+
+  const profileHeader = isProfileView ? (
+    <TopProfileHeader
+      title="PERFIL"
+      showBack
+      onBack={
+        view === "profile"
+          ? () => setView(isArenaOwner ? "arenaPanel" : "home")
+          : goBack
+      }
+      theme={theme}
+      onToggleTheme={toggleTheme}
+      onCopyId={() => safeCopy(profileTargetId, "ID copiado ✅")}
+      onShare={() => safeCopy(profileTargetId, "Copiado ✅")}
+      showLogout={view === "profile"}
+      onLogout={handleLogout}
+    />
+  ) : null;
+
+
   return (
     <AppShell
+      header={profileHeader}
       title={title}
       showBack={showBack}
       onBack={goBack}
@@ -904,9 +977,19 @@ async function onCreateMatch(payload) {
       {authLoading ? (
         <div style={{ padding: 18, opacity: 0.75 }}>Carregando...</div>
       ) : view === "login" ? (
-        <Login onLoginSuccess={handleLogin} onGoRegister={() => setView("register")} />
+        <Login
+  onLoginSuccess={handleLogin}
+  onGoRegister={() => setView("register")}
+  onGoForgotPassword={() => setView("forgotPassword")}
+/>
       ) : view === "register" ? (
         <Register onRegisterSuccess={handleRegister} onGoLogin={() => setView("login")} />
+      ) : view === "resetPassword" ? (
+      <ResetPassword onGoLogin={() => setView("login")} />
+        ) : view === "forgotPassword" ? (
+  <ForgotPassword onGoLogin={() => setView("login")} />
+
+
       ) : loadingAny ? (
         <div style={{ padding: 18, opacity: 0.75 }}>Carregando {courtsLoading ? "arenas" : "partidas"}…</div>
       ) : view === "publicCourtsHome" ? (

@@ -4,7 +4,11 @@
    - body com hierarquia e microinterações
    ========================================================= */
 
+/* MatchCard.module.css */
 .card{
+  width: 100%;
+  display: block;
+
   border-radius: 20px;
   border: 1px solid var(--border);
   background: linear-gradient(180deg, rgba(255,255,255,.70), rgba(255,255,255,.55));
@@ -13,6 +17,9 @@
   transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, filter .12s ease;
   box-shadow: 0 14px 30px rgba(15,28,45,.08);
 }
+
+/* (restante do teu arquivo continua igual abaixo) */
+
 
 .card:hover{
   border-color: rgba(24,195,126,.35);

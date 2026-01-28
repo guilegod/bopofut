@@ -1,54 +1,86 @@
+/* =========================================================
+   ArenaCourtSettings — NEW LAYOUT MODEL
+   - Sections full-bleed 100% width (sem radius na section)
+   - Respiro lateral via --page-pad (index.css)
+   - Cards internos arredondados (UX premium)
+   ========================================================= */
+
 .page{
-  min-height: 100vh;
-  padding: 18px 18px 28px;
-  color: var(--text, #fff);
+  min-height: 100%;
+  padding: var(--section-gap) var(--page-pad) calc(var(--bottom-nav-h) + 14px);
+  color: var(--text);
 }
 
+/* =========================
+   TOPBAR (SECTION FULL)
+========================= */
 .topbar{
+  margin-left: calc(var(--page-pad) * -1);
+  margin-right: calc(var(--page-pad) * -1);
+  padding: 14px var(--page-pad);
+
   display: grid;
   grid-template-columns: 44px 1fr auto;
   gap: 12px;
   align-items: center;
-  padding: 14px;
-  border-radius: 18px;
-  border: 1px solid var(--border, rgba(255,255,255,0.12));
-  background: var(--surface, rgba(0,0,0,0.16));
-  box-shadow: var(--shadow, 0 18px 38px rgba(0,0,0,0.28));
-  backdrop-filter: blur(10px);
+
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 42%, transparent);
 }
 
 .backBtn{
   width: 44px;
   height: 44px;
-  border-radius: 14px;
-  border: 1px solid var(--border, rgba(255,255,255,0.12));
-  background: rgba(255,255,255,0.06);
-  color: inherit;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
   cursor: pointer;
   font-weight: 1000;
 }
 
-.titleWrap{ display: grid; gap: 2px; }
-.title{ font-size: 14px; font-weight: 1000; letter-spacing: .02em; text-transform: uppercase; }
-.subtitle{ font-size: 12px; opacity: .78; }
+.titleWrap{ display: grid; gap: 3px; min-width: 0; }
+.title{
+  font-size: 14px;
+  font-weight: 1100;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.subtitle{
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.25;
+}
 
-.topActions{ display: flex; gap: 10px; align-items: center; justify-content: flex-end; }
+.topActions{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
 
+/* =========================
+   BUTTONS
+========================= */
 .primaryBtn, .ghostBtn{
-  border-radius: 999px;
-  border: 1px solid var(--border, rgba(255,255,255,0.14));
-  padding: 10px 14px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
   cursor: pointer;
-  font-weight: 950;
+  font-weight: 1000;
   color: inherit;
+  background: var(--surface);
 }
 
 .primaryBtn{
-  background: rgba(255,255,255,0.12);
-}
-
-.ghostBtn{
-  background: rgba(255,255,255,0.06);
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
 }
 
 .primaryBtn:disabled, .ghostBtn:disabled{
@@ -56,17 +88,27 @@
   cursor: not-allowed;
 }
 
+/* =========================
+   CONTROLS (SECTION FULL)
+========================= */
 .controls{
-  margin-top: 14px;
+  margin-top: var(--section-gap);
+
+  margin-left: calc(var(--page-pad) * -1);
+  margin-right: calc(var(--page-pad) * -1);
+  padding: 12px var(--page-pad);
+
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 12px;
   align-items: center;
+
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 50%, transparent);
 }
 
-.searchWrap{
-  position: relative;
-}
+.searchWrap{ position: relative; }
 
 .searchIcon{
   position: absolute;
@@ -78,12 +120,14 @@
 
 .search{
   width: 100%;
-  padding: 12px 12px 12px 34px;
-  border-radius: 999px;
-  border: 1px solid var(--border, rgba(255,255,255,0.12));
-  background: rgba(255,255,255,0.06);
+  height: 42px;
+  padding: 0 12px 0 34px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
   color: inherit;
   outline: none;
+  font-weight: 800;
 }
 
 .filters{
@@ -91,10 +135,11 @@
   align-items: center;
   gap: 10px;
   justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .filtersLabel{
-  font-weight: 950;
+  font-weight: 1000;
   opacity: .9;
   font-size: 12px;
 }
@@ -102,46 +147,59 @@
 .pills{ display: flex; gap: 8px; }
 
 .pill{
+  height: 38px;
+  padding: 0 12px;
   border-radius: 999px;
-  border: 1px solid var(--border, rgba(255,255,255,0.14));
-  padding: 10px 12px;
-  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  background: var(--surface);
   color: inherit;
   cursor: pointer;
-  font-weight: 950;
+  font-weight: 1000;
   font-size: 12px;
 }
 
 .pillActive{
-  background: rgba(255,255,255,0.12);
-  border-color: rgba(255,255,255,0.22);
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
 }
 
+/* =========================
+   ERROR (SECTION FULL)
+========================= */
 .errorBox{
-  margin-top: 12px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  border: 1px solid rgba(231, 76, 60, .35);
-  background: rgba(231, 76, 60, .10);
+  margin-top: var(--section-gap);
+
+  margin-left: calc(var(--page-pad) * -1);
+  margin-right: calc(var(--page-pad) * -1);
+  padding: 12px var(--page-pad);
+
+  border-top: 1px solid color-mix(in srgb, var(--danger) 45%, var(--border));
+  border-bottom: 1px solid color-mix(in srgb, var(--danger) 45%, var(--border));
+  background: color-mix(in srgb, var(--danger-soft) 70%, transparent);
   font-weight: 900;
 }
 
+/* =========================
+   CONTENT
+========================= */
 .content{
-  margin-top: 14px;
+  margin-top: var(--section-gap);
 }
 
+/* Grid de cards */
 .grid{
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  gap: 12px;
 }
 
+/* Card interno (aqui pode ter radius) */
 .card{
-  border-radius: 18px;
-  border: 1px solid var(--border, rgba(255,255,255,0.12));
-  background: rgba(255,255,255,0.04);
-  box-shadow: var(--shadow, 0 14px 32px rgba(0,0,0,0.24));
-  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  padding: 12px;
+  box-shadow: var(--shadow-sm);
 }
 
 .cardTop{
@@ -157,12 +215,12 @@
   border-radius: 14px;
   display: grid;
   place-items: center;
-  font-weight: 1000;
-  border: 1px solid var(--border, rgba(255,255,255,0.14));
-  background: rgba(255,255,255,0.06);
+  font-weight: 1100;
+  border: 1px solid var(--border);
+  background: var(--surface);
 }
 
-.cardHead{ display: grid; gap: 6px; }
+.cardHead{ display: grid; gap: 6px; min-width: 0; }
 
 .cardTitleRow{
   display: flex;
@@ -172,26 +230,31 @@
 }
 
 .cardTitle{
-  font-weight: 1000;
-  letter-spacing: .01em;
+  font-weight: 1100;
+  letter-spacing: .2px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .badge{
   padding: 6px 10px;
   border-radius: 999px;
   font-size: 11px;
-  font-weight: 1000;
-  border: 1px solid var(--border, rgba(255,255,255,0.16));
+  font-weight: 1100;
+  border: 1px solid var(--border);
+  background: var(--surface);
 }
 
 .badgeFutsal{
-  background: rgba(46, 204, 113, .12);
-  border-color: rgba(46, 204, 113, .45);
+  border-color: color-mix(in srgb, var(--success) 35%, var(--border));
+  background: color-mix(in srgb, var(--success) 14%, transparent);
 }
 
 .badgeFut7{
-  background: rgba(52, 152, 219, .12);
-  border-color: rgba(52, 152, 219, .45);
+  border-color: color-mix(in srgb, var(--info) 35%, var(--border));
+  background: color-mix(in srgb, var(--info) 14%, transparent);
 }
 
 .meta{
@@ -199,28 +262,30 @@
   flex-wrap: wrap;
   gap: 8px;
   font-size: 12px;
-  opacity: .85;
+  color: var(--muted);
 }
 
-.metaDot{ opacity: .6; }
+.metaDot{ opacity: .7; }
 
 .status{
   padding: 6px 10px;
   border-radius: 999px;
   font-size: 11px;
-  font-weight: 1000;
-  border: 1px solid var(--border, rgba(255,255,255,0.16));
+  font-weight: 1100;
+  border: 1px solid var(--border);
+  background: var(--surface);
   opacity: .95;
+  white-space: nowrap;
 }
 
 .statusOn{
-  background: rgba(46, 204, 113, .12);
-  border-color: rgba(46, 204, 113, .55);
+  border-color: color-mix(in srgb, var(--success) 40%, var(--border));
+  background: color-mix(in srgb, var(--success) 14%, transparent);
 }
 
 .statusOff{
-  background: rgba(231, 76, 60, .12);
-  border-color: rgba(231, 76, 60, .55);
+  border-color: color-mix(in srgb, var(--danger) 40%, var(--border));
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
 }
 
 .cardBottom{
@@ -229,21 +294,23 @@
   justify-content: space-between;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .chip{
   padding: 8px 10px;
   border-radius: 999px;
-  border: 1px solid var(--border, rgba(255,255,255,0.14));
-  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  background: var(--surface);
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 1000;
 }
 
 .cardActions{
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .linkBtn{
@@ -251,62 +318,71 @@
   background: transparent;
   color: inherit;
   cursor: pointer;
-  font-weight: 1000;
+  font-weight: 1100;
   opacity: .9;
 }
 
 .smallBtn{
+  height: 34px;
   border-radius: 999px;
-  border: 1px solid var(--border, rgba(255,255,255,0.14));
-  padding: 8px 10px;
-  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  padding: 0 10px;
+  background: var(--surface);
   color: inherit;
   cursor: pointer;
-  font-weight: 1000;
+  font-weight: 1100;
   font-size: 12px;
 }
 
 .smallBtn:disabled{ opacity: .55; cursor: not-allowed; }
 
+/* =========================
+   EMPTY (SECTION FULL)
+========================= */
 .emptyBox{
-  padding: 18px;
-  border-radius: 18px;
-  border: 1px dashed rgba(255,255,255,0.18);
-  background: rgba(255,255,255,0.03);
+  margin-left: calc(var(--page-pad) * -1);
+  margin-right: calc(var(--page-pad) * -1);
+  padding: 16px var(--page-pad);
+
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 45%, transparent);
   display: grid;
   gap: 10px;
   justify-items: start;
 }
 
-.emptyTitle{ font-weight: 1000; }
-.emptySub{ opacity: .72; font-size: 12px; }
+.emptyTitle{ font-weight: 1100; }
+.emptySub{ color: var(--muted); font-size: 12px; }
 
 .emptyActions{
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
-/* ===== Modal ===== */
+/* =========================
+   MODAL
+========================= */
 .modalBackdrop{
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   padding: 16px;
   z-index: 9999;
 }
 
 .modalCard{
   width: min(760px, 100%);
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(16,16,16,0.92);
-  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
   padding: 14px;
   box-shadow: 0 18px 42px rgba(0,0,0,0.45);
+  color: var(--text);
 }
 
 .modalTop{
@@ -317,16 +393,17 @@
   margin-bottom: 12px;
 }
 
-.modalTitle{ font-weight: 1000; }
+.modalTitle{ font-weight: 1100; }
+
 .modalClose{
   width: 40px;
   height: 40px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.06);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
   color: inherit;
   cursor: pointer;
-  font-weight: 1000;
+  font-weight: 1100;
 }
 
 .modalGrid{
@@ -338,19 +415,21 @@
 .label{
   display: grid;
   gap: 6px;
-  font-weight: 950;
+  font-weight: 1000;
   font-size: 12px;
   opacity: .95;
 }
 
 .input, .select{
   width: 100%;
-  padding: 10px 12px;
+  height: 42px;
+  padding: 0 12px;
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
   color: inherit;
   outline: none;
+  font-weight: 800;
 }
 
 .switchRow{
@@ -360,19 +439,18 @@
   align-items: center;
   padding: 10px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
   font-weight: 900;
   font-size: 12px;
-  opacity: .92;
 }
 
 .modalError{
   margin-top: 10px;
   padding: 10px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(231, 76, 60, .35);
-  background: rgba(231, 76, 60, .10);
+  border: 1px solid color-mix(in srgb, var(--danger) 45%, var(--border));
+  background: color-mix(in srgb, var(--danger-soft) 70%, transparent);
   font-weight: 900;
 }
 
@@ -382,36 +460,31 @@
   justify-content: flex-end;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
+/* =========================
+   RESPONSIVE
+========================= */
 @media (max-width: 1100px){
   .grid{ grid-template-columns: 1fr; }
   .controls{ grid-template-columns: 1fr; }
   .filters{ justify-content: flex-start; }
+
   .topbar{ grid-template-columns: 44px 1fr; }
   .topActions{ grid-column: 1 / -1; justify-content: flex-end; }
 }
 
 @media (max-width: 720px){
+  .topbar{
+    grid-template-columns: 44px 1fr;
+    gap: 10px;
+  }
+
+  .topActions{
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+
   .modalGrid{ grid-template-columns: 1fr; }
-}
-/* ===== FIX: texto do modal no tema claro ===== */
-.modalCard{
-  color: #fff;                 /* força texto branco no modal */
-}
-
-.modalTitle,
-.label,
-.switchRow,
-.modalError{
-  color: #fff;
-}
-
-.input,
-.select{
-  color: #fff;                 /* texto dentro dos inputs */
-}
-
-.input::placeholder{
-  color: rgba(255,255,255,0.55); /* placeholder visível */
 }

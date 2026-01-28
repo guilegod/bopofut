@@ -124,21 +124,38 @@ export default function ProfileHybrid({
   const isArenaOwner = (profile?.role || user?.role) === "arena_owner";
 
   // ---------- Loaders ----------
-  async function refreshOfficial() {
-    if (!targetUserId) return;
-    setProfileLoading(true);
-    setProfileError("");
+async function refreshOfficial() {
+  if (!targetUserId) return;
 
-    try {
-      const data = isPublic ? await getPublicProfileApi(targetUserId) : await getMyProfile();
-      setProfile(data || null);
-    } catch (err) {
-      setProfile(null);
-      setProfileError(err?.message || "Erro ao carregar perfil 😬");
-    } finally {
-      setProfileLoading(false);
-    }
+  // ✅ Se é meu perfil mas não tô logado ainda, não tenta buscar
+  if (!isPublic && !user?.id) {
+    setProfile(null);
+    setProfileLoading(false);
+    setProfileError("Faça login para carregar o perfil.");
+    return;
   }
+
+  setProfileLoading(true);
+  setProfileError("");
+
+  try {
+    const data = isPublic ? await getPublicProfileApi(targetUserId) : await getMyProfile();
+    setProfile(data || null);
+  } catch (err) {
+    setProfile(null);
+
+    // ✅ Mensagem mais “premium” e útil
+    const msg =
+      err?.message?.includes("401") || err?.message?.toLowerCase?.().includes("unauthorized")
+        ? "Sua sessão expirou. Faça login novamente."
+        : err?.message || "Erro ao carregar perfil 😬";
+
+    setProfileError(msg);
+  } finally {
+    setProfileLoading(false);
+  }
+}
+
 
   function refreshSocial() {
     if (!targetUserId) return;
@@ -325,49 +342,6 @@ export default function ProfileHybrid({
   // ---------- Render ----------
   return (
     <div className={styles.page}>
-      {/* TOP BAR */}
-      <div className={styles.topBar}>
-        <button type="button" className={styles.backBtn} onClick={onBack}>
-          ← Voltar
-        </button>
-
-        <div className={styles.topTitle}>
-          {iAmViewingSomeone ? "Perfil do Jogador" : "Meu Perfil"}
-        </div>
-
-        <div className={styles.topRight}>
-          {!iAmViewingSomeone ? (
-            <>
-              <button
-                type="button"
-                className={styles.ghostBtn}
-                onClick={() => safeCopy(targetUserId, "ID copiado ✅")}
-              >
-                🆔
-              </button>
-              <button
-                type="button"
-                className={styles.ghostBtn}
-                onClick={() => safeCopy(shareText, "Copiado ✅")}
-              >
-                📤
-              </button>
-              <button type="button" className={styles.ghostBtn} onClick={onLogout}>
-                Sair
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              className={styles.ghostBtn}
-              onClick={() => safeCopy(shareText, "Copiado ✅")}
-            >
-              📤
-            </button>
-          )}
-        </div>
-      </div>
-
       {/* HEADER CARD */}
       <div className={styles.headerCard}>
         <div className={styles.headerLeft}>

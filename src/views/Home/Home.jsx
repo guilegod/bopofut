@@ -1,3 +1,4 @@
+// Home.jsx
 import React, { useMemo, useRef, useState } from "react";
 import styles from "./Home.module.css";
 
@@ -242,7 +243,9 @@ export default function Home({
 
   return (
     <div className={styles.page}>
-      <AdBanner />
+      <div className={styles.hero}>
+        <AdBanner />
+      </div>
 
       <section className={styles.section}>
         <h3 className={styles.sectionTitle}>Escolha seu terreno</h3>

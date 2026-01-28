@@ -72,6 +72,19 @@ export default function ArenaPublicPage({
   const [query, setQuery] = useState("");
   const [modFilter, setModFilter] = useState("Todas");
 
+  // ✅ ETAPA 2 (demo): reservados localmente (pra já ficar “vendável” no APK)
+  // depois você troca esse map pelo retorno real de reservas do backend.
+  const [reservedMap, setReservedMap] = useState(() => ({}));
+  const isReserved = (courtId, hh) => !!reservedMap?.[courtId]?.[hh];
+
+  const toggleReserved = (courtId, hh) => {
+    setReservedMap((prev) => {
+      const cur = prev?.[courtId] || {};
+      const next = { ...prev, [courtId]: { ...cur, [hh]: !cur[hh] } };
+      return next;
+    });
+  };
+
   const base = useMemo(() => {
     const list = Array.isArray(courts) ? courts : [];
     const group = list.filter((c) => String(c?.arenaOwnerId) === String(arenaOwnerId));
@@ -103,15 +116,11 @@ export default function ArenaPublicPage({
 
   const courtsWithDetails = useMemo(() => {
     const q = query.trim().toLowerCase();
+
     const list = base.courts.map((c) => {
-      const slots = (listSlotsForCourtOnDate(c.id, dateObj) || []).slice(0, 18);
+      const slots = (listSlotsForCourtOnDate(c.id, dateObj) || []).slice(0, 24);
       const range = timeRangeFromSlots(slots);
-      return {
-        court: c,
-        modality: normalizeModality(c),
-        slots,
-        range,
-      };
+      return { court: c, modality: normalizeModality(c), slots, range };
     });
 
     let filtered = list;
@@ -127,7 +136,6 @@ export default function ArenaPublicPage({
       });
     }
 
-    // ordena: primeiro quem tem mais slots, depois A-Z
     filtered.sort((a, b) => {
       const ds = (b.slots?.length || 0) - (a.slots?.length || 0);
       if (ds !== 0) return ds;
@@ -139,17 +147,14 @@ export default function ArenaPublicPage({
 
   const arenaSummary = useMemo(() => {
     const allSlots = [];
-    for (const item of courtsWithDetails) {
-      for (const hh of item.slots || []) allSlots.push(hh);
-    }
+    for (const item of courtsWithDetails) for (const hh of item.slots || []) allSlots.push(hh);
     const globalRange = timeRangeFromSlots(allSlots);
     return {
       courtsCount: base.courts.length,
-      modalities: base.modalities,
       globalRange,
       hasSlots: uniq(allSlots).length > 0,
     };
-  }, [base.courts.length, base.modalities, courtsWithDetails]);
+  }, [base.courts.length, courtsWithDetails]);
 
   // placeholders por enquanto
   const liveMatches = [];
@@ -157,18 +162,16 @@ export default function ArenaPublicPage({
 
   return (
     <div className={styles.page}>
-      {/* ===== TOPBAR ===== */}
+      {/* ===== TOPBAR + HERO (theme-safe) ===== */}
       <div className={styles.topbar}>
-        <button type="button" className={styles.backBtn} onClick={() => onBack?.()} aria-label="Voltar">
-          ←
-        </button>
-
+    
         <div className={styles.titleWrap}>
           <div className={styles.titleRow}>
             <div className={styles.title}>🏟 {base.arenaName}</div>
+
             <div className={styles.rightPills}>
-              {dateLabel ? <div className={styles.datePill}>📅 {dateLabel}</div> : null}
-              {arenaSummary.globalRange ? <div className={styles.timePill}>⏰ {arenaSummary.globalRange}</div> : null}
+              {dateLabel ? <div className={styles.pill}>📅 {dateLabel}</div> : null}
+              {arenaSummary.globalRange ? <div className={styles.pillSoft}>⏰ {arenaSummary.globalRange}</div> : null}
             </div>
           </div>
 
@@ -185,6 +188,24 @@ export default function ArenaPublicPage({
               </div>
             ))}
             {base.modalities.length > 4 ? <div className={styles.quickChipSoft}>+{base.modalities.length - 4}</div> : null}
+          </div>
+
+          <div className={styles.heroActions}>
+            <button type="button" className={styles.actionPrimary} onClick={() => setTab("quadras")}>
+              Ver horários
+            </button>
+            <button type="button" className={styles.actionSecondary} onClick={() => onOpenMatchCreator?.()}>
+              + Criar pelada
+            </button>
+          </div>
+
+          {/* ✅ legenda etapa 2 */}
+          <div className={styles.legendRow}>
+            <span className={`${styles.legendDot} ${styles.dotFree}`} />
+            <span className={styles.legendText}>Livre</span>
+            <span className={`${styles.legendDot} ${styles.dotRes}`} />
+            <span className={styles.legendText}>Reservado</span>
+            <span className={styles.legendHint}>Toque num horário pra alternar (demo)</span>
           </div>
         </div>
 
@@ -231,12 +252,7 @@ export default function ArenaPublicPage({
         <div className={styles.toolbar}>
           <div className={styles.toolbarBlock}>
             <div className={styles.toolbarLabel}>Data</div>
-            <input
-              className={styles.dateInput}
-              type="date"
-              value={dateISO}
-              onChange={(e) => setDateISO(e.target.value)}
-            />
+            <input className={styles.dateInput} type="date" value={dateISO} onChange={(e) => setDateISO(e.target.value)} />
           </div>
 
           <div className={styles.toolbarBlock}>
@@ -275,7 +291,14 @@ export default function ArenaPublicPage({
             <div className={styles.emptyBox}>
               <div className={styles.emptyTitle}>Nada encontrado</div>
               <div className={styles.emptySub}>Tenta limpar a busca ou trocar a modalidade.</div>
-              <button type="button" className={styles.ghostBtn} onClick={() => { setQuery(""); setModFilter("Todas"); }}>
+              <button
+                type="button"
+                className={styles.ghostBtn}
+                onClick={() => {
+                  setQuery("");
+                  setModFilter("Todas");
+                }}
+              >
                 Limpar filtros
               </button>
             </div>
@@ -285,43 +308,44 @@ export default function ArenaPublicPage({
               const address = c?.address || base.address || "";
               const city = c?.city || base.city || "";
 
+              const reservedCount = slots.reduce((acc, hh) => acc + (isReserved(c.id, hh) ? 1 : 0), 0);
+              const freeCount = Math.max(0, slots.length - reservedCount);
+
               return (
                 <div key={c.id} className={styles.courtCard}>
                   <div className={styles.courtTop}>
                     <div className={styles.courtLeft}>
                       <div className={styles.courtName}>
-                        {c?.name || "Quadra"}{" "}
-                        <span className={styles.courtType}>• {modality}</span>
+                        {c?.name || "Quadra"} <span className={styles.courtType}>• {modality}</span>
                       </div>
 
                       <div className={styles.courtMeta}>
-                        <span>📍 {city ? `${city}${address ? " • " : ""}` : ""}{address || "Endereço não informado"}</span>
+                        <span>
+                          📍 {city ? `${city}${address ? " • " : ""}` : ""}
+                          {address || "Endereço não informado"}
+                        </span>
                         {price ? <span>💸 R$ {price}/h</span> : <span className={styles.mutedInline}>💸 preço não informado</span>}
                         {range ? <span>⏰ {range}</span> : <span className={styles.mutedInline}>⏰ sem horários</span>}
                       </div>
 
                       <div className={styles.badges}>
                         <span className={styles.badge}>{modality}</span>
-                        {slots.length ? <span className={styles.badgeSoft}>Slots: {slots.length}</span> : <span className={styles.badgeSoft}>Sem slots</span>}
+                        {slots.length ? (
+                          <>
+                            <span className={styles.badgeSoft}>Livres: {freeCount}</span>
+                            <span className={styles.badgeSoft}>Reservados: {reservedCount}</span>
+                          </>
+                        ) : (
+                          <span className={styles.badgeSoft}>Sem slots</span>
+                        )}
                       </div>
                     </div>
 
                     <div className={styles.courtActions}>
-                      <button
-                        type="button"
-                        className={styles.primaryBtn}
-                        onClick={() => onOpenMatchCreator?.(c)}
-                        title="Criar pelada nesta quadra"
-                      >
+                      <button type="button" className={styles.primaryBtn} onClick={() => onOpenMatchCreator?.(c)}>
                         + Criar pelada
                       </button>
-
-                      <button
-                        type="button"
-                        className={styles.secondaryBtn}
-                        onClick={() => onOpenMatchCreator?.({ courtId: c.id })}
-                        title="Abrir fluxo de criar já com a quadra selecionada"
-                      >
+                      <button type="button" className={styles.secondaryBtn} onClick={() => onOpenMatchCreator?.({ courtId: c.id })}>
                         Pré-selecionar
                       </button>
                     </div>
@@ -330,16 +354,24 @@ export default function ArenaPublicPage({
                   <div className={styles.slotsRow}>
                     {slots.length ? (
                       <div className={styles.slotsScroller}>
-                        {slots.map((hh) => (
-                          <span key={hh} className={styles.slotChip}>
-                            {hh}
-                          </span>
-                        ))}
+                        {slots.map((hh) => {
+                          const reserved = isReserved(c.id, hh);
+                          return (
+                            <button
+                              key={hh}
+                              type="button"
+                              className={`${styles.slotChip} ${reserved ? styles.slotReserved : styles.slotFree}`}
+                              onClick={() => toggleReserved(c.id, hh)}
+                              title={reserved ? "Reservado (toque para marcar livre)" : "Livre (toque para marcar reservado)"}
+                            >
+                              {reserved ? "🔒 " : "✅ "}
+                              {hh}
+                            </button>
+                          );
+                        })}
                       </div>
                     ) : (
-                      <div className={styles.emptyInline}>
-                        Sem horários configurados ainda (o dono define na Agenda).
-                      </div>
+                      <div className={styles.emptyInline}>Sem horários configurados ainda (o dono define na Agenda).</div>
                     )}
                   </div>
                 </div>
@@ -356,26 +388,14 @@ export default function ArenaPublicPage({
               {liveMatches.map((m) => (
                 <div key={m.id} className={styles.liveCard}>
                   <div className={styles.liveTitle}>{m.title || "Partida ao vivo"}</div>
-                  <div className={styles.muted}>Integração ao vivo entra aqui.</div>
+                  <div className={styles.mutedInline}>Integração ao vivo entra aqui.</div>
                 </div>
               ))}
             </div>
           ) : (
             <div className={styles.emptyBox}>
               <div className={styles.emptyTitle}>Nenhuma partida ao vivo agora</div>
-              <div className={styles.emptySub}>
-                Próximo passo: integrar matches por courtId e mostrar cards ao vivo aqui.
-              </div>
-              <div className={styles.kpisMini}>
-                <div className={styles.kpiMini}>
-                  <div className={styles.kpiMiniLabel}>Arenas hoje</div>
-                  <div className={styles.kpiMiniValue}>{base.courts.length}</div>
-                </div>
-                <div className={styles.kpiMini}>
-                  <div className={styles.kpiMiniLabel}>Slots visíveis</div>
-                  <div className={styles.kpiMiniValue}>{arenaSummary.hasSlots ? "Sim" : "Não"}</div>
-                </div>
-              </div>
+              <div className={styles.emptySub}>Depois a gente liga nos matches do backend e mostra aqui.</div>
             </div>
           )}
         </div>
@@ -398,10 +418,8 @@ export default function ArenaPublicPage({
           </div>
 
           <div className={styles.emptyBox}>
-            <div className={styles.emptyTitle}>Essa aba vai virar “máquina de conversão” 😈</div>
-            <div className={styles.emptySub}>
-              Próximo passo: cruzar “slots” + “peladas abertas” e montar cards com CTA (Entrar / Reservar).
-            </div>
+            <div className={styles.emptyTitle}>Aba “Vagas” vira conversão</div>
+            <div className={styles.emptySub}>Depois: cruzar slots + peladas abertas e montar CTA (Entrar/Reservar).</div>
           </div>
         </div>
       ) : null}
