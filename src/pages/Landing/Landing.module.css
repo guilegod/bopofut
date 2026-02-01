@@ -1,0 +1,274 @@
+.page{
+  min-height: 100dvh;
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.topbar{
+  position: sticky;
+  top: 0;
+  z-index: 50;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.brand{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 190px;
+}
+
+.logo{
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-weight: 1000;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.brandName{
+  font-weight: 1000;
+  letter-spacing: .2px;
+}
+
+.brandTag{
+  opacity: .8;
+  font-size: 12px;
+}
+
+.nav{
+  display: none;
+  gap: 10px;
+  align-items: center;
+}
+
+.linkBtn{
+  padding: 10px 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  opacity: .9;
+}
+.linkBtn:hover{
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+}
+
+.actions{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btnGhost, .btnPrimary, .btnSoft, .btnPrimaryBig, .btnSoftBig{
+  border-radius: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+}
+
+.btnGhost{
+  background: transparent;
+}
+
+.btnPrimary{
+  background: var(--primary);
+  color: white;
+  border-color: color-mix(in srgb, var(--primary) 70%, var(--border));
+}
+
+.btnSoft{
+  background: color-mix(in srgb, var(--surface) 65%, transparent);
+}
+
+.btnPrimaryBig{
+  padding: 12px 14px;
+  background: var(--primary);
+  color: white;
+  border-color: color-mix(in srgb, var(--primary) 70%, var(--border));
+  font-weight: 800;
+}
+
+.btnSoftBig{
+  padding: 12px 14px;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  font-weight: 800;
+}
+
+.hero{
+  display: grid;
+  gap: 16px;
+  padding: 22px 14px 10px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.heroText{
+  display: grid;
+  gap: 12px;
+}
+
+.h1{
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.1;
+  font-weight: 1000;
+}
+
+.p{
+  margin: 0;
+  opacity: .9;
+  line-height: 1.5;
+}
+
+.heroCtas{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.badges{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.badge{
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+}
+
+.heroMock{
+  display: grid;
+  gap: 12px;
+}
+
+.mockCard{
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.mockTitle{
+  font-weight: 900;
+}
+
+.mockBody{
+  min-height: 140px;
+  border-radius: 14px;
+  border: 1px dashed color-mix(in srgb, var(--border) 70%, transparent);
+  display: grid;
+  place-items: center;
+  opacity: .75;
+}
+
+.section{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 18px 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.h2{
+  margin: 0;
+  font-size: 20px;
+  font-weight: 1000;
+}
+
+.grid3{
+  display: grid;
+  gap: 12px;
+}
+
+.card{
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.cardT{
+  font-weight: 900;
+}
+
+.cardP{
+  opacity: .9;
+  line-height: 1.45;
+}
+
+.priceCard{
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.priceFeatured{
+  border-color: color-mix(in srgb, var(--primary) 60%, var(--border));
+  box-shadow: 0 16px 50px rgba(0,0,0,.08);
+}
+
+.priceName{ font-weight: 1000; }
+.priceValue{ font-size: 26px; font-weight: 1000; }
+.priceDesc{ opacity: .9; }
+
+.miniNote{
+  margin: 0;
+  opacity: .8;
+  font-size: 12px;
+}
+
+.contactRow{
+  display: grid;
+  gap: 12px;
+}
+
+.ctaRow{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.footer{
+  padding: 18px 14px 26px;
+  opacity: .8;
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
+
+@media (min-width: 860px){
+  .nav{ display: flex; }
+  .hero{
+    grid-template-columns: 1.1fr .9fr;
+    align-items: start;
+    padding: 34px 14px 12px;
+  }
+  .grid3{
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

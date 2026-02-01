@@ -1,0 +1,50 @@
+.page{
+  min-height: 100dvh;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.card{
+  width: min(520px, 100%);
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+  text-align: center;
+}
+
+.logo{
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-weight: 1000;
+  margin: 0 auto;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 65%, transparent);
+}
+
+.title{
+  margin: 0;
+  font-size: 26px;
+  font-weight: 1000;
+  letter-spacing: .2px;
+}
+
+.text{
+  margin: 0;
+  opacity: .9;
+  line-height: 1.5;
+}
+
+.note{
+  font-size: 12px;
+  opacity: .75;
+}
