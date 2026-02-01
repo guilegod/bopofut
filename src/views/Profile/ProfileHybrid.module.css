@@ -1,269 +1,430 @@
+/* src/views/Profile/ProfileHybrid.module.css
+   BoraPô / BóPôFut — Profile + Feed (module)
+   ✅ Somente CSS (não mexe no JSX)
+*/
+
 .page{
-  padding: 14px;
+  min-height: 100dvh;
+  width: 100%;
+  max-width: min(1100px, 100%);
+  margin: 0 auto;
+
+  padding: var(--page-pad, 12px);
   display: grid;
   gap: 12px;
+
+  overflow-x: hidden;
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
 }
 
-.topBar{
-  display:flex;
-  align-items:center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  border-radius: 18px;
-  box-shadow: var(--shadow-sm);
-}
-
-.backBtn{
-  border-radius: 14px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  font-weight: 1000;
-  cursor: pointer;
-}
-
-.topTitle{
-  font-weight: 1000;
-  opacity: .95;
-}
-
-.topRight{
-  display:flex;
-  gap: 8px;
-}
-
-.ghostBtn{
-  width: 44px;
-  height: 44px;
-  display:grid;
-  place-items:center;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  font-weight: 1000;
-  cursor:pointer;
-}
-
+/* =========================
+   Header Card
+========================= */
 .headerCard{
+  border-radius: 28px;
   border: 1px solid var(--border);
-  background: var(--surface-2);
-  border-radius: 18px;
-  padding: 14px;
+  background: linear-gradient(135deg, var(--surface-2), var(--surface));
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.headerTop{
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: start;
 }
 
 .headerLeft{
-  display:flex;
+  display: grid;
+  grid-template-columns: 76px 1fr;
   gap: 12px;
-  align-items: center;
+  align-items: start;
+  min-width: 0;
 }
 
 .avatarWrap{
-  width: 78px;
-  height: 78px;
-  border-radius: 999px;
-  overflow:hidden;
+  width: 76px;
+  height: 76px;
+  border-radius: 22px;
   border: 1px solid var(--border);
-  background: var(--bg-3);
-  flex-shrink: 0;
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 .avatar{
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .identity{
-  flex: 1;
   min-width: 0;
 }
 
 .nameRow{
-  display:flex;
-  gap: 10px;
-  align-items:center;
+  display: flex;
+  gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .name{
-  font-size: 18px;
+  font-size: 28px;
   font-weight: 1000;
-  line-height: 1.1;
-  overflow:hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 340px;
+  letter-spacing: .2px;
+  line-height: 1.05;
 }
 
 .meta{
-  margin-top: 8px;
-  opacity: .85;
-  font-size: 13px;
+  margin-top: 6px;
+  color: var(--muted);
+  font-weight: 900;
 }
 
 .meta2{
-  margin-top: 6px;
-  opacity: .75;
-  font-size: 13px;
+  margin-top: 4px;
+  color: var(--muted);
+  font-weight: 900;
 }
 
 .pillsRow{
   margin-top: 10px;
-  display:flex;
-  gap: 10px;
+  display: flex;
   flex-wrap: wrap;
+  gap: 8px;
 }
 
 .pill{
-  padding: 8px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background: var(--surface);
-  font-weight: 900;
-  font-size: 12px;
-  white-space: nowrap;
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  box-shadow: var(--shadow-sm);
+  font-weight: 1000;
+  font-size: 13px;
 }
 
 .headerRight{
-  margin-top: 12px;
-  display:grid;
+  display: grid;
   gap: 10px;
-}
-
-.primaryBtn{
-  border-radius: 14px;
-  padding: 12px 12px;
-  font-weight: 1000;
-  border: 0;
-  cursor: pointer;
-  background: var(--primary);
-  color: white;
-}
-
-.ghostBtnWide{
-  border-radius: 14px;
-  padding: 12px 12px;
-  font-weight: 1000;
-  border: 1px solid var(--border);
-  cursor: pointer;
-  background: var(--surface);
-  color: var(--text);
+  align-content: start;
+  justify-items: end;
 }
 
 .friendOk{
-  padding: 12px 12px;
-  border-radius: 14px;
+  padding: 10px 12px;
+  border-radius: 16px;
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
   font-weight: 1000;
 }
 
+/* =========================
+   Bio + Tags
+========================= */
 .bio{
-  margin-top: 12px;
-  opacity: .92;
-  line-height: 1.35;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+  font-weight: 900;
 }
 
 .bioMuted{
-  margin-top: 12px;
-  opacity: .7;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-weight: 900;
+  font-style: italic;
 }
 
 .tagsRow{
-  margin-top: 12px;
-  display:flex;
-  gap: 10px;
+  padding: 0 14px 14px;
+  display: flex;
   flex-wrap: wrap;
+  gap: 8px;
 }
 
 .tag{
-  padding: 8px 10px;
+  display: inline-flex;
+  padding: 7px 10px;
   border-radius: 999px;
   border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface-2) 65%, transparent);
+  font-weight: 1000;
+  font-size: 12px;
+}
+
+/* =========================
+   Hero Panel (Overall + Figure)
+========================= */
+.heroPanel{
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 12px;
+  align-items: start;
+  min-width: 0;
+}
+
+.heroFigure{
+  width: 180px;
+  height: 180px;
+  border-radius: 26px;
+  border: 1px solid var(--border);
+  background: radial-gradient(circle at 35% 20%, rgba(0,0,0,.05), transparent 60%);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.figureSvg{
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.heroStats{
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.ovrRow{
+  display: grid;
+  gap: 10px;
+}
+
+.ovrBadge{
+  display: grid;
+  grid-template-columns: 64px 1fr 40px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  box-shadow: var(--shadow-sm);
+  min-width: 0;
+}
+
+.ovrNum{
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--primary) 55%, var(--border));
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+  font-weight: 1000;
+  font-size: 20px;
+}
+
+.chevBtn{
+  width: 40px;
+  height: 40px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
   background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  font-weight: 1000;
+  display: grid;
+  place-items: center;
+}
+
+.actionRow{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.attrGrid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.attr{
+  padding: 10px 10px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  box-shadow: var(--shadow-sm);
+  min-width: 0;
+}
+
+.attrTop{
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  font-weight: 1000;
+  margin-bottom: 8px;
+}
+
+.attrBar{
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  overflow: hidden;
+}
+
+.attrFill{
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--primary));
+}
+
+/* Collapsed overall */
+.heroCollapsed{
+  padding: 10px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  box-shadow: var(--shadow-sm);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.heroCollapsedLeft{
+  display: grid;
+  gap: 2px;
+}
+
+.heroCollapsedLabel{
+  font-weight: 1000;
+}
+
+.heroCollapsedValue{
+  font-weight: 1000;
+  font-size: 22px;
+}
+
+.heroCollapsedHint{
+  color: var(--muted);
   font-weight: 900;
   font-size: 12px;
 }
 
-.tabsRow{
-  margin-top: 14px;
-  display:flex;
-  gap: 10px;
-  flex-wrap: wrap;
+/* =========================
+   Tabs
+========================= */
+.tabsWrap{
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--border);
 }
 
-.tabBtn{
-  border-radius: 999px;
-  padding: 10px 12px;
+.tabsHeader{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tabsHeaderTitle{
   font-weight: 1000;
+}
+
+.tabsRow{
+  display: flex;
+  gap: 10px;
+  flex-wrap: nowrap;
+  align-items: center;
+  padding: 4px 2px 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+}
+
+.tabsRow::-webkit-scrollbar{ height: 8px; }
+.tabsRow::-webkit-scrollbar-track{ background: transparent; }
+.tabsRow::-webkit-scrollbar-thumb{ background: rgba(15,28,45,.14); border-radius: 999px; }
+
+.tabBtn{
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
   border: 1px solid var(--border);
-  cursor: pointer;
   background: var(--surface);
-  color: var(--text);
+  box-shadow: var(--shadow-sm);
+  font-weight: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  flex: 0 0 auto;
   white-space: nowrap;
+  scroll-snap-align: start;
 }
 
 .tabActive{
-  background: var(--primary);
-  color: white;
-  border-color: transparent;
+  border-color: color-mix(in srgb, var(--primary) 65%, var(--border));
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
 }
 
+/* =========================
+   Content Grid
+========================= */
 .content{
-  display:grid;
+  display: grid;
   gap: 12px;
 }
 
 .grid2{
-  display:grid;
+  display: grid;
+  grid-template-columns: 1fr 360px;
   gap: 12px;
-  grid-template-columns: 1fr;
+  align-items: start;
 }
 
-@media (min-width: 920px){
-  .grid2{ grid-template-columns: 1fr 1fr; }
-  .headerRight{
-    margin-top: 0;
-    max-width: 340px;
-    margin-left: auto;
-  }
-  .headerCard{
-    display:grid;
-    grid-template-columns: 1fr 340px;
-    gap: 14px;
-    align-items: start;
-  }
-  .bio, .bioMuted, .tagsRow, .tabsRow{
-    grid-column: 1 / -1;
-  }
+.gridFull{
+  grid-template-columns: 1fr !important;
 }
 
 .block{
+  border-radius: 26px;
   border: 1px solid var(--border);
-  background: var(--surface-2);
-  border-radius: 18px;
-  padding: 14px;
+  background: linear-gradient(135deg, var(--surface-2), var(--surface));
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
 
 .blockTitle{
+  padding: 12px 14px;
   font-weight: 1000;
-  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
+.feedTop{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* =========================
+   Soft Card (generic)
+========================= */
 .softCard{
+  padding: 14px;
+  border-radius: 22px;
   border: 1px solid var(--border);
-  background: var(--surface);
-  border-radius: 16px;
-  padding: 12px;
-  display:grid;
-  gap: 8px;
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  box-shadow: var(--shadow-sm);
 }
 
 .softTitle{
@@ -271,60 +432,162 @@
 }
 
 .softHint{
-  opacity: .75;
-  font-size: 12px;
+  margin-top: 6px;
+  color: var(--muted);
+  font-weight: 900;
   line-height: 1.35;
 }
 
-.kpiGrid{
-  display:grid;
+/* =========================
+   Buttons
+========================= */
+.primaryBtn{
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--primary) 65%, var(--border));
+  background: linear-gradient(180deg, var(--primary), var(--primary-2));
+  color: var(--on-primary);
+  font-weight: 1000;
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+}
+
+.ghostBtnWide{
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-weight: 1000;
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+}
+
+.primaryBtn:disabled,
+.ghostBtnWide:disabled{
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* =========================
+   Feed Posts
+========================= */
+.feedList{
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.post{
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.postHeader{
+  padding: 12px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.postUser{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.postAvatar{
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  object-fit: cover;
+  display: block;
+}
+
+.postName{
+  font-weight: 1000;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.postTime{
+  margin-top: 2px;
+  color: var(--muted);
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.postBadges{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.postBadge{
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-weight: 1000;
+  font-size: 12px;
+}
+
+.postMeta{
+  padding: 0 12px 12px;
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.postImg{
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.postCaption{
+  padding: 12px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.postActions{
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 
-.kpi{
-  border: 1px solid var(--border);
-  background: var(--surface);
-  border-radius: 14px;
-  padding: 12px;
-}
-
-.kpiLabel{
-  opacity: .7;
-  font-size: 12px;
-}
-
-.kpiValue{
-  margin-top: 6px;
-  font-weight: 1000;
-  font-size: 20px;
-}
-
-.actionRow{
-  margin-top: 10px;
-  display:grid;
-  gap: 10px;
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 920px){
-  .actionRow{ grid-template-columns: 1fr 1fr; }
-}
-
+/* =========================
+   Friends list (lite/official)
+========================= */
 .list{
-  display:grid;
+  margin-top: 10px;
+  display: grid;
   gap: 10px;
 }
 
 .row{
+  padding: 12px;
+  border-radius: 18px;
   border: 1px solid var(--border);
-  background: var(--surface);
-  border-radius: 14px;
-  padding: 10px 12px;
-  display:flex;
-  align-items:center;
-  justify-content: space-between;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: var(--shadow-sm);
+
+  display: grid;
+  grid-template-columns: 1fr auto;
   gap: 10px;
+  align-items: center;
 }
 
 .rowLeft{
@@ -333,28 +596,350 @@
 
 .rowName{
   font-weight: 1000;
-  overflow:hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 420px;
 }
 
 .rowSub{
   margin-top: 4px;
-  opacity: .75;
+  color: var(--muted);
+  font-weight: 900;
   font-size: 12px;
 }
 
 .rowRight{
-  display:flex;
+  display: flex;
   gap: 8px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
 }
-.ghostBtnActive{
-  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
-  background:
-    radial-gradient(180px 120px at 50% 0%, color-mix(in srgb, var(--primary) 18%, transparent), transparent 62%),
-    color-mix(in srgb, var(--surface-2) 92%, transparent);
-  box-shadow: 0 10px 24px color-mix(in srgb, var(--primary) 16%, transparent);
+
+/* =========================
+   Feed Composer compact helper (se existir)
+========================= */
+.feedComposerCompact{
+  padding: 12px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: var(--shadow-sm);
+}
+
+/* =========================
+   Responsive
+========================= */
+@media (max-width: 1040px){
+  .page{ max-width: 100%; }
+}
+
+@media (max-width: 920px){
+  .grid2{ grid-template-columns: 1fr; }
+  .headerTop{ grid-template-columns: 1fr; }
+  .headerRight{ margin-top: 10px; justify-items: start; }
+}
+
+@media (max-width: 860px){
+  .heroPanel{
+    grid-template-columns: 1fr;
+  }
+  .heroFigure{
+    width: 160px;
+    height: 160px;
+  }
+}
+
+@media (max-width: 520px){
+  /* ✅ ocupa 100% no mobile e evita “sobrando espaço” */
+  .page{
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 10px;
+    gap: 10px;
+  }
+  .headerCard,
+  .block,
+  .softCard{
+    width: 100%;
+  }
+
+  .grid2{
+    grid-template-columns: 1fr !important;
+  }
+
+  .actionRow{
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .attrGrid{
+    grid-template-columns: 1fr !important;
+  }
+
+  .postActions{
+    grid-template-columns: 1fr;
+  }
+
+  .primaryBtn, .ghostBtnWide{
+    height: 42px !important;
+    border-radius: 18px !important;
+  }
+
+  .heroFigure{
+    width: 140px !important;
+    height: 140px !important;
+    opacity: .95;
+  }
+
+  .feedComposerCompact{
+    padding: 10px;
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 480px){
+  .headerLeft{
+    grid-template-columns: 64px 1fr;
+  }
+  .avatarWrap{
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+  }
+  .name{
+    font-size: 24px;
+  }
+  .pill{
+    font-size: 12px;
+    padding: 7px 10px;
+  }
+}
+
+@media (max-width: 520px){
+  .grid2{
+    gap: 10px !important;
+  }
+
+  .grid2 > .block:nth-child(2) > .softCard{
+    padding: 12px !important;
+    border-radius: 20px !important;
+  }
+}
+
+@media (max-width: 520px){
+  .tabBtn{
+    height: 38px;
+    padding: 0 12px;
+    border-radius: 999px;
+    font-size: 13px;
+  }
+}
+
+/* ✅ evita corte horizontal por textos grandes */
+.name, .postName, .meta, .meta2, .softHint{ overflow-wrap: anywhere; }
+/* =========================================================
+   FeedComposerLite — styles que faltavam no module
+   (usado em: src/views/Profile/components/FeedComposerLite.jsx)
+   ========================================================= */
+
+.feedComposerCompact{
+  margin: 14px;
+  padding: 12px 12px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: var(--shadow-sm);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.feedComposerCompactLeft{
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.feedComposerCompactTitle{
+  font-weight: 1000;
+  font-size: 16px;
+  line-height: 1.1;
+}
+
+.feedComposerCompactHint{
+  color: var(--muted);
+  font-weight: 900;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+/* “Box” aberto do composer */
+.feedComposerBox{
+  margin: 14px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--surface-2), var(--surface));
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.feedComposerTop{
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.feedComposerTitle{
+  font-weight: 1000;
+  font-size: 14px;
+}
+
+/* Chips (tipos de post) */
+.feedChips{
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 0;
+}
+
+.feedChip{
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  font-weight: 1000;
+  font-size: 12px;
+
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.feedChipActive{
+  border-color: color-mix(in srgb, var(--primary) 65%, var(--border));
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+}
+
+/* Campos */
+.feedGrid{
+  padding: 12px 14px 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.feedField{
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.feedLabel{
+  font-weight: 1000;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.input{
+  height: 44px;
+  width: 100%;
+  padding: 0 12px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 900;
+  outline: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.input::placeholder{
+  color: color-mix(in srgb, var(--muted) 70%, transparent);
+  font-weight: 900;
+}
+
+.input:focus{
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+/* Footer ações */
+.feedFooter{
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--border);
+
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.fileBtn{
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 16px;
+  border: 1px dashed var(--border);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: var(--shadow-sm);
+  font-weight: 1000;
+  text-align: left;
+}
+
+.ghostBtnSm{
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  font-weight: 1000;
+}
+
+.primaryBtnSm{
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--primary) 65%, var(--border));
+  background: linear-gradient(180deg, var(--primary), var(--primary-2));
+  color: var(--on-primary);
+  box-shadow: var(--shadow-sm);
+  font-weight: 1000;
+}
+
+.primaryBtnSm:disabled,
+.ghostBtnSm:disabled,
+.fileBtn:disabled{
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* Mobile: composer vira 1 coluna e footer empilha */
+@media (max-width: 560px){
+  .feedGrid{
+    grid-template-columns: 1fr;
+  }
+
+  .feedFooter{
+    grid-template-columns: 1fr;
+  }
+
+  .fileBtn,
+  .ghostBtnSm,
+  .primaryBtnSm{
+    width: 100%;
+  }
+
+  .feedComposerCompact{
+    margin: 12px;
+    border-radius: 20px;
+  }
+
+  .feedComposerBox{
+    margin: 12px;
+    border-radius: 22px;
+  }
 }

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import AppShell from "./components/layout/AppShell.jsx";
 import TopProfileHeader from "./components/layout/TopProfileHeader.jsx";
@@ -33,6 +34,9 @@ import Login from "./views/Auth/Login.jsx";
 import Register from "./views/Auth/Register.jsx";
 import ForgotPassword from "./views/Auth/ForgotPassword.jsx";
 import ResetPassword from "./views/Auth/ResetPassword.jsx";
+import Landing from "./pages/Landing/Landing.jsx";
+import Maintenance from "./pages/Maintenance/Maintenance.jsx";
+
 
 
 // ✅ Auth Service
@@ -228,6 +232,21 @@ export default function App() {
   // =======================
   // Theme (global) — light/dark
   // =======================
+
+const MAINTENANCE = true; // 🔥 trocar para false quando quiser liberar
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const routeMode = useMemo(() => {
+    const p = (location?.pathname || "/").toLowerCase();
+    if (p.startsWith("/painel")) return "panel";
+    if (p.startsWith("/app")) return "app";
+    return "landing";
+  }, [location?.pathname]);
+
+
+
   const [theme, setTheme] = useState(() => localStorage.getItem("borapo_theme") || "light");
 
   useEffect(() => {
@@ -548,8 +567,17 @@ async function loadMatches(tokenParam) {
         setView("publicCourtPage");
         setPendingDeepLinkCourtId(null);
       } else {
-        resetBackStack();
-        setView(nextUser.role === "arena_owner" ? "arenaPanel" : "home");
+      resetBackStack();
+
+        if (routeMode === "panel") {
+          // painel do dono: arena_owner -> arenaPanel | owner/admin -> OwnerDashboard | outros -> home
+          if (nextUser.role === "arena_owner") setView("arenaPanel");
+          else if (nextUser.role === "owner" || nextUser.role === "admin") setView("ownerDashboard");
+          else setView("home");
+        } else {
+          // app normal
+          setView(nextUser.role === "arena_owner" ? "arenaPanel" : "home");
+        }
       }
 
       await loadCourts(token);
@@ -939,31 +967,53 @@ async function onCreateMatch(payload) {
   const adminMatch = adminMatchId ? matches.find((m) => m.id === adminMatchId) || null : null;
   const loadingAny = matchesLoading || courtsLoading;
 
-    const isProfileView = view === "profile" || view === "playerProfile";
+  const isProfileView = view === "profile" || view === "playerProfile";
   const profileTargetId = view === "playerProfile" ? viewedUserId : user?.id;
 
-  const profileHeader = isProfileView ? (
-    <TopProfileHeader
-      title="PERFIL"
-      showBack
-      onBack={
-        view === "profile"
-          ? () => setView(isArenaOwner ? "arenaPanel" : "home")
-          : goBack
-      }
-      theme={theme}
-      onToggleTheme={toggleTheme}
-      onCopyId={() => safeCopy(profileTargetId, "ID copiado ✅")}
-      onShare={() => safeCopy(profileTargetId, "Copiado ✅")}
-      showLogout={view === "profile"}
-      onLogout={handleLogout}
-    />
-  ) : null;
+ 
+
+const profileHeader = (
+  <TopProfileHeader
+    title="PERFIL"
+    onBack={goBack}
+    showBack={showBack} // <- usa sua lógica real
+
+    onCopyId={() => navigator.clipboard.writeText(user?.id || "")}
+    onShare={() => navigator.clipboard.writeText(`@${user?.username || user?.id || ""}`)}
+
+    onToggleTheme={toggleTheme}
+    theme={theme}
+
+    // ✅ AGORA SIM: navega pra views corretas
+    onEditProfile={() => setView("editProfile")}
+    onOpenSettings={() => setView("accountSettings")}
+    onOpenWallet={() => setView("wallet")} // se quiser mostrar
+    hideWalletInMenu // se quiser esconder por enquanto
+
+    showLogout
+    onLogout={handleLogout}
+  />
+);
+
+if (MAINTENANCE) {
+  return <Maintenance />;
+}
+
+  if (routeMode === "landing") {
+    return (
+      <Landing
+        onEnterApp={() => navigate("/app")}
+        onEnterPanel={() => navigate("/painel")}
+      />
+    );
+  }
+
+
 
 
   return (
     <AppShell
-      header={profileHeader}
+      header={isProfileView ? profileHeader : null}
       title={title}
       showBack={showBack}
       onBack={goBack}

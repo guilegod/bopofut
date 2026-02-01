@@ -1,49 +1,45 @@
 /* =========================================================
    THEME — BoraPô (Light + Dark)
-   - Light: bege/areia premium (menos branco estourado)
-   - Dark: estádio à noite (contraste bom sem “sumir” inputs)
    Ativação: <html data-theme="dark">
    ========================================================= */
 
 :root{
-  /* Background (light) — um pouco mais escuro */
+  /* Background (light) */
   --bg:   #ECE6DA;
   --bg-2: #E6DECF;
   --bg-3: #DED3C0;
   --bg-soft: rgba(15, 28, 45, .06);
 
-  /* Surfaces (menos branco estourado) */
+  /* Surfaces */
   --surface: rgba(255,255,255,.52);
   --surface-2: rgba(255,255,255,.64);
   --surface-3: rgba(255,255,255,.72);
   --surface-soft: rgba(255,255,255,.46);
   --surface-solid: #FAF6EF;
 
-  /* Borders (um tiquinho mais visíveis no claro) */
+  /* Borders */
   --border: rgba(18, 24, 30, .14);
   --border-2: rgba(18, 24, 30, .20);
   --border-strong: rgba(18, 24, 30, .28);
 
-  /* Text (um pouco menos “preto” duro) */
+  /* Text */
   --text: #121A22;
   --muted: rgba(18, 26, 34, .68);
   --muted-2: rgba(18, 26, 34, .50);
 
-  /* Inputs (menos branco) */
+  /* Inputs */
   --input-bg: rgba(250,246,239,.86);
   --input-border: rgba(18, 24, 30, .20);
   --input-border-focus: rgba(24,195,126,.44);
   --input-text: var(--text);
   --input-placeholder: rgba(18, 26, 34, .44);
 
-  /* Shadows (mais suaves no claro) */
+  /* Shadows */
   --shadow-sm: 0 10px 26px rgba(12, 16, 22, .08);
   --shadow-md: 0 16px 46px rgba(12, 16, 22, .11);
   --shadow-lg: 0 26px 84px rgba(12, 16, 22, .14);
 
-  /* ... o que você já tem ... */
-
-  /* ✅ Brand tokens (LIGHT) — estavam faltando */
+  /* Brand tokens (LIGHT) */
   --primary: #2EDC8F;
   --primary-2: #1BCB83;
   --primary-3: #10B374;
@@ -54,12 +50,20 @@
   --accent-3: #B7831A;
   --accent-soft: rgba(247,201,102,.16);
 
-  /* texto em cima do accent */
   --on-accent: #121A22;
-
-  /* (opcional, mas bom ter) texto em cima do primary */
   --on-primary: #061b12;
 
+  /* (opcional) */
+  --info: #60A5FA;
+  --info-2: #3B82F6;
+  --info-soft: rgba(96,165,250,.16);
+
+  --danger: #FB5B5B;
+  --danger-2: #E94848;
+  --danger-soft: rgba(251,91,91,.16);
+
+  --warning: #FBBF24;
+  --warning-soft: rgba(251,191,36,.16);
 }
 
 /* DARK */
@@ -124,6 +128,12 @@ body{
     radial-gradient(1000px 700px at 90% 0%,  color-mix(in srgb, var(--primary) 8%,  transparent), transparent 65%),
     radial-gradient(900px 600px  at 65% 110%, color-mix(in srgb, var(--info) 6%,    transparent), transparent 62%),
     linear-gradient(180deg, var(--bg-2), var(--bg));
-  background-attachment: fixed;
 }
 
+/* ✅ Evita “moldura”/glitch do fixed no Android */
+@media (max-width: 900px){
+  body{ background-attachment: scroll; }
+}
+@media (min-width: 901px){
+  body{ background-attachment: fixed; }
+}
