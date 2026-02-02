@@ -1,12 +1,12 @@
 // Home.jsx
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./Home.module.css";
 
 import AdBanner from "./components/AdBanner.jsx";
 import TerrainSelector from "./components/TerrainSelector.jsx";
 import DateScroller from "./components/DateScroller.jsx";
 import MatchCard from "./components/MatchCard.jsx";
-import RankingBanner from "./components/RankingBanner.jsx";
+//import RankingBanner from "./components/RankingBanner.jsx";
 
 import { listSlotsForCourtOnDate } from "../../services/arenaAvailabilityStore.js";
 
@@ -22,9 +22,27 @@ export default function Home({
 }) {
   const [activeType, setActiveType] = useState("fut7");
   const [selectedDate, setSelectedDate] = useState("Hoje");
-  const scrollRef = useRef(null);
+  const [heroDismissed, setHeroDismissed] = useState(() => {
+    try {
+      return localStorage.getItem("bp_hide_owner_banner") === "1";
+    } catch {
+      return false;
+    }
+  });
+  const [heroCompact, setHeroCompact] = useState(false);
 
+  const scrollRef = useRef(null);
   const arenasScrollRef = useRef(null);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY || 0;
+      setHeroCompact(y > 90);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   function pad2(n) {
     return String(n).padStart(2, "0");
@@ -243,12 +261,34 @@ export default function Home({
 
   return (
     <div className={styles.page}>
-      <div className={styles.hero}>
-        <AdBanner />
-      </div>
+      {!heroDismissed ? (
+        <div className={`${styles.hero} ${heroCompact ? styles.heroCompact : ""}`}>
+          <button
+            type="button"
+            className={styles.heroClose}
+            aria-label="Fechar banner"
+            title="Fechar"
+            onClick={() => {
+              setHeroDismissed(true);
+              try {
+                localStorage.setItem("bp_hide_owner_banner", "1");
+              } catch {}
+            }}
+          >
+            ✕
+          </button>
+
+          <div className={styles.heroInner}>
+            <AdBanner />
+          </div>
+        </div>
+      ) : null}
 
       <section className={styles.section}>
-        <h3 className={styles.sectionTitle}>Escolha seu terreno</h3>
+        <div className={styles.sectionHeaderStack}>
+          <h3 className={styles.sectionTitle}>Escolha seu terreno</h3>
+          <div className={styles.sectionHint}>Selecione o tipo de jogo para filtrar arenas e peladas.</div>
+        </div>
         <TerrainSelector activeType={activeType} onChangeType={setActiveType} />
       </section>
 
@@ -330,11 +370,14 @@ export default function Home({
                       ))}
                     </div>
 
-                    <div className={styles.timeLine}>
+                    <div className={`${styles.timeLine} ${!a.timeRange ? styles.timeLineEmpty : ""}`}>
                       ⏰ {todayLabel}: {a.timeRange ? a.timeRange : "Sem horários configurados"}
                     </div>
 
-                    <div className={styles.hint}>Toque para abrir a arena e ver quadras/agenda</div>
+                    <div className={styles.arenaBottomRow}>
+                      <div className={styles.hint}>Toque para abrir a arena e ver quadras/agenda</div>
+                      <div className={styles.arenaCta}>Ver horários →</div>
+                    </div>
                   </div>
                 </button>
               );
@@ -368,17 +411,25 @@ export default function Home({
           ) : (
             <div className={styles.emptyBox}>
               <p className={styles.emptyText}>
-                Nenhuma partida de <b>{activeType}</b> disponível para <b>{String(selectedDate).toLowerCase()}</b>.
+                ⚽ Nenhuma pelada de <b>{activeType}</b> para <b>{String(selectedDate).toLowerCase()}</b>.
               </p>
-              <button type="button" className={styles.linkBtn} onClick={() => setSelectedDate("Hoje")}>
-                Voltar para Hoje
-              </button>
+
+              <div className={styles.emptyActions}>
+                {canCreateMatch ? (
+                  <button type="button" className={styles.primaryBtn} onClick={() => onOpenMatchCreator?.()}>
+                    + Criar uma pelada
+                  </button>
+                ) : null}
+
+                <button type="button" className={styles.linkBtn} onClick={() => setSelectedDate("Hoje")}>
+                  Voltar para Hoje
+                </button>
+              </div>
             </div>
           )}
         </div>
       </section>
 
-      <RankingBanner onOpenRanking={onOpenRanking} />
     </div>
   );
 }
