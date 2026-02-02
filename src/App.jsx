@@ -233,7 +233,7 @@ export default function App() {
   // Theme (global) — light/dark
   // =======================
 
-const MAINTENANCE = true; // 🔥 trocar para false quando quiser liberar
+const MAINTENANCE = false; // 🔥 trocar para false quando quiser liberar
 
   const location = useLocation();
   const navigate = useNavigate();

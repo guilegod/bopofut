@@ -19,6 +19,43 @@
 .hero{
   padding-left: 14px;
   padding-right: 14px;
+  position: relative;
+}
+
+.heroInner{
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  /* mantém o banner dentro do layout */
+}
+
+.heroCompact .heroInner{
+  /* compacta após rolar (sem quebrar o AdBanner) */
+  max-height: 136px;
+}
+
+.heroClose{
+  position: absolute;
+  top: 8px;
+  right: 18px;
+  z-index: 3;
+
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+
+  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--surface-2) 78%, transparent);
+  color: var(--text);
+  font-weight: 1000;
+
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.heroClose:active{
+  transform: scale(0.98);
 }
 
 /* =========================
@@ -38,6 +75,19 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+}
+
+.sectionHeaderStack{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sectionHint{
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--muted);
+  opacity: 0.95;
 }
 
 .sectionTitle {
@@ -318,8 +368,34 @@ html[data-theme="dark"] .arenaMedia {
   font-weight: 1000;
 }
 
+.timeLineEmpty{
+  opacity: 0.86;
+  color: var(--muted);
+}
+
+.arenaBottomRow{
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.arenaCta{
+  flex: 0 0 auto;
+  font-weight: 1000;
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 999px;
+
+  border: 1px solid transparent;
+  background: rgba(24, 195, 126, 0.14);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+
 .hint {
-  margin-top: 6px;
+  margin-top: 0;
   color: var(--muted);
   font-weight: 900;
   font-size: 12px;
@@ -336,8 +412,9 @@ html[data-theme="dark"] .arenaMedia {
 }
 
 .createBtn {
-  padding: 10px 14px;
+  padding: 11px 14px;
   border-radius: 14px;
+  min-height: 44px;
 
   border: 1px solid transparent;
   background: rgba(24, 195, 126, 0.16);
@@ -384,8 +461,33 @@ html[data-theme="dark"] .emptyBox {
   line-height: 1.35;
 }
 
-.linkBtn {
+.emptyActions{
   margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.primaryBtn{
+  padding: 11px 14px;
+  border-radius: 14px;
+
+  border: 1px solid transparent;
+  background: rgba(24, 195, 126, 0.20);
+  color: var(--text);
+
+  font-weight: 1000;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.14s ease, background 0.14s ease, box-shadow 0.14s ease;
+}
+
+.primaryBtn:active{
+  transform: scale(0.99);
+}
+
+.linkBtn {
   border: none;
   background: transparent;
   font-weight: 1000;
@@ -399,47 +501,52 @@ html[data-theme="dark"] .emptyBox {
    ✅ MOBILE FULL-WIDTH: 1 card por tela
 ========================= */
 @media (max-width: 520px) {
+  .navBtns{ display:none; }
+
   .arenaCard {
-  width: calc(100vw - 28px);
-  min-height: 110px; /* antes tava grande demais */
-  padding: 12px;
-  border-radius: 18px;
+    width: calc(100vw - 28px);
+    min-height: 110px;
+    padding: 12px;
+    border-radius: 18px;
 
-  display: grid;
-  grid-template-columns: 72px 1fr auto; /* imagem | infos | seta */
-  gap: 12px;
-  align-items: center;
-}
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    gap: 12px;
+    align-items: center;
+  }
 
- .arenaMedia {
-  width: 72px;
-  height: 72px;
-  border-radius: 14px;
-}
+  .arenaMedia {
+    width: 72px;
+    height: 72px;
+    border-radius: 14px;
+  }
 
+  .arenaTitle {
+    font-size: 15px;
+  }
 
- .arenaTitle {
-  font-size: 15px;
-}
+  .arenaMeta {
+    font-size: 12px;
+  }
 
-.arenaMeta {
-  font-size: 12px;
-}
+  .timeLine {
+    font-size: 12px;
+    margin-top: 4px;
+  }
 
-.timeLine {
-  font-size: 12px;
-  margin-top: 4px;
-}
+  .chips {
+    margin-top: 6px;
+    gap: 6px;
+  }
 
-.chips {
-  margin-top: 6px;
-  gap: 6px;
-}
-.arenaArrow {
-  font-size: 20px;
-  opacity: 0.6;
-}
+  .arenaArrow {
+    font-size: 20px;
+    opacity: 0.6;
+  }
 
+  .arenaCta{
+    padding: 7px 10px;
+  }
 }
 
 /* =========================

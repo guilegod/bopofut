@@ -1,54 +1,113 @@
-/* Login.module.css — BoraPô (premium + alinhado + theme tokens) */
+/* Login.module.css — BoraPô (Product-ready / Premium)
+   - visual: glass + glow sutil + hierarquia forte
+   - UX: sem scroll, foco elegante, botões “clicky”
+*/
 
 .page{
-  min-height: 100dvh;
-  display: grid;
+  /* ✅ trava a tela: sem scroll */
+  height: 100dvh;
+  width: 100%;
   overflow: hidden;
-  place-items: center;
-  padding: 28px 16px;
-  background: radial-gradient(
-    1000px 520px at 50% 0%,
-    rgba(46, 220, 143, .14),
-    transparent 60%
-  );
-  
+  position: fixed;
+  inset: 0;
 
+  display: grid;
+  place-items: center;
+
+  padding: 24px 16px;
+  background:
+    radial-gradient(900px 520px at 50% 0%,
+      color-mix(in srgb, var(--primary) 18%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(700px 420px at 14% 18%,
+      color-mix(in srgb, var(--accent) 12%, transparent),
+      transparent 60%
+    );
+}
+
+/* ✅ fundo decorativo bem sutil (não precisa mexer no JSX) */
+.page::before{
+  content:"";
+  position: absolute;
+  inset: -40px;
+  background:
+    radial-gradient(closest-side at 30% 20%, rgba(255,255,255,.08), transparent 60%),
+    radial-gradient(closest-side at 70% 65%, rgba(255,255,255,.06), transparent 60%);
+  filter: blur(10px);
+  opacity: .9;
+  pointer-events: none;
 }
 
 .card{
   width: min(460px, 100%);
-  border-radius: var(--r-2xl);
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
-  box-shadow: var(--shadow-lg);
+  overflow: hidden; /* ✅ garante “travada” */
+  border-radius: var(--r-2xl, 26px);
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+
+  /* glass premium */
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--surface) 86%, transparent),
+      color-mix(in srgb, var(--surface) 70%, transparent)
+    );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow:
+    0 18px 50px rgba(0,0,0,.18),
+    0 10px 24px rgba(0,0,0,.12),
+    inset 0 1px 0 rgba(255,255,255,.10);
+
   padding: 18px 18px 14px;
+  position: relative;
+}
+
+/* glow interno sutil */
+.card::before{
+  content:"";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(900px 400px at 50% 0%,
+      color-mix(in srgb, var(--primary) 14%, transparent),
+      transparent 60%
+    );
+  opacity: .55;
+  pointer-events: none;
 }
 
 .brand{
   display: grid;
   gap: 6px;
   padding: 6px 2px 14px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
   margin-bottom: 14px;
+  position: relative;
+  z-index: 1;
 }
 
 .logo{
   font-size: 22px;
-  letter-spacing: .12em;
+  letter-spacing: .14em;
   font-weight: 1000;
   color: var(--text);
+  text-transform: uppercase;
 }
 
 .subtitle{
   font-size: 13px;
   color: var(--muted);
-  font-weight: 800;
+  font-weight: 850;
+  line-height: 1.2;
 }
 
 .form{
   display: grid;
   gap: 12px;
-  padding-top: 14px;
+  padding-top: 10px;
+  position: relative;
+  z-index: 1;
 }
 
 .field{
@@ -58,83 +117,100 @@
 
 .field label{
   font-size: 12px;
-  letter-spacing: .08em;
+  letter-spacing: .10em;
   text-transform: uppercase;
-  color: var(--muted);
-  font-weight: 900;
+  color: color-mix(in srgb, var(--muted) 92%, transparent);
+  font-weight: 950;
 }
 
 .field input{
-  height: 44px;
+  height: 46px;
   border-radius: 14px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  background: color-mix(in srgb, var(--surface-2) 92%, transparent);
   color: var(--text);
   padding: 0 12px;
   outline: none;
-  font-weight: 800;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
-  transition: border-color .15s ease, box-shadow .15s ease, transform .06s ease;
+
+  font-weight: 850;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 10px 24px rgba(0,0,0,.08);
+
+  transition:
+    border-color .15s ease,
+    box-shadow .15s ease,
+    transform .08s ease,
+    background .15s ease;
 }
 
 .field input::placeholder{
-  color: color-mix(in srgb, var(--muted) 72%, transparent);
+  color: color-mix(in srgb, var(--muted) 70%, transparent);
   font-weight: 800;
 }
 
 .field input:focus{
   border-color: color-mix(in srgb, var(--primary) 70%, var(--border));
+  background: color-mix(in srgb, var(--surface-2) 80%, var(--surface));
   box-shadow:
-    0 0 0 4px rgba(46,220,143,.16),
+    0 0 0 4px color-mix(in srgb, var(--primary) 18%, transparent),
+    0 14px 30px rgba(0,0,0,.10),
     inset 0 1px 0 rgba(255,255,255,.12);
 }
 
 .error{
   border: 1px solid color-mix(in srgb, var(--danger) 65%, var(--border));
-  background: rgba(239,68,68,.10);
-  color: color-mix(in srgb, var(--danger) 82%, var(--text));
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: color-mix(in srgb, var(--danger) 86%, var(--text));
   padding: 10px 12px;
   border-radius: 14px;
-  font-weight: 900;
+  font-weight: 950;
   font-size: 13px;
+  line-height: 1.25;
 }
 
 .primary{
-  height: 46px;
+  height: 48px;
   border-radius: 16px;
   border: 1px solid rgba(0,0,0,.08);
-  background: linear-gradient(180deg, var(--primary), var(--primary-2));
+
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--primary) 96%, #ffffff 4%),
+      color-mix(in srgb, var(--primary-2) 96%, #000000 4%)
+    );
+
   color: var(--on-primary, #061b12);
   font-weight: 1000;
   letter-spacing: .18em;
   text-transform: uppercase;
-  box-shadow: 0 14px 30px rgba(46,220,143,.22), var(--shadow-sm);
+
+  box-shadow:
+    0 18px 38px color-mix(in srgb, var(--primary) 26%, transparent),
+    0 10px 18px rgba(0,0,0,.12);
+
   transition: transform .08s ease, filter .15s ease, box-shadow .15s ease;
 }
 
-.primary:hover{
-  filter: brightness(1.02);
-  box-shadow: 0 18px 36px rgba(46,220,143,.26), var(--shadow-md);
-}
-
-.primary:active{
-  transform: translateY(1px);
-}
+.primary:hover{ filter: brightness(1.03); }
+.primary:active{ transform: translateY(1px); }
 
 .primary:disabled{
-  opacity: .7;
+  opacity: .72;
   cursor: not-allowed;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 10px 18px rgba(0,0,0,.10);
 }
 
 .link{
   height: 44px;
   border-radius: 16px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
+  border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+  background: color-mix(in srgb, var(--surface-2) 92%, transparent);
   color: var(--text);
+
   font-weight: 950;
   letter-spacing: .02em;
+
   transition: transform .08s ease, background .15s ease, border-color .15s ease;
 }
 
@@ -142,23 +218,23 @@
   background: color-mix(in srgb, var(--surface-2) 70%, var(--surface));
 }
 
-.link:active{
-  transform: translateY(1px);
-}
+.link:active{ transform: translateY(1px); }
 
 .link:disabled{
-  opacity: .6;
+  opacity: .62;
   cursor: not-allowed;
 }
 
 .hint{
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
   color: var(--muted);
   font-size: 12px;
   text-align: center;
-  font-weight: 800;
+  font-weight: 850;
+  position: relative;
+  z-index: 1;
 }
 
 .hint b{
@@ -168,10 +244,7 @@
 
 /* Ajustes mobile */
 @media (max-width: 420px){
-  .card{
-    padding: 16px 14px 12px;
-  }
-  .logo{
-    font-size: 20px;
-  }
+  .page{ padding: 18px 12px; }
+  .card{ padding: 16px 14px 12px; }
+  .logo{ font-size: 20px; }
 }

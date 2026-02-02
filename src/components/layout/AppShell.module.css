@@ -1,4 +1,17 @@
+/* AppShell.module.css
+   BoraPô — AppShell (Safe Areas + Topbar + BottomNav + Sheet)
+   ✅ topo respeita câmera/notch
+   ✅ bottom respeita barra de gestos/botões
+   ✅ sheet (menu) bonito e NÃO quebra layout
+*/
+
 .shell{
+  /* Safe areas */
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+
   width: 100%;
   min-height: 100dvh;
 
@@ -9,24 +22,22 @@
   overflow-x: hidden;
 }
 
-/* onde as views são renderizadas */
-.content{
-  width: 100%;
-  max-width: 100%;
-
-  flex: 1;
-
-  padding: 0;          /* 🔥 AppShell NÃO cria borda */
-  margin: 0;
-
-  overflow-x: hidden;
-}
-
-
-/* Topbar premium */
+/* =========================
+   Topbar (safe-area TOP)
+   - resolve título na câmera/notch
+========================= */
 .topbar{
-  height: 58px;
-  padding: 0 14px;
+  /* altura flexível + safe-area */
+  min-height: calc(58px + var(--sat));
+
+  /* ✅ empurra pra baixo da câmera */
+  padding-top: calc(10px + var(--sat));
+  padding-bottom: 10px;
+
+  /* ✅ respeita laterais seguras */
+  padding-left: calc(14px + var(--sal));
+  padding-right: calc(14px + var(--sar));
+
   display: grid;
   grid-template-columns: 44px 1fr 44px;
   align-items: center;
@@ -43,6 +54,12 @@
   box-shadow: 0 10px 30px rgba(0,0,0,.08);
 }
 
+.topbarCustom{
+  /* quando header é custom (TopProfileHeader), ele cuida do layout interno */
+  grid-template-columns: 1fr;
+}
+
+/* default topbar elements */
 .backBtn{
   width: 44px;
   height: 44px;
@@ -62,34 +79,55 @@
 }
 .backBtn:active{ transform: scale(.98); }
 
-.backHide{ opacity:0; pointer-events:none; }
-.backShow{ opacity:1; }
+.backShow{ opacity: 1; pointer-events: auto; }
+.backHide{ opacity: 0; pointer-events: none; }
 
 .title{
   text-align: center;
-  font-size: 11px;
   font-weight: 1000;
-  letter-spacing: .16em;
-  text-transform: uppercase;
+  letter-spacing: .2px;
+  color: var(--text);
   opacity: .96;
 }
-
 .rightSlot{ width: 44px; height: 44px; }
 
-/* Conteúdo */
+/* =========================
+   Onde as views renderizam
+========================= */
 .content{
+  width: 100%;
+  max-width: 100%;
+
   flex: 1;
   min-height: 0;
-  padding: 18px 14px calc(98px + env(safe-area-inset-bottom));
+
+  padding: 0;   /* ✅ views controlam seu padding */
+  margin: 0;
+
+  overflow-x: hidden;
 }
 
-/* Bottom Nav */
+/* =========================
+   Bottom Nav (safe-area bottom)
+========================= */
 .bottomNav{
-  height: 74px;
-  padding: 10px 10px calc(14px + env(safe-area-inset-bottom));
+  --nav-h: 74px;
+  --nav-gap: 12px;
+  --nav-pad-x: 10px;
+  --nav-pad-top: 10px;
+  --nav-pad-bottom: 12px;
+
+  height: var(--nav-h);
+
+  padding:
+    var(--nav-pad-top)
+    calc(var(--nav-pad-x) + var(--sar))
+    max(var(--nav-pad-bottom), var(--sab))
+    calc(var(--nav-pad-x) + var(--sal));
+
   display: grid;
   grid-template-columns: repeat(var(--nav-count, 4), 1fr);
-  gap: 10px;
+  gap: var(--nav-gap);
 
   position: fixed;
   left: 50%;
@@ -98,7 +136,7 @@
   z-index: 80;
 
   max-width: var(--app-max, 1100px);
-  width: calc(100% - 24px);
+  width: calc(100% - 24px - var(--sal) - var(--sar));
 
   border-top: 1px solid var(--border);
   background: color-mix(in srgb, var(--bg) 84%, transparent);
@@ -107,20 +145,19 @@
   -webkit-backdrop-filter: blur(12px);
   box-shadow: var(--shadow-md);
   border-radius: 22px 22px 0 0;
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-bottom: max(12px, env(safe-area-inset-bottom));
-
 }
 
 .navItem{
   border-radius: 18px;
   border: 1px solid var(--border);
   background: color-mix(in srgb, var(--surface) 92%, transparent);
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 6px;
+
   padding: 10px;
   color: var(--text);
 
@@ -130,33 +167,25 @@
   box-shadow: var(--shadow-sm);
   transform: translateY(-1px);
 }
-.navItem:active{ transform: translateY(0); }
-
-.navActive{
-  border-color: color-mix(in srgb, var(--primary) 42%, var(--border));
-  background:
-    radial-gradient(220px 120px at 50% 0%, color-mix(in srgb, var(--primary) 22%, transparent), transparent 60%),
-    color-mix(in srgb, var(--surface-2) 88%, transparent);
-  box-shadow: 0 10px 26px color-mix(in srgb, var(--primary) 18%, transparent);
-}
+.navItem:active{ transform: translateY(0) scale(.99); }
 
 .navIcon{ font-size: 18px; line-height: 1; }
 .navLabel{
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 1000;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  opacity: .86;
-}
-/* =========================
-   Custom header slots
-   - usado pelo TopProfileHeader (e outros no futuro)
-   ========================= */
-.topbarCustom{
-  /* quando o header é custom, a estrutura fica interna no componente */
-  grid-template-columns: 1fr;
+  letter-spacing: .2px;
+  opacity: .92;
 }
 
+.navActive{
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+  background: color-mix(in srgb, var(--surface-3) 86%, transparent);
+  box-shadow: 0 14px 34px rgba(0,0,0,.10);
+}
+
+/* =========================
+   TopProfileHeader (custom header layout)
+========================= */
 .topbarRow{
   display: flex;
   align-items: center;
@@ -189,6 +218,7 @@
   gap: 8px;
 }
 
+/* header buttons */
 .headerBtn{
   width: 44px;
   height: 44px;
@@ -201,16 +231,10 @@
   color: var(--text);
   box-shadow: var(--shadow-sm);
 }
-
-.headerBtn:hover{
-  border-color: var(--border-strong);
-}
-
 .headerBtnActive{
   border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+  background: color-mix(in srgb, var(--surface-3) 80%, transparent);
 }
-
 .headerBtnWide{
   height: 44px;
   padding: 0 12px;
@@ -224,12 +248,10 @@
   color: var(--text);
   box-shadow: var(--shadow-sm);
 }
-/* =========================
-   Header menu (mobile) + Bottom Sheet
-========================= */
 
+/* Mobile kebab */
 .kebabBtn{
-  display: none; /* aparece no mobile */
+  display: none;
   width: 44px;
   height: 44px;
   border-radius: 16px;
@@ -242,13 +264,21 @@
   align-items: center;
   justify-content: center;
 }
+@media (max-width: 520px){
+  .kebabBtn{ display: inline-flex; }
+}
 
+/* =========================
+   Bottom Sheet (menu)
+   ✅ aqui tava “quebrando” visual (faltava sheetItem)
+========================= */
 .sheetBackdrop{
   position: fixed;
   inset: 0;
   z-index: 9999;
   background: rgba(0,0,0,.28);
   backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: grid;
   align-items: end;
 }
@@ -261,74 +291,73 @@
   background: linear-gradient(180deg, var(--surface-2), var(--surface));
   box-shadow: 0 -18px 40px rgba(0,0,0,.18);
   padding: 10px 12px 12px;
-  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(12px + var(--sab));
   animation: sheetUp .18s ease-out;
 }
 
 @keyframes sheetUp{
-  from{ transform: translateY(16px); opacity: .7; }
+  from{ transform: translateY(18px); opacity: .8; }
   to{ transform: translateY(0); opacity: 1; }
 }
 
 .sheetHandle{
-  width: 52px;
+  width: 56px;
   height: 5px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--text) 14%, transparent);
-  margin: 0 auto 8px;
+  background: color-mix(in srgb, var(--muted) 30%, transparent);
+  margin: 6px auto 10px;
 }
 
 .sheetTitle{
   font-weight: 1000;
-  text-align: center;
-  margin-bottom: 10px;
+  color: var(--text);
+  opacity: .92;
+  padding: 2px 4px 10px;
 }
 
 .sheetList{
   display: grid;
-  gap: 8px;
-}
-
-.sheetItem,
-.sheetItemDanger{
-  height: 46px;
-  padding: 0 14px;
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  box-shadow: var(--shadow-sm);
-  font-weight: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
   gap: 10px;
 }
 
-.sheetItemDanger{
-  border-color: color-mix(in srgb, #ff4d4d 30%, var(--border));
-  background: color-mix(in srgb, #ff4d4d 10%, var(--surface));
-}
-
-.sheetDivider{
-  height: 1px;
-  background: var(--border);
-  margin: 6px 2px;
-  border-radius: 999px;
-}
-
-.sheetClose{
-  margin-top: 10px;
-  width: 100%;
-  height: 44px;
+/* ✅ AQUI: o que faltava */
+.sheetItem{
+  height: 48px;
   border-radius: 16px;
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface-2) 88%, transparent);
-  box-shadow: var(--shadow-sm);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  color: var(--text);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 0 14px;
   font-weight: 1000;
+  box-shadow: var(--shadow-sm);
 }
 
-/* Mobile: esconde os ícones e mostra "⋯" */
+.sheetItem:active{ transform: scale(.99); }
+.sheetItemDanger{
+  border-color: color-mix(in srgb, #ef4444 50%, var(--border));
+  background: color-mix(in srgb, #ef4444 12%, var(--surface));
+}
+
+/* =========================
+   Mobile tweaks
+========================= */
 @media (max-width: 520px){
-  .headerBtn, .headerBtnWide{ display: none; }
-  .kebabBtn{ display: inline-flex; }
+  .topbar{
+    padding-left: calc(12px + var(--sal));
+    padding-right: calc(12px + var(--sar));
+    padding-top: calc(10px + var(--sat));
+  }
+
+  .bottomNav{
+    width: calc(100% - 20px - var(--sal) - var(--sar));
+    border-radius: 20px 20px 0 0;
+    gap: 10px;
+  }
+  .navItem{ border-radius: 16px; }
 }

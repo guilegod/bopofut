@@ -6,33 +6,54 @@
 
 html, body { height: 100%; }
 
+/* ✅ Força layout “full viewport” e evita width bug */
 html{
+  width: 100%;
+  max-width: 100%;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+
+  /* ✅ evita bounce/scroll lateral */
+  overflow-x: clip;
+
+  /* ✅ garante que o fundo do theme apareça até antes do React montar */
+  background: var(--bg);
 }
 
+/* ✅ Full screen real no mobile (dvh resolve barra do navegador) */
 body{
   margin: 0;
+  min-height: 100dvh;
   width: 100%;
-  overflow-x: hidden;
+  max-width: 100%;
+
+  /* ✅ o “segredo” pra sumir borda lateral causada por overflow */
+  overflow-x: clip;
 
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   color: var(--text);
-  background: transparent; /* ✅ theme.css manda */
+  background: transparent; /* theme.css manda */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* ✅ evita scroll lateral por gestos no mobile */
+  overscroll-behavior-x: none;
 }
 
+/* ✅ Root sempre ocupa tela toda */
 #root{
-  min-height: 100%;
+  min-height: 100dvh;
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+
+  /* ✅ evita “1px de lado” e scroll fantasma */
+  overflow-x: clip;
 
   background: transparent;
   isolation: isolate;
 }
 
+/* Links / headings */
 a{ color: inherit; text-decoration: none; }
 
 h1,h2,h3,h4,h5,h6{
@@ -62,7 +83,7 @@ button{
   --section-border: var(--border);
 }
 
-/* util opcional */
+/* util opcional: “full bleed” (sem borda) */
 .fullBleed{
   margin-left: calc(var(--page-pad) * -1);
   margin-right: calc(var(--page-pad) * -1);
@@ -70,6 +91,7 @@ button{
   padding-right: var(--page-pad);
 }
 
+/* ✅ no desktop a gente pode manter padding maior */
 @media (min-width: 920px){
   :root{
     --page-pad: var(--page-pad-lg);
@@ -78,7 +100,9 @@ button{
   }
 }
 
-/* Inputs */
+/* =========================
+   INPUTS (global)
+========================= */
 input, select, textarea{
   color: var(--input-text);
   background: var(--input-bg);
@@ -87,7 +111,10 @@ input, select, textarea{
   border-radius: 14px;
   max-width: 100%;
 }
-input::placeholder, textarea::placeholder{ color: var(--input-placeholder); }
+
+input::placeholder, textarea::placeholder{
+  color: var(--input-placeholder);
+}
 
 input:focus, select:focus, textarea:focus{
   border-color: var(--input-border-focus);
@@ -108,7 +135,9 @@ select option{
 
 img{ max-width: 100%; display: block; }
 
-/* Scroll */
+/* =========================
+   SCROLLBAR (premium)
+========================= */
 ::-webkit-scrollbar{ width: 8px; height: 8px; }
 ::-webkit-scrollbar-track{ background: transparent; }
 ::-webkit-scrollbar-thumb{
@@ -123,8 +152,8 @@ img{ max-width: 100%; display: block; }
   background-clip: content-box;
 }
 
-/* layout guard */
-html, body{ width: 100%; overflow-x: hidden; }
+/* ✅ Layout guard: nada pode passar da largura da tela */
+html, body{ overflow-x: clip; }
 :where(.page, .app, .container, main, section){ max-width: 100%; }
 
 @media (max-width: 600px){

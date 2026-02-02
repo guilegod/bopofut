@@ -120,7 +120,7 @@ export default function AppShell({
               />
 
               <NavItem
-                label="Wallet"
+                label="Carteira"
                 icon="💳"
                 active={active === "wallet"}
                 onClick={() => onNav("wallet")}

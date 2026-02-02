@@ -1,0 +1,255 @@
+/* src/views/Arena/ArenaEventPage.module.css
+   ✅ Premium + Safe-area (notch / navbar)
+   ✅ Ajuste: menos “vazio”, hero mais compacto, padding bottom correto
+*/
+
+.page{
+  width: 100%;
+  min-height: 100dvh;
+
+  /* ↓ antes estava 110px e isso cria “sobra” */
+  padding:
+    calc(10px + env(safe-area-inset-top, 0px))
+    calc(12px + env(safe-area-inset-right, 0px))
+    calc(92px + env(safe-area-inset-bottom, 0px))
+    calc(12px + env(safe-area-inset-left, 0px));
+
+  display: grid;
+  gap: 12px;
+  align-content: start;           /* ✅ evita “esticar” e criar vazio */
+  grid-auto-rows: min-content;    /* ✅ cada bloco só ocupa o necessário */
+
+  background: transparent;
+  overflow-x: hidden;
+}
+
+/* Topbar */
+.topbar{
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 12px; /* ↓ levemente menor */
+  border-radius: 18px;
+  border: 1px solid var(--border, rgba(255,255,255,.10));
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  box-shadow: 0 10px 26px rgba(0,0,0,.14);
+}
+
+.backBtn{
+  height: 42px;
+  width: 42px;
+  border-radius: 14px;
+  border: 1px solid var(--border, rgba(255,255,255,.12));
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  color: var(--text, #fff);
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+}
+.backBtn:active{ transform: translateY(1px); }
+
+.topbarCenter{ display: grid; gap: 2px; text-align: center; }
+.topbarTitle{
+  font-weight: 950;
+  letter-spacing: .4px;
+  opacity: .98;
+}
+.topbarSubtitle{
+  font-size: 12px;
+  opacity: .72;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.topbarRight{ height: 42px; }
+
+/* Hero (↓ mais compacto e com menos “vazio”) */
+.hero{
+  border-radius: 22px;
+  border: 1px solid var(--border, rgba(255,255,255,.10));
+  overflow: hidden;
+  position: relative;
+
+  /* ✅ limita o “tamanho gigante” do hero */
+  min-height: 172px;
+  max-height: 280px;
+
+  background:
+    radial-gradient(1000px 380px at 20% 0%,
+      color-mix(in srgb, var(--primary, #2dd4bf) 20%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(900px 380px at 100% 30%,
+      color-mix(in srgb, var(--accent, #f59e0b) 14%, transparent),
+      transparent 65%
+    ),
+    color-mix(in srgb, var(--surface) 55%, transparent);
+}
+
+.hero::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image: var(--hero-bg);
+  background-size: cover;
+  background-position: center;
+
+  /* ↓ menos “lavado”, mais premium */
+  opacity: .14;
+  transform: scale(1.05);
+}
+
+.heroGlow{
+  position:absolute; inset:0;
+  background: linear-gradient(
+    90deg,
+    rgba(0,0,0,.62),
+    rgba(0,0,0,.18),
+    rgba(0,0,0,.52)
+  );
+  pointer-events:none;
+}
+
+.heroInner{
+  position: relative;
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.heroTitle{
+  font-weight: 990;
+  font-size: 18px;
+  letter-spacing: .15px;
+  line-height: 1.15;
+}
+
+.heroMeta{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill{
+  border-radius: 999px;
+  padding: 6px 10px; /* ↓ menor */
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.12);
+  font-size: 12px;
+  opacity: .94;
+}
+
+.pillAlt{
+  border-color: color-mix(in srgb, var(--accent, #f59e0b) 28%, rgba(255,255,255,.12));
+  font-weight: 900;
+}
+
+.heroSub{
+  font-size: 13px;
+  opacity: .80;
+  line-height: 1.25;
+}
+
+.heroActions{
+  margin-top: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.primaryBtn, .ghostBtn{
+  height: 44px;
+  border-radius: 16px;
+  font-weight: 950;
+  letter-spacing: .12px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.10);
+}
+
+.primaryBtn{
+  border-color: color-mix(in srgb, var(--primary, #2dd4bf) 50%, rgba(255,255,255,.18));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--primary, #2dd4bf) 26%, rgba(255,255,255,.10)),
+    rgba(0,0,0,.14)
+  );
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--primary, #2dd4bf) 20%, transparent);
+}
+
+.primaryBtn:disabled{ opacity: .45; }
+.primaryBtn:active, .ghostBtn:active{ transform: translateY(1px); }
+
+/* Conteúdo */
+.grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 820px){
+  .grid{ grid-template-columns: 1fr; }
+}
+
+.card{
+  padding: 14px;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+}
+
+.cardTitle{
+  font-weight: 980;
+  margin-bottom: 8px;
+}
+
+.cardText{
+  font-size: 13px;
+  opacity: .82;
+  line-height: 1.35;
+}
+
+.list{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+.li{ font-size: 13px; opacity: .86; }
+
+/* Notice */
+.notice{
+  padding: 14px;
+  border-radius: 22px;
+  border: 1px dashed rgba(255,255,255,.16);
+  background: color-mix(in srgb, var(--surface-2) 55%, transparent);
+}
+.noticeTitle{ font-weight: 980; }
+.noticeText{
+  margin-top: 6px;
+  font-size: 13px;
+  opacity: .78;
+  line-height: 1.35;
+}
+
+/* Mobile refinado */
+@media (max-width: 520px){
+  .hero{
+    min-height: 162px;
+    max-height: none; /* deixa crescer se precisar, mas sem exagero via padding */
+  }
+
+  .heroInner{ padding: 12px; }
+  .heroTitle{ font-size: 17px; }
+
+  /* ✅ no mobile, botões ficam mais confortáveis */
+  .heroActions{
+    grid-template-columns: 1fr;
+  }
+
+  .primaryBtn, .ghostBtn{
+    height: 46px;
+  }
+}

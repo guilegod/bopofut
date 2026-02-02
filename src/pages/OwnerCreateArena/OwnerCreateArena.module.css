@@ -1,0 +1,145 @@
+.page{
+  min-height: 100dvh;
+  width: 100%;
+  padding: 14px;
+  display: grid;
+  place-items: start center;
+  background: transparent;
+}
+
+.wrap{
+  width: min(980px, 100%);
+  display: grid;
+  gap: 12px;
+}
+
+.header{
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+
+  padding: 14px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.title{
+  margin: 0;
+  font-size: 22px;
+  font-weight: 1000;
+}
+
+.sub{
+  margin: 6px 0 0;
+  opacity: .85;
+  line-height: 1.4;
+}
+
+.headerActions{
+  display: flex;
+  gap: 10px;
+}
+
+.btnGhost, .btnSoft{
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-weight: 900;
+}
+
+.btnSoft{
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+}
+
+.card{
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.grid2{
+  display: grid;
+  gap: 12px;
+}
+
+.label{
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.input{
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  color: var(--text);
+  outline: none;
+}
+
+.input:focus{
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+}
+
+.textarea{
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  color: var(--text);
+  outline: none;
+  resize: vertical;
+}
+
+.msg{
+  font-size: 13px;
+  opacity: .9;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 75%, transparent);
+}
+
+.footer{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  padding-top: 4px;
+}
+
+.hint{
+  font-size: 12px;
+  opacity: .8;
+}
+
+.btnPrimary{
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--primary) 65%, var(--border));
+  background: var(--primary);
+  color: #fff;
+  font-weight: 1000;
+}
+
+.btnPrimary:disabled{
+  opacity: .6;
+}
+
+@media (min-width: 820px){
+  .grid2{
+    grid-template-columns: 1fr 1fr;
+  }
+}

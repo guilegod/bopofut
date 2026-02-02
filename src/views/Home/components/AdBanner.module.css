@@ -1,174 +1,159 @@
-.banner{
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--r-lg);
-  min-height: 165px;
-  isolation: isolate;
+/* AdBanner.module.css */
+/* =========================================================
+   Ad Banner — Compact / Premium / Mobile-first
+   ========================================================= */
 
-  /* casa com o tema claro premium */
-  background: var(--surface);
-  border: 1px solid var(--border);
+.banner {
+  position: relative;
+  width: 100%;
+  min-height: 140px;
+
+  border-radius: 22px;
+  overflow: hidden;
+
+  background: linear-gradient(
+    135deg,
+    var(--surface),
+    var(--surface-2)
+  );
+
   box-shadow: var(--shadow-md);
 }
 
-/* imagem de fundo */
-.bg{
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  transform: scale(1.05);
-  filter: saturate(1.05) contrast(1.03) brightness(.92);
-  z-index: 0;
-}
-
-/* camada “porcelana” (deixa o banner claro, premium, e legível) */
-.gradient{
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background:
-    radial-gradient(900px 260px at 18% 22%, rgba(201,162,78,.26), transparent 60%),
-    radial-gradient(900px 280px at 92% 18%, rgba(24,195,126,.18), transparent 62%),
-    linear-gradient(110deg, rgba(233,238,246,.86), rgba(233,238,246,.56), rgba(233,238,246,.28));
-}
-
-/* highlight + vidro sutil */
-.overlay{
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  backdrop-filter: blur(2px);
-  background:
-    radial-gradient(circle at 82% 18%, rgba(255,255,255,.50), transparent 60%),
-    radial-gradient(circle at 20% 92%, rgba(255,255,255,.36), transparent 62%);
-  opacity: 1;
-}
-
-/* brilho de borda premium */
-.banner::before{
-  content:"";
-  position:absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  border-radius: inherit;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.70),
-    inset 0 -1px 0 rgba(15,28,45,.05);
-}
-
-/* grain bem leve (sem sujar o claro) */
-.banner::after{
-  content:"";
-  position:absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  opacity: .06;
-  mix-blend-mode: multiply;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
-}
-
-/* conteúdo */
-.content{
+/* Conteúdo */
+.content {
   position: relative;
-  z-index: 4;
-  display:flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 18px;
-  padding: 22px 26px;
-  color: var(--text);
-}
+  z-index: 2;
 
-.textBlock{
-  max-width: 68%;
-  display:flex;
+  padding: 16px 18px;
+
+  display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
-/* selo */
-.kicker{
-  display:inline-flex;
-  align-items:center;
-  gap: 6px;
-  width: fit-content;
+/* Tag patrocinado */
+.tag {
+  align-self: flex-start;
+
   padding: 6px 10px;
   border-radius: 999px;
 
   font-size: 11px;
-  letter-spacing: .14em;
   font-weight: 1000;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
 
-  color: var(--accent-3);
-  background: rgba(201,162,78,.16);
-  border: 1px solid rgba(201,162,78,.22);
+  background: rgba(24, 195, 126, 0.18);
+  color: var(--text);
+
+  box-shadow: var(--shadow-sm);
 }
 
-/* título mais “chique” e legível */
-.title{
-  margin:0;
-  font-size: 22px;
+/* Título */
+.title {
+  font-size: 20px;
   font-weight: 1000;
-  letter-spacing: -0.02em;
   line-height: 1.15;
-  text-shadow: 0 10px 18px rgba(255,255,255,.55);
+  color: var(--text);
+
+  margin: 0;
 }
 
-.subtitle{
-  margin:0;
-  font-size: 13.5px;
-  color: var(--muted);
+/* Sub */
+.subtitle {
+  font-size: 14px;
+  font-weight: 900;
   line-height: 1.35;
+  color: var(--muted);
+
+  max-width: 90%;
 }
 
-/* CTA premium com “rim light” */
-.cta{
-  display:inline-flex;
-  align-items:center;
-  gap: 10px;
+/* CTA */
+.cta {
+  margin-top: 6px;
+  align-self: flex-start;
 
-  padding: 12px 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 12px 16px;
   border-radius: 999px;
-  cursor:pointer;
+  min-height: 44px;
 
-  color: #062a1e;
+  border: 1px solid transparent;
+  background: linear-gradient(
+    135deg,
+    rgba(24, 195, 126, 0.85),
+    rgba(16, 160, 110, 0.9)
+  );
+
+  color: #0e1a14;
   font-weight: 1000;
+  font-size: 14px;
 
-  border: 1px solid rgba(24,195,126,.28);
-  background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  box-shadow:
-    0 14px 34px rgba(24,195,126,.28),
-    inset 0 1px 0 rgba(255,255,255,.25);
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
 
-  transition: transform .22s ease, box-shadow .22s ease, filter .22s ease;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
 }
 
-.cta:hover{
-  transform: translateY(-2px);
-  filter: brightness(1.02);
-  box-shadow:
-    0 18px 46px rgba(24,195,126,.36),
-    inset 0 1px 0 rgba(255,255,255,.28);
+.cta span {
+  font-size: 16px;
 }
 
-.cta:active{
-  transform: translateY(0) scale(.985);
+.cta:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
 }
 
-/* responsivo */
-@media (max-width: 720px){
-  .content{
-    padding: 18px;
-    flex-direction: column;
-    align-items: flex-start;
+.cta:active {
+  transform: scale(0.98);
+}
+
+/* Glow decorativo */
+.glow {
+  position: absolute;
+  inset: -80px;
+
+  background:
+    radial-gradient(
+      circle at 15% 20%,
+      rgba(24, 195, 126, 0.22),
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 90% 0%,
+      rgba(99, 102, 241, 0.18),
+      transparent 40%
+    );
+
+  pointer-events: none;
+}
+
+/* =========================
+   Dark theme fine-tuning
+========================= */
+html[data-theme="dark"] .cta {
+  color: #04130d;
+}
+
+/* =========================
+   Mobile tweaks
+========================= */
+@media (max-width: 520px) {
+  .banner {
+    min-height: 132px;
+    border-radius: 20px;
   }
-  .textBlock{ max-width: 100%; }
-  .cta{
-    width: 100%;
-    justify-content: center;
+
+  .title {
+    font-size: 18px;
+  }
+
+  .subtitle {
+    font-size: 13px;
   }
 }
