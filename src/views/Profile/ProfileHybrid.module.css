@@ -28,74 +28,200 @@
   overflow: hidden;
 }
 
-.headerTop{
-  padding: 14px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12px;
-  align-items: start;
-}
+/* =========================================================
+   ✅ NOVO PERFIL REAL (banner + avatar central)
+   ========================================================= */
 
-.headerLeft{
-  display: grid;
-  grid-template-columns: 76px 1fr;
-  gap: 12px;
-  align-items: start;
-  min-width: 0;
-}
-
-.avatarWrap{
-  width: 76px;
-  height: 76px;
-  border-radius: 22px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 85%, transparent);
+.profileTop{
+  position: relative;
+  height: 150px;
+  border-bottom: 1px solid var(--border);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
 }
 
-.avatar{
+/* banner premium */
+.profileBanner{
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(800px 240px at 15% 30%,
+      color-mix(in srgb, var(--primary) 25%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(700px 220px at 85% 10%,
+      color-mix(in srgb, var(--accent) 22%, transparent),
+      transparent 65%
+    ),
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--surface-2) 90%, transparent),
+      color-mix(in srgb, var(--surface) 85%, transparent)
+    );
+  filter: saturate(1.05);
+}
+
+/* brilho leve */
+.profileBanner::after{
+  content:"";
+  position:absolute;
+  inset:-60px;
+  background:
+    radial-gradient(circle at 50% 65%,
+      color-mix(in srgb, var(--accent) 18%, transparent),
+      transparent 62%
+    );
+  opacity: .75;
+}
+
+/* avatar */
+.profileAvatarWrap{
+  position: absolute;
+  left: 50%;
+  bottom: -38px;
+  transform: translateX(-50%);
+  width: 92px;
+  height: 92px;
+  border-radius: 26px;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.profileAvatar{
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
+  display:block;
 }
 
-.identity{
-  min-width: 0;
+/* blocão de identidade */
+.profileIdentity{
+  padding: 54px 14px 14px; /* espaço do avatar */
+  display: grid;
+  gap: 10px;
+  text-align: center;
 }
 
-.nameRow{
+.profileNameRow{
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
+  gap: 8px;
 }
 
-.name{
+.profileName{
   font-size: 28px;
   font-weight: 1000;
   letter-spacing: .2px;
   line-height: 1.05;
 }
 
-.meta{
+.profileSubRow{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.profileLocation{
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.profileBio{
+  padding: 10px 12px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: var(--shadow-sm);
+  font-weight: 900;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.profileBioMuted{
+  padding: 10px 12px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: var(--shadow-sm);
+  color: var(--muted);
+  font-weight: 900;
+  font-style: italic;
+  line-height: 1.35;
+  text-align: left;
+}
+
+/* TopStats */
+.profileQuickStats{
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.quickStat{
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: var(--shadow-sm);
+  padding: 10px 10px;
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.quickStatTop{
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+}
+
+.quickStatIcon{
+  opacity: .95;
+  font-size: 14px;
+}
+
+.quickStatVal{
+  font-weight: 1000;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.quickStatLabel{
+  color: var(--muted);
+  font-weight: 900;
+  font-size: 12px;
+  line-height: 1.1;
+}
+
+/* pills (OVR/Lv/XP/checkins) */
+.profileMetaPills{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+/* Ações quando visita outro */
+.profileActions{
+  display: grid;
+  gap: 10px;
   margin-top: 6px;
-  color: var(--muted);
-  font-weight: 900;
 }
 
-.meta2{
-  margin-top: 4px;
-  color: var(--muted);
-  font-weight: 900;
-}
-
+/* =========================
+   Pills (reaproveitado)
+========================= */
 .pillsRow{
   margin-top: 10px;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  justify-content: center;
 }
 
 .pill{
@@ -111,13 +237,6 @@
   font-size: 13px;
 }
 
-.headerRight{
-  display: grid;
-  gap: 10px;
-  align-content: start;
-  justify-items: end;
-}
-
 .friendOk{
   padding: 10px 12px;
   border-radius: 16px;
@@ -127,27 +246,13 @@
 }
 
 /* =========================
-   Bio + Tags
+   Bio + Tags (mantido)
 ========================= */
-.bio{
-  padding: 12px 14px;
-  border-top: 1px solid var(--border);
-  font-weight: 900;
-}
-
-.bioMuted{
-  padding: 12px 14px;
-  border-top: 1px solid var(--border);
-  color: var(--muted);
-  font-weight: 900;
-  font-style: italic;
-}
-
 .tagsRow{
-  padding: 0 14px 14px;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  justify-content: center;
 }
 
 .tag{
@@ -157,161 +262,6 @@
   border: 1px solid var(--border);
   background: color-mix(in srgb, var(--surface-2) 65%, transparent);
   font-weight: 1000;
-  font-size: 12px;
-}
-
-/* =========================
-   Hero Panel (Overall + Figure)
-========================= */
-.heroPanel{
-  padding: 12px 14px 14px;
-  border-top: 1px solid var(--border);
-  display: grid;
-  grid-template-columns: 180px 1fr;
-  gap: 12px;
-  align-items: start;
-  min-width: 0;
-}
-
-.heroFigure{
-  width: 180px;
-  height: 180px;
-  border-radius: 26px;
-  border: 1px solid var(--border);
-  background: radial-gradient(circle at 35% 20%, rgba(0,0,0,.05), transparent 60%);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-}
-
-.figureSvg{
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.heroStats{
-  min-width: 0;
-  display: grid;
-  gap: 10px;
-}
-
-.ovrRow{
-  display: grid;
-  gap: 10px;
-}
-
-.ovrBadge{
-  display: grid;
-  grid-template-columns: 64px 1fr 40px;
-  gap: 10px;
-  align-items: center;
-  padding: 10px 10px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 86%, transparent);
-  box-shadow: var(--shadow-sm);
-  min-width: 0;
-}
-
-.ovrNum{
-  width: 54px;
-  height: 54px;
-  border-radius: 18px;
-  display: grid;
-  place-items: center;
-  border: 1px solid color-mix(in srgb, var(--primary) 55%, var(--border));
-  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
-  font-weight: 1000;
-  font-size: 20px;
-}
-
-.chevBtn{
-  width: 40px;
-  height: 40px;
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  font-weight: 1000;
-  display: grid;
-  place-items: center;
-}
-
-.actionRow{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.attrGrid{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.attr{
-  padding: 10px 10px;
-  border-radius: 18px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 86%, transparent);
-  box-shadow: var(--shadow-sm);
-  min-width: 0;
-}
-
-.attrTop{
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: center;
-  font-weight: 1000;
-  margin-bottom: 8px;
-}
-
-.attrBar{
-  height: 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
-  overflow: hidden;
-}
-
-.attrFill{
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent), var(--primary));
-}
-
-/* Collapsed overall */
-.heroCollapsed{
-  padding: 10px 12px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 86%, transparent);
-  box-shadow: var(--shadow-sm);
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.heroCollapsedLeft{
-  display: grid;
-  gap: 2px;
-}
-
-.heroCollapsedLabel{
-  font-weight: 1000;
-}
-
-.heroCollapsedValue{
-  font-weight: 1000;
-  font-size: 22px;
-}
-
-.heroCollapsedHint{
-  color: var(--muted);
-  font-weight: 900;
   font-size: 12px;
 }
 
@@ -373,22 +323,11 @@
 }
 
 /* =========================
-   Content Grid
+   Content
 ========================= */
 .content{
   display: grid;
   gap: 12px;
-}
-
-.grid2{
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 12px;
-  align-items: start;
-}
-
-.gridFull{
-  grid-template-columns: 1fr !important;
 }
 
 .block{
@@ -417,7 +356,7 @@
 }
 
 /* =========================
-   Soft Card (generic)
+   Soft Card
 ========================= */
 .softCard{
   padding: 14px;
@@ -425,12 +364,10 @@
   border: 1px solid var(--border);
   background: color-mix(in srgb, var(--surface) 86%, transparent);
   box-shadow: var(--shadow-sm);
+  margin: 14px;
 }
 
-.softTitle{
-  font-weight: 1000;
-}
-
+.softTitle{ font-weight: 1000; }
 .softHint{
   margin-top: 6px;
   color: var(--muted);
@@ -468,6 +405,12 @@
 .ghostBtnWide:disabled{
   opacity: .6;
   cursor: not-allowed;
+}
+
+.actionRow{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
 /* =========================
@@ -569,7 +512,7 @@
 }
 
 /* =========================
-   Friends list (lite/official)
+   Friends list
 ========================= */
 .list{
   margin-top: 10px;
@@ -590,14 +533,8 @@
   align-items: center;
 }
 
-.rowLeft{
-  min-width: 0;
-}
-
-.rowName{
-  font-weight: 1000;
-}
-
+.rowLeft{ min-width: 0; }
+.rowName{ font-weight: 1000; }
 .rowSub{
   margin-top: 4px;
   color: var(--muted);
@@ -610,42 +547,19 @@
   gap: 8px;
 }
 
-/* =========================
-   Feed Composer compact helper (se existir)
-========================= */
-.feedComposerCompact{
-  padding: 12px;
-  border-radius: 22px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  box-shadow: var(--shadow-sm);
-}
+/* ✅ evita corte horizontal por textos grandes */
+.profileName, .postName, .softHint{ overflow-wrap: anywhere; }
 
 /* =========================
    Responsive
 ========================= */
-@media (max-width: 1040px){
-  .page{ max-width: 100%; }
-}
 
 @media (max-width: 920px){
-  .grid2{ grid-template-columns: 1fr; }
-  .headerTop{ grid-template-columns: 1fr; }
-  .headerRight{ margin-top: 10px; justify-items: start; }
+  .actionRow{ grid-template-columns: 1fr; }
+  .profileQuickStats{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
-@media (max-width: 860px){
-  .heroPanel{
-    grid-template-columns: 1fr;
-  }
-  .heroFigure{
-    width: 160px;
-    height: 160px;
-  }
-}
-
-@media (max-width: 520px){
-  /* ✅ ocupa 100% no mobile e evita “sobrando espaço” */
+@media (max-width: 560px){
   .page{
     width: 100%;
     max-width: 100%;
@@ -653,91 +567,31 @@
     padding: 10px;
     gap: 10px;
   }
-  .headerCard,
-  .block,
-  .softCard{
-    width: 100%;
+
+  .profileTop{ height: 140px; }
+  .profileAvatarWrap{
+    width: 86px;
+    height: 86px;
+    border-radius: 24px;
+    bottom: -36px;
   }
 
-  .grid2{
-    grid-template-columns: 1fr !important;
-  }
+  .profileIdentity{ padding-top: 52px; }
+  .profileName{ font-size: 24px; }
 
-  .actionRow{
-    grid-template-columns: 1fr !important;
-    gap: 8px !important;
-  }
+  .profileQuickStats{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
-  .attrGrid{
-    grid-template-columns: 1fr !important;
-  }
-
-  .postActions{
-    grid-template-columns: 1fr;
-  }
+  .postActions{ grid-template-columns: 1fr; }
 
   .primaryBtn, .ghostBtnWide{
     height: 42px !important;
     border-radius: 18px !important;
   }
-
-  .heroFigure{
-    width: 140px !important;
-    height: 140px !important;
-    opacity: .95;
-  }
-
-  .feedComposerCompact{
-    padding: 10px;
-    border-radius: 18px;
-  }
 }
 
-@media (max-width: 480px){
-  .headerLeft{
-    grid-template-columns: 64px 1fr;
-  }
-  .avatarWrap{
-    width: 64px;
-    height: 64px;
-    border-radius: 18px;
-  }
-  .name{
-    font-size: 24px;
-  }
-  .pill{
-    font-size: 12px;
-    padding: 7px 10px;
-  }
-}
-
-@media (max-width: 520px){
-  .grid2{
-    gap: 10px !important;
-  }
-
-  .grid2 > .block:nth-child(2) > .softCard{
-    padding: 12px !important;
-    border-radius: 20px !important;
-  }
-}
-
-@media (max-width: 520px){
-  .tabBtn{
-    height: 38px;
-    padding: 0 12px;
-    border-radius: 999px;
-    font-size: 13px;
-  }
-}
-
-/* ✅ evita corte horizontal por textos grandes */
-.name, .postName, .meta, .meta2, .softHint{ overflow-wrap: anywhere; }
 /* =========================================================
-   FeedComposerLite — styles que faltavam no module
-   (usado em: src/views/Profile/components/FeedComposerLite.jsx)
+   FeedComposerLite — styles (mantido, caso use)
    ========================================================= */
-
 .feedComposerCompact{
   margin: 14px;
   padding: 12px 12px;
@@ -917,29 +771,12 @@
   cursor: not-allowed;
 }
 
-/* Mobile: composer vira 1 coluna e footer empilha */
 @media (max-width: 560px){
-  .feedGrid{
-    grid-template-columns: 1fr;
-  }
+  .feedGrid{ grid-template-columns: 1fr; }
+  .feedFooter{ grid-template-columns: 1fr; }
 
-  .feedFooter{
-    grid-template-columns: 1fr;
-  }
+  .fileBtn, .ghostBtnSm, .primaryBtnSm{ width: 100%; }
 
-  .fileBtn,
-  .ghostBtnSm,
-  .primaryBtnSm{
-    width: 100%;
-  }
-
-  .feedComposerCompact{
-    margin: 12px;
-    border-radius: 20px;
-  }
-
-  .feedComposerBox{
-    margin: 12px;
-    border-radius: 22px;
-  }
+  .feedComposerCompact{ margin: 12px; border-radius: 20px; }
+  .feedComposerBox{ margin: 12px; border-radius: 22px; }
 }

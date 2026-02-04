@@ -3,13 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import styles from "./ProfileHybrid.module.css";
 
 // ✅ UI oficial existente (mantém seu core)
-import WalletCard from "./components/WalletCard.jsx";
 import AchievementsGrid from "./components/AchievementsGrid.jsx";
 import OwnerManagement from "./components/OwnerManagement.jsx";
 import AchievementModal from "./components/modals/AchievementModal.jsx";
 import MiniAchievementModal from "./components/modals/MiniAchievementModal.jsx";
 
-// ✅ NOVO: composer inteligente do feed
+// ✅ composer inteligente do feed
 import FeedComposerLite from "./components/FeedComposerLite.jsx";
 
 // ✅ lógica do backend (igual seu ProfileV2)
@@ -70,112 +69,63 @@ function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n));
 }
 
-function calcOverall({ games = 0, goals = 0, assists = 0, xp = 0, checkins = 0 }) {
+/**
+ * ✅ Overall mais "lógico" (sem depender do backend ter tudo)
+ * - Se existirem stats extras (passes, faltas etc), ele usa.
+ * - Se não existirem, fica 0 e segue.
+ */
+function calcOverall({
+  games = 0,
+  goals = 0,
+  assists = 0,
+  passes = 0,
+  tackles = 0,
+  saves = 0,
+  fouls = 0,
+  xp = 0,
+  checkins = 0,
+}) {
   const score =
     games * 2 +
-    goals * 6 +
-    assists * 4 +
+    goals * 7 +
+    assists * 5 +
+    Math.floor(passes / 30) +
+    Math.floor(tackles / 8) +
+    Math.floor(saves / 6) -
+    Math.floor(fouls / 6) +
     Math.floor(xp / 25) +
     Math.floor(checkins / 2);
 
   return clamp(10 + Math.floor(score / 6), 1, 99);
 }
 
-function calcAttributes({ games = 0, goals = 0, assists = 0, xp = 0, checkins = 0 }) {
-  const overall = calcOverall({ games, goals, assists, xp, checkins });
+function calcAttributes({
+  games = 0,
+  goals = 0,
+  assists = 0,
+  passes = 0,
+  tackles = 0,
+  saves = 0,
+  fouls = 0,
+  xp = 0,
+  checkins = 0,
+}) {
+  const overall = calcOverall({ games, goals, assists, passes, tackles, saves, fouls, xp, checkins });
+
+  // ⚽ atributos "futebol"
   const pace = clamp(overall + Math.floor(checkins / 2), 10, 99);
   const shooting = clamp(overall + goals * 2, 10, 99);
-  const passing = clamp(overall + assists * 3, 10, 99);
-  const stamina = clamp(overall + Math.floor(games / 2) + Math.floor(xp / 50), 10, 99);
+  const passing = clamp(overall + assists * 2 + Math.floor(passes / 20), 10, 99);
+  const defending = clamp(overall + Math.floor(tackles / 2), 10, 99);
+  const gk = clamp(overall + Math.floor(saves / 2), 10, 99);
 
-  return { overall, pace, shooting, passing, stamina };
-}
+  // disciplina: faltas pesam pra baixo, mas nunca zera
+  const discipline = clamp(90 - Math.floor(fouls * 1.5), 10, 99);
 
-function PlayerFigure({ overall = 50 }) {
-  return (
-    <div className={styles.heroFigure} title={`Overall ${overall}`}>
-      <svg className={styles.figureSvg} viewBox="0 0 120 120" aria-hidden="true">
-        <defs>
-          <radialGradient id="g1" cx="35%" cy="25%" r="70%">
-            <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.55" />
-            <stop offset="70%" stopColor="var(--primary)" stopOpacity="0.10" />
-            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
-          </radialGradient>
-
-          <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.95" />
-            <stop offset="100%" stopColor="var(--primary-2)" stopOpacity="0.95" />
-          </linearGradient>
-
-          <linearGradient id="shorts" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.95" />
-            <stop offset="100%" stopColor="var(--accent-2)" stopOpacity="0.95" />
-          </linearGradient>
-        </defs>
-
-        <circle cx="60" cy="60" r="58" fill="url(#g1)" opacity="0.9" />
-
-        <circle cx="60" cy="38" r="16" fill="color-mix(in srgb, var(--surface-solid) 70%, #ffd7b3)" />
-        <path
-          d="M44 36c4-12 29-12 32 0c-6-7-26-7-32 0z"
-          fill="color-mix(in srgb, var(--text) 60%, #000)"
-          opacity="0.9"
-        />
-        <circle cx="54" cy="40" r="2.2" fill="color-mix(in srgb, var(--text) 80%, #000)" />
-        <circle cx="66" cy="40" r="2.2" fill="color-mix(in srgb, var(--text) 80%, #000)" />
-        <path
-          d="M54 48c4 4 8 4 12 0"
-          stroke="color-mix(in srgb, var(--text) 55%, #000)"
-          strokeWidth="2.2"
-          fill="none"
-          strokeLinecap="round"
-        />
-
-        <path d="M40 62c6-14 34-14 40 0v14c0 8-9 16-20 16s-20-8-20-16V62z" fill="url(#shirt)" />
-        <circle cx="70" cy="70" r="7" fill="var(--accent)" opacity="0.9" />
-        <text x="70" y="73" textAnchor="middle" fontSize="9" fontWeight="900" fill="var(--on-accent)">
-          {String(overall).padStart(2, "0")}
-        </text>
-
-        <path d="M44 78h32v10c0 6-8 12-16 12s-16-6-16-12V78z" fill="url(#shorts)" />
-        <rect x="52" y="88" width="8" height="20" rx="4" fill="color-mix(in srgb, var(--surface-solid) 70%, #ffd7b3)" />
-        <rect x="60" y="88" width="8" height="20" rx="4" fill="color-mix(in srgb, var(--surface-solid) 70%, #ffd7b3)" />
-
-        <path
-          d="M48 108h16c0 6-6 10-12 10h-8c-2 0-4-2-4-4c0-3 3-6 8-6z"
-          fill="color-mix(in srgb, var(--text) 65%, #000)"
-          opacity="0.9"
-        />
-        <path
-          d="M56 108h16c0 6-6 10-12 10h-8c-2 0-4-2-4-4c0-3 3-6 8-6z"
-          fill="color-mix(in srgb, var(--text) 65%, #000)"
-          opacity="0.9"
-        />
-
-        <circle cx="28" cy="96" r="10" fill="color-mix(in srgb, var(--surface-solid) 70%, #fff)" />
-        <path d="M22 96h12M28 90v12" stroke="color-mix(in srgb, var(--text) 45%, #000)" strokeWidth="2" opacity="0.6" />
-      </svg>
-    </div>
-  );
-}
-
-function Attr({ label, value }) {
-  const pct = clamp(Number(value) || 0, 0, 99);
-  return (
-    <div className={styles.attr}>
-      <div className={styles.attrTop}>
-        <span>{label}</span>
-        <span>{pct}</span>
-      </div>
-      <div className={styles.attrBar}>
-        <div className={styles.attrFill} style={{ width: `${pct}%` }} />
-      </div>
-    </div>
-  );
+  return { overall, pace, shooting, passing, defending, gk, discipline };
 }
 
 function timeAgo(ts) {
-  // suporta number (antigo) ou ISO (novo)
   let t = ts;
   if (typeof ts === "string") {
     const parsed = Date.parse(ts);
@@ -236,7 +186,7 @@ function postSummary(p) {
     const b = p.game.away || "Time B";
     const sh = p.game.scoreHome ?? "";
     const sa = p.game.scoreAway ?? "";
-    const scoreTxt = (sh !== "" || sa !== "") ? `${sh || 0}x${sa || 0}` : "";
+    const scoreTxt = sh !== "" || sa !== "" ? `${sh || 0}x${sa || 0}` : "";
     const place = p.game.place ? ` • ${p.game.place}` : "";
     return `${a} ${scoreTxt} ${b}${place}`.trim();
   }
@@ -287,9 +237,6 @@ export default function ProfileHybrid({
 
   const [tab, setTab] = useState("overview");
   const [editOpen, setEditOpen] = useState(false);
-
-  // ✅ NOVO: collapsibles (Overall/Hero + Tabs)
-  const [heroOpen, setHeroOpen] = useState(true);
   const [tabsOpen, setTabsOpen] = useState(true);
 
   const [selectedAchievement, setSelectedAchievement] = useState(null);
@@ -453,6 +400,9 @@ export default function ProfileHybrid({
     const baseName = p?.name || user?.name || s?.name || "Jogador";
     const avatar = s?.avatar || p?.avatar || user?.avatar || "https://picsum.photos/seed/user/240";
 
+    // ✅ stats oficiais + opcionais (se existirem)
+    const coreStats = p?.stats || user?.stats || { goals: 0, assists: 0, gamesPlayed: 0 };
+
     return {
       id: targetUserId,
       name: baseName,
@@ -469,7 +419,17 @@ export default function ProfileHybrid({
       bio: s?.bio || "",
       tags: Array.isArray(s?.tags) ? s.tags : [],
 
-      stats: p?.stats || user?.stats || { goals: 0, assists: 0, gamesPlayed: 0 },
+      // ✅ aqui já deixamos espaço pra futuramente vir do backend sem quebrar UI
+      stats: {
+        gamesPlayed: coreStats?.gamesPlayed || 0,
+        goals: coreStats?.goals || 0,
+        assists: coreStats?.assists || 0,
+        passes: coreStats?.passes || 0,
+        fouls: coreStats?.fouls || 0,
+        tackles: coreStats?.tackles || 0,
+        saves: coreStats?.saves || 0,
+      },
+
       unlockedAchievementIds: p?.unlockedAchievementIds || user?.unlockedAchievementIds || [],
       walletBalance: p?.walletBalance ?? user?.walletBalance ?? 0,
     };
@@ -484,6 +444,10 @@ export default function ProfileHybrid({
       games: merged.stats?.gamesPlayed || 0,
       goals: merged.stats?.goals || 0,
       assists: merged.stats?.assists || 0,
+      passes: merged.stats?.passes || 0,
+      fouls: merged.stats?.fouls || 0,
+      tackles: merged.stats?.tackles || 0,
+      saves: merged.stats?.saves || 0,
       xp: socialXp,
       checkins: totalCheckins,
     });
@@ -560,175 +524,131 @@ export default function ProfileHybrid({
 
   const shareText = merged.username ? `@${merged.username}` : `ID: ${targetUserId}`;
 
+  // ✅ mini stats do topo (perfil real)
+  const topStats = [
+    { k: "⚽", v: merged.stats?.gamesPlayed || 0, l: "Jogos" },
+    { k: "🥅", v: merged.stats?.goals || 0, l: "Gols" },
+    { k: "🎁", v: merged.stats?.assists || 0, l: "Assist." },
+    { k: "🎯", v: merged.stats?.passes || 0, l: "Passes" },
+    { k: "🟨", v: merged.stats?.fouls || 0, l: "Faltas" },
+  ];
+
   return (
     <div className={styles.page}>
+      {/* =====================================================
+          PERFIL (cara de perfil real)
+      ====================================================== */}
       <div className={styles.headerCard}>
-        <div className={styles.headerTop}>
-          <div className={styles.headerLeft}>
-            <div className={styles.avatarWrap}>
-              <img src={merged.avatar} alt="" className={styles.avatar} />
-            </div>
-
-            <div className={styles.identity}>
-              <div className={styles.nameRow}>
-                <div className={styles.name}>{merged.name}</div>
-                {merged.role === "admin" ? <Pill>⚙️ Admin</Pill> : null}
-                {merged.role === "arena_owner" ? <Pill>🏟️ Arena</Pill> : null}
-                {merged.role === "owner" ? <Pill>🧠 Organizador</Pill> : null}
-                {merged.username ? <Pill>@{merged.username}</Pill> : <Pill>Sem @</Pill>}
-              </div>
-
-              <div className={styles.meta}>
-                {merged.position} • {merged.level} • {merged.foot}
-              </div>
-
-              <div className={styles.meta2}>
-                {merged.bairro ? `${merged.bairro} • ` : ""}
-                {merged.city}
-              </div>
-
-              <div className={styles.pillsRow}>
-                <Pill>⭐ OVR {attr.overall}</Pill>
-                <Pill>🔥 Lv {socialLevel}</Pill>
-                <Pill>⚡ {socialXp} XP</Pill>
-                <Pill>📍 {totalCheckins} check-ins</Pill>
-                <Pill>⚽ {merged.stats?.gamesPlayed || 0} jogos</Pill>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.headerRight}>
-            {!iAmViewingSomeone ? null : (
-              <>
-                {alreadyFriend ? (
-                  <div className={styles.friendOk}>🤝 Amigos</div>
-                ) : (
-                  <button
-                    type="button"
-                    className={styles.primaryBtn}
-                    onClick={handleAddFriend}
-                    disabled={actionBusy || outgoingPending}
-                    title={outgoingPending ? "Pedido já enviado" : "Enviar pedido"}
-                  >
-                    {outgoingPending ? "📩 Pedido enviado" : "➕ Adicionar amigo"}
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  className={styles.ghostBtnWide}
-                  onClick={() => onStartChallenge?.({ id: targetUserId, name: merged.name, avatar: merged.avatar })}
-                >
-                  ⚔️ Desafiar com meu time
-                </button>
-
-                <button
-                  type="button"
-                  className={styles.ghostBtnWide}
-                  onClick={() => onStartChat?.({ id: targetUserId, name: merged.name, avatar: merged.avatar })}
-                >
-                  💬 Conversar
-                </button>
-              </>
-            )}
+        {/* topo: banner + avatar */}
+        <div className={styles.profileTop}>
+          <div className={styles.profileBanner} />
+          <div className={styles.profileAvatarWrap}>
+            <img src={merged.avatar} alt="" className={styles.profileAvatar} />
           </div>
         </div>
 
-        {merged.bio ? (
-          <div className={styles.bio}>{merged.bio}</div>
-        ) : (
-          <div className={styles.bioMuted}>
-            {iAmViewingSomeone ? "Sem bio por enquanto." : "Sem bio ainda — clica no menu (⋯) e edita seu perfil 😉"}
-          </div>
-        )}
+        {/* identidade */}
+        <div className={styles.profileIdentity}>
+          <div className={styles.profileNameRow}>
+            <div className={styles.profileName}>{merged.name}</div>
 
-        {merged.tags?.length ? (
-          <div className={styles.tagsRow}>
-            {merged.tags.map((t) => (
-              <span key={t} className={styles.tag}>
-                {t}
-              </span>
+            {merged.role === "admin" ? <Pill>⚙️ Admin</Pill> : null}
+            {merged.role === "arena_owner" ? <Pill>🏟️ Arena</Pill> : null}
+            {merged.role === "owner" ? <Pill>🧠 Organizador</Pill> : null}
+          </div>
+
+          <div className={styles.profileSubRow}>
+            {merged.username ? <Pill>@{merged.username}</Pill> : <Pill>Sem @</Pill>}
+            <Pill>{merged.position}</Pill>
+            <Pill>{merged.level}</Pill>
+            <Pill>{merged.foot}</Pill>
+          </div>
+
+          <div className={styles.profileLocation}>
+            📍 {merged.bairro ? `${merged.bairro} • ` : ""}
+            {merged.city}
+          </div>
+
+          {/* bio */}
+          {merged.bio ? (
+            <div className={styles.profileBio}>{merged.bio}</div>
+          ) : (
+            <div className={styles.profileBioMuted}>
+              {iAmViewingSomeone ? "Sem bio por enquanto." : "Sem bio ainda — clica no menu (⋯) e edita seu perfil 😉"}
+            </div>
+          )}
+
+          {/* tags */}
+          {merged.tags?.length ? (
+            <div className={styles.tagsRow}>
+              {merged.tags.map((t) => (
+                <span key={t} className={styles.tag}>
+                  {t}
+                </span>
+              ))}
+            </div>
+          ) : null}
+
+          {/* stats rápidos (perfil real) */}
+          <div className={styles.profileQuickStats}>
+            {topStats.map((s) => (
+              <div key={s.l} className={styles.quickStat}>
+                <div className={styles.quickStatTop}>
+                  <span className={styles.quickStatIcon}>{s.k}</span>
+                  <span className={styles.quickStatVal}>{s.v}</span>
+                </div>
+                <div className={styles.quickStatLabel}>{s.l}</div>
+              </div>
             ))}
           </div>
-        ) : null}
 
-        {/* ✅ Collapsible: Overall + Boneco */}
-        <div className={styles.heroPanel}>
-          {heroOpen ? (
-            <>
-              <PlayerFigure overall={attr.overall} />
+          {/* meta pills (OVR + Lv + XP + checkins) */}
+          <div className={styles.profileMetaPills}>
+            <Pill>⭐ OVR {attr.overall}</Pill>
+            <Pill>🔥 Lv {socialLevel}</Pill>
+            <Pill>⚡ {socialXp} XP</Pill>
+            <Pill>📍 {totalCheckins} check-ins</Pill>
+          </div>
 
-              <div className={styles.heroStats}>
-                <div className={styles.ovrRow}>
-                  <div className={styles.ovrBadge}>
-                    <div className={styles.ovrNum}>{attr.overall}</div>
-
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontWeight: 1000, lineHeight: 1.1 }}>Overall</div>
-                      <div style={{ color: "var(--muted)", fontWeight: 900, fontSize: 12 }}>
-                        baseado em jogos, gols, assist., XP e check-ins
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      className={styles.chevBtn}
-                      onClick={() => setHeroOpen(false)}
-                      aria-label="Ocultar overall"
-                      title="Ocultar"
-                    >
-                      ▾
-                    </button>
-                  </div>
-
-                  <div className={styles.actionRow}>
-                    <button
-                      type="button"
-                      className={styles.ghostBtnWide}
-                      onClick={() => safeCopy(targetUserId, "ID copiado ✅")}
-                    >
-                      🆔 Copiar ID
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.ghostBtnWide}
-                      onClick={() => safeCopy(shareText, "Copiado ✅")}
-                    >
-                      📤 Copiar @/ID
-                    </button>
-                  </div>
-                </div>
-
-                <div className={styles.attrGrid}>
-                  <Attr label="🏃 Ritmo" value={attr.pace} />
-                  <Attr label="🎯 Finalização" value={attr.shooting} />
-                  <Attr label="🎁 Passe" value={attr.passing} />
-                  <Attr label="🫀 Fôlego" value={attr.stamina} />
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className={styles.heroCollapsed}>
-              <div className={styles.heroCollapsedLeft}>
-                <span className={styles.heroCollapsedLabel}>⭐ Overall</span>
-                <span className={styles.heroCollapsedValue}>{attr.overall}</span>
-                <span className={styles.heroCollapsedHint}>toque para abrir</span>
-              </div>
+          {/* ações (quando visualiza outro) */}
+          {iAmViewingSomeone ? (
+            <div className={styles.profileActions}>
+              {alreadyFriend ? (
+                <div className={styles.friendOk}>🤝 Amigos</div>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.primaryBtn}
+                  onClick={handleAddFriend}
+                  disabled={actionBusy || outgoingPending}
+                  title={outgoingPending ? "Pedido já enviado" : "Enviar pedido"}
+                >
+                  {outgoingPending ? "📩 Pedido enviado" : "➕ Adicionar amigo"}
+                </button>
+              )}
 
               <button
                 type="button"
-                className={styles.chevBtn}
-                onClick={() => setHeroOpen(true)}
-                aria-label="Mostrar overall"
-                title="Mostrar"
+                className={styles.ghostBtnWide}
+                onClick={() => onStartChallenge?.({ id: targetUserId, name: merged.name, avatar: merged.avatar })}
               >
-                ▸
+                ⚔️ Desafiar
+              </button>
+
+              <button
+                type="button"
+                className={styles.ghostBtnWide}
+                onClick={() => onStartChat?.({ id: targetUserId, name: merged.name, avatar: merged.avatar })}
+              >
+                💬 Conversar
               </button>
             </div>
-          )}
+          ) : null}
         </div>
 
-        {/* ✅ Collapsible: Tabs (Feed/Social/Amigos/...) */}
+        {/* =====================================================
+            Tabs
+        ====================================================== */}
         <div className={styles.tabsWrap}>
           <div className={styles.tabsHeader}>
             <div className={styles.tabsHeaderTitle}>Seções</div>
@@ -748,7 +668,6 @@ export default function ProfileHybrid({
               <Tab active={tab === "overview"} onClick={() => setTab("overview")}>
                 📰 Feed
               </Tab>
-
               <Tab active={tab === "social"} onClick={() => setTab("social")}>
                 🌐 Social
               </Tab>
@@ -762,7 +681,6 @@ export default function ProfileHybrid({
               <Tab active={tab === "official"} onClick={() => setTab("official")}>
                 🏆 Oficial
               </Tab>
-
               <Tab active={tab === "achievements"} onClick={() => setTab("achievements")}>
                 🏅 Conquistas
               </Tab>
@@ -777,6 +695,9 @@ export default function ProfileHybrid({
         </div>
       </div>
 
+      {/* =====================================================
+          CONTEÚDO (1 COLUNA — sem card do lado)
+      ====================================================== */}
       <div className={styles.content}>
         {profileLoading ? (
           <div className={styles.softCard}>
@@ -793,285 +714,280 @@ export default function ProfileHybrid({
           </div>
         ) : null}
 
+        {/* =========================
+            FEED
+        ========================= */}
         {tab === "overview" ? (
-          <div className={`${styles.grid2} ${styles.gridFull}`}>
-            <div className={styles.block}>
-              <div className={styles.feedTop}>
-                <div className={styles.blockTitle}>📰 Seu Feed</div>
-                {iAmViewingSomeone ? <Pill>somente leitura</Pill> : null}
+          <div className={styles.block}>
+            <div className={styles.feedTop}>
+              <div className={styles.blockTitle}>📰 Feed</div>
+              {iAmViewingSomeone ? <Pill>somente leitura</Pill> : null}
+            </div>
+
+            {!iAmViewingSomeone ? (
+              <FeedComposerLite
+                userId={targetUserId}
+                userName={merged.name}
+                userAvatar={merged.avatar}
+                defaultCity={merged.city || "Curitiba"}
+                onCreate={(post) => {
+                  const next = [post, ...(Array.isArray(feed) ? feed : [])].slice(0, 50);
+                  persistFeed(next);
+                }}
+              />
+            ) : null}
+
+            <div className={styles.feedList}>
+              {(Array.isArray(feed) ? feed : []).map((p) => (
+                <div key={p.id} className={styles.post}>
+                  <div className={styles.postHeader}>
+                    <div className={styles.postUser}>
+                      <img src={p.userAvatar} alt="" className={styles.postAvatar} />
+                      <div style={{ minWidth: 0 }}>
+                        <div className={styles.postName}>{p.userName}</div>
+                        <div className={styles.postTime}>{timeAgo(p.createdAt)}</div>
+                      </div>
+                    </div>
+
+                    <div className={styles.postBadges}>
+                      <span className={styles.postBadge}>{postBadge(p)}</span>
+                      <Pill>⭐ +{p.likes || 0}</Pill>
+                    </div>
+                  </div>
+
+                  {postSummary(p) ? <div className={styles.postMeta}>{postSummary(p)}</div> : null}
+                  {p.image ? <img src={p.image} alt="" className={styles.postImg} /> : null}
+                  {p.caption ? <div className={styles.postCaption}>{p.caption}</div> : null}
+
+                  <div className={styles.postActions}>
+                    <button type="button" className={styles.ghostBtnWide} onClick={() => likePost(p.id)}>
+                      👍 Curtir
+                    </button>
+
+                    {!iAmViewingSomeone ? (
+                      <button
+                        type="button"
+                        className={styles.ghostBtnWide}
+                        onClick={() => safeCopy(p.caption || "", "Legenda copiada ✅")}
+                      >
+                        📋 Copiar legenda
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {/* =========================
+            SOCIAL (1 coluna)
+        ========================= */}
+        {tab === "social" ? (
+          <div className={styles.block}>
+            <div className={styles.blockTitle}>🌐 Social</div>
+
+            <div className={styles.softCard}>
+              <div className={styles.softTitle}>Status / presença / check-ins</div>
+              <div className={styles.softHint}>Aqui entra presença em praças, últimos check-ins e desafios.</div>
+
+              <div className={styles.pillsRow} style={{ marginTop: 10 }}>
+                <Pill>🔥 Lv {socialLevel}</Pill>
+                <Pill>⚡ {socialXp} XP</Pill>
+                <Pill>📍 {totalCheckins} check-ins</Pill>
+              </div>
+
+              <div className={styles.actionRow} style={{ marginTop: 10 }}>
+                <button
+                  type="button"
+                  className={styles.ghostBtnWide}
+                  onClick={() => safeCopy(targetUserId, "ID copiado ✅")}
+                >
+                  🆔 Copiar ID
+                </button>
+                <button type="button" className={styles.ghostBtnWide} onClick={() => safeCopy(shareText, "Copiado ✅")}>
+                  📤 Copiar @/ID
+                </button>
               </div>
 
               {!iAmViewingSomeone ? (
-                <FeedComposerLite
-                  userId={targetUserId}
-                  userName={merged.name}
-                  userAvatar={merged.avatar}
-                  defaultCity={merged.city || "Curitiba"}
-                  onCreate={(post) => {
-                    const next = [post, ...(Array.isArray(feed) ? feed : [])].slice(0, 50);
-                    persistFeed(next);
-                  }}
-                />
+                <button
+                  type="button"
+                  className={styles.primaryBtn}
+                  style={{ marginTop: 10 }}
+                  onClick={() => setEditOpen(true)}
+                >
+                  ✏️ Editar perfil público
+                </button>
               ) : null}
-
-              <div className={styles.feedList}>
-                {(Array.isArray(feed) ? feed : []).map((p) => (
-                  <div key={p.id} className={styles.post}>
-                    <div className={styles.postHeader}>
-                      <div className={styles.postUser}>
-                        <img src={p.userAvatar} alt="" className={styles.postAvatar} />
-                        <div style={{ minWidth: 0 }}>
-                          <div className={styles.postName}>{p.userName}</div>
-                          <div className={styles.postTime}>{timeAgo(p.createdAt)}</div>
-                        </div>
-                      </div>
-
-                      <div className={styles.postBadges}>
-                        <span className={styles.postBadge}>{postBadge(p)}</span>
-                        <Pill>⭐ +{p.likes || 0}</Pill>
-                      </div>
-                    </div>
-
-                    {postSummary(p) ? <div className={styles.postMeta}>{postSummary(p)}</div> : null}
-
-                    {p.image ? <img src={p.image} alt="" className={styles.postImg} /> : null}
-                    {p.caption ? <div className={styles.postCaption}>{p.caption}</div> : null}
-
-                    <div className={styles.postActions}>
-                      <button type="button" className={styles.ghostBtnWide} onClick={() => likePost(p.id)}>
-                        👍 Curtir
-                      </button>
-
-                      {!iAmViewingSomeone ? (
-                        <button
-                          type="button"
-                          className={styles.ghostBtnWide}
-                          onClick={() => safeCopy(p.caption || "", "Legenda copiada ✅")}
-                        >
-                          📋 Copiar legenda
-                        </button>
-                      ) : null}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Wallet removida do Perfil (já existe na View Wallet do AppShell) */}
-
-          </div>
-        ) : null}
-
-        {tab === "social" ? (
-          <div className={styles.grid2}>
-            <div className={styles.block}>
-              <div className={styles.blockTitle}>🌐 Social do BóPôFut</div>
-              <div className={styles.softCard}>
-                <div className={styles.softTitle}>Status / presença / desafios</div>
-                <div className={styles.softHint}>
-                  Aqui entra: presença em praças, últimos check-ins, desafios recebidos, etc.
-                </div>
-                <div className={styles.pillsRow} style={{ marginTop: 10 }}>
-                  <Pill>🔥 Lv {socialLevel}</Pill>
-                  <Pill>⚡ {socialXp} XP</Pill>
-                  <Pill>📍 {totalCheckins} check-ins</Pill>
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.block}>
-              <div className={styles.blockTitle}>📌 Links rápidos</div>
-
-              <div className={styles.softCard}>
-                <div className={styles.softTitle}>Compartilhar</div>
-                <div className={styles.softHint}>Copie seu @ ou ID pra mandar no WhatsApp/Instagram.</div>
-
-                <div className={styles.actionRow}>
-                  <button
-                    type="button"
-                    className={styles.ghostBtnWide}
-                    onClick={() => safeCopy(targetUserId, "ID copiado ✅")}
-                  >
-                    🆔 Copiar ID
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.ghostBtnWide}
-                    onClick={() => safeCopy(shareText, "Copiado ✅")}
-                  >
-                    📤 Copiar @/ID
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         ) : null}
 
+        {/* =========================
+            FRIENDS (1 coluna)
+        ========================= */}
         {tab === "friends" && !iAmViewingSomeone ? (
-          <div className={styles.grid2}>
-            <div className={styles.block}>
-              <div className={styles.blockTitle}>👥 Amigos (oficial)</div>
+          <div className={styles.block}>
+            <div className={styles.blockTitle}>👥 Amigos</div>
 
-              {friendsLoading ? (
+            {friendsLoading ? (
+              <div className={styles.softCard}>
+                <div className={styles.softTitle}>Carregando amigos…</div>
+                <div className={styles.softHint}>Buscando lista e pedidos.</div>
+              </div>
+            ) : friendsError ? (
+              <div className={styles.softCard}>
+                <div className={styles.softTitle}>Erro ao carregar amigos 😬</div>
+                <div className={styles.softHint}>{friendsError}</div>
+                <button type="button" className={styles.primaryBtn} onClick={refreshFriends}>
+                  Tentar de novo
+                </button>
+              </div>
+            ) : (
+              <>
                 <div className={styles.softCard}>
-                  <div className={styles.softTitle}>Carregando amigos…</div>
-                  <div className={styles.softHint}>Buscando lista e pedidos.</div>
+                  <div className={styles.softTitle}>📩 Pedidos recebidos</div>
+                  {incoming.length === 0 ? (
+                    <div className={styles.softHint}>Sem pedidos por enquanto.</div>
+                  ) : (
+                    <div className={styles.list}>
+                      {incoming.map((r) => (
+                        <div key={r.id || r.fromUserId} className={styles.row}>
+                          <div className={styles.rowLeft}>
+                            <div className={styles.rowName}>{r.fromUser?.name || "Usuário"}</div>
+                            <div className={styles.rowSub}>Quer te adicionar</div>
+                          </div>
+
+                          <div className={styles.rowRight}>
+                            <button
+                              type="button"
+                              className={styles.primaryBtn}
+                              disabled={actionBusy}
+                              onClick={() => handleAccept(r.fromUserId)}
+                            >
+                              Aceitar
+                            </button>
+                            <button
+                              type="button"
+                              className={styles.ghostBtnWide}
+                              disabled={actionBusy}
+                              onClick={() => handleDecline(r.fromUserId)}
+                            >
+                              Recusar
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              ) : friendsError ? (
+
                 <div className={styles.softCard}>
-                  <div className={styles.softTitle}>Erro ao carregar amigos 😬</div>
-                  <div className={styles.softHint}>{friendsError}</div>
-                  <button type="button" className={styles.primaryBtn} onClick={refreshFriends}>
-                    Tentar de novo
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div className={styles.softCard}>
-                    <div className={styles.softTitle}>📩 Pedidos recebidos</div>
-                    {incoming.length === 0 ? (
-                      <div className={styles.softHint}>Sem pedidos por enquanto.</div>
-                    ) : (
-                      <div className={styles.list}>
-                        {incoming.map((r) => (
-                          <div key={r.id || r.fromUserId} className={styles.row}>
+                  <div className={styles.softTitle}>🤝 Amigos ({friends.length})</div>
+                  {friends.length === 0 ? (
+                    <div className={styles.softHint}>Você ainda não tem amigos.</div>
+                  ) : (
+                    <div className={styles.list}>
+                      {friends.map((f) => {
+                        const pr = presenceMap?.[f.id] || {};
+                        const status = pr.status || "OFFLINE";
+                        return (
+                          <div key={f.id} className={styles.row}>
                             <div className={styles.rowLeft}>
-                              <div className={styles.rowName}>{r.fromUser?.name || "Usuário"}</div>
-                              <div className={styles.rowSub}>Quer te adicionar</div>
+                              <div className={styles.rowName}>{f.name}</div>
+                              <div className={styles.rowSub}>
+                                {status === "ONLINE" ? "🟢 Online" : status === "IN_MATCH" ? "🟡 Em jogo" : "⚪ Offline"}
+                              </div>
                             </div>
 
                             <div className={styles.rowRight}>
                               <button
                                 type="button"
-                                className={styles.primaryBtn}
-                                disabled={actionBusy}
-                                onClick={() => handleAccept(r.fromUserId)}
-                              >
-                                Aceitar
-                              </button>
-                              <button
-                                type="button"
                                 className={styles.ghostBtnWide}
-                                disabled={actionBusy}
-                                onClick={() => handleDecline(r.fromUserId)}
+                                onClick={() => onStartChat?.({ id: f.id, name: f.name, avatar: f.avatar })}
                               >
-                                Recusar
+                                💬 Chat
                               </button>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
 
-                  <div className={styles.softCard}>
-                    <div className={styles.softTitle}>🤝 Amigos ({friends.length})</div>
-                    {friends.length === 0 ? (
-                      <div className={styles.softHint}>Você ainda não tem amigos.</div>
-                    ) : (
-                      <div className={styles.list}>
-                        {friends.map((f) => {
-                          const pr = presenceMap?.[f.id] || {};
-                          const status = pr.status || "OFFLINE";
-                          return (
-                            <div key={f.id} className={styles.row}>
-                              <div className={styles.rowLeft}>
-                                <div className={styles.rowName}>{f.name}</div>
-                                <div className={styles.rowSub}>
-                                  {status === "ONLINE"
-                                    ? "🟢 Online"
-                                    : status === "IN_MATCH"
-                                    ? "🟡 Em jogo"
-                                    : "⚪ Offline"}
-                                </div>
-                              </div>
-
-                              <div className={styles.rowRight}>
-                                <button
-                                  type="button"
-                                  className={styles.ghostBtnWide}
-                                  onClick={() => onStartChat?.({ id: f.id, name: f.name, avatar: f.avatar })}
-                                >
-                                  💬 Chat
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-
-            <div className={styles.block}>
-              <div className={styles.blockTitle}>🌐 Amigos (Lite)</div>
-              <ProfileFriendsLite user={user} />
-            </div>
+                <div className={styles.softCard}>
+                  <div className={styles.softTitle}>🌐 Amigos (Lite)</div>
+                  <ProfileFriendsLite user={user} />
+                </div>
+              </>
+            )}
           </div>
         ) : null}
 
+        {/* =========================
+            OFICIAL (1 coluna)
+        ========================= */}
         {tab === "official" ? (
-          <div className={styles.grid2}>
-            <div className={styles.block}>
-              <div className={styles.blockTitle}>🏆 Perfil oficial (core)</div>
-              <div className={styles.softCard}>
-                <div className={styles.softTitle}>Seu core do BóPôFut</div>
-                <div className={styles.softHint}>
-                  Aqui é onde entram partidas oficiais, números e histórico validado.
-                </div>
+          <div className={styles.block}>
+            <div className={styles.blockTitle}>🏆 Oficial</div>
 
-                <div className={styles.pillsRow} style={{ marginTop: 12 }}>
-                  <Pill>⚽ Partidas: {merged.stats?.gamesPlayed || 0}</Pill>
-                  <Pill>🥅 Gols: {merged.stats?.goals || 0}</Pill>
-                  <Pill>🎁 Assist.: {merged.stats?.assists || 0}</Pill>
-                </div>
+            <div className={styles.softCard}>
+              <div className={styles.softTitle}>Números do jogador</div>
+              <div className={styles.softHint}>
+                Quando teu backend estiver completo, esses números vêm validados. Por enquanto: 0 quando não existir.
               </div>
 
-              {!iAmViewingSomeone ? (
-                <div className={styles.actionRow}>
-                  <button type="button" className={styles.ghostBtnWide} onClick={onOpenAccountSettings}>
-                    ⚙️ Conta
+              <div className={styles.profileQuickStats} style={{ marginTop: 12 }}>
+                {topStats.map((s) => (
+                  <div key={s.l} className={styles.quickStat}>
+                    <div className={styles.quickStatTop}>
+                      <span className={styles.quickStatIcon}>{s.k}</span>
+                      <span className={styles.quickStatVal}>{s.v}</span>
+                    </div>
+                    <div className={styles.quickStatLabel}>{s.l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {!iAmViewingSomeone ? (
+              <div className={styles.actionRow}>
+                <button type="button" className={styles.ghostBtnWide} onClick={onOpenAccountSettings}>
+                  ⚙️ Conta
+                </button>
+
+                {isOrganizer ? (
+                  <button type="button" className={styles.ghostBtnWide} onClick={onOpenOrganizerPanel}>
+                    🧠 Painel Organizador
                   </button>
-                  {isOrganizer ? (
-                    <button type="button" className={styles.ghostBtnWide} onClick={onOpenOrganizerPanel}>
-                      🧠 Painel Organizador
-                    </button>
-                  ) : null}
-                  {isArenaOwner ? (
-                    <>
-                      <button type="button" className={styles.ghostBtnWide} onClick={onOpenArenaPanel}>
-                        🏟️ Painel Arena
-                      </button>
-                      <button type="button" className={styles.ghostBtnWide} onClick={onOpenAgenda}>
-                        🗓️ Agenda
-                      </button>
-                      <button type="button" className={styles.ghostBtnWide} onClick={onOpenFinance}>
-                        💰 Financeiro
-                      </button>
-                      <button type="button" className={styles.ghostBtnWide} onClick={onOpenPromotions}>
-                        🎟️ Promoções
-                      </button>
-                    </>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
+                ) : null}
 
-            <div className={styles.block}>
-              <div className={styles.blockTitle}>📌 Observação</div>
-              <div className={styles.softCard}>
-                <div className={styles.softTitle}>404 tratado</div>
-                <div className={styles.softHint}>
-                  Seu front tentava chamar <b>/users/me/profile</b>, mas seu backend ainda não tem esse endpoint.
-                  Agora a gente considera 404 como “ok” e usa dados locais (user/social-lite) pra não quebrar sua UI.
-                </div>
+                {isArenaOwner ? (
+                  <>
+                    <button type="button" className={styles.ghostBtnWide} onClick={onOpenArenaPanel}>
+                      🏟️ Painel Arena
+                    </button>
+                    <button type="button" className={styles.ghostBtnWide} onClick={onOpenAgenda}>
+                      🗓️ Agenda
+                    </button>
+                    <button type="button" className={styles.ghostBtnWide} onClick={onOpenFinance}>
+                      💰 Financeiro
+                    </button>
+                    <button type="button" className={styles.ghostBtnWide} onClick={onOpenPromotions}>
+                      🎟️ Promoções
+                    </button>
+                  </>
+                ) : null}
               </div>
-            </div>
+            ) : null}
           </div>
         ) : null}
 
+        {/* =========================
+            CONQUISTAS
+        ========================= */}
         {tab === "achievements" ? (
           <div className={styles.block}>
             <div className={styles.blockTitle}>🏅 Conquistas</div>
@@ -1083,6 +999,9 @@ export default function ProfileHybrid({
           </div>
         ) : null}
 
+        {/* =========================
+            GESTÃO
+        ========================= */}
         {tab === "management" && !iAmViewingSomeone ? (
           <div className={styles.block}>
             <div className={styles.blockTitle}>🧠 Gestão</div>

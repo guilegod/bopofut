@@ -13,6 +13,10 @@
 
   padding-left: 0;
   padding-right: 0;
+
+  /* ✅ necessário pro watermark ficar atrás sem quebrar layout */
+  position: relative;
+  isolation: isolate;
 }
 
 /* ✅ Banner alinhado com as seções (sem grudar na borda) */
@@ -203,6 +207,9 @@ html[data-theme="dark"] .arenasScroller::-webkit-scrollbar-track {
   position: relative;
   overflow: hidden;
   transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+
+  /* ✅ garante que o card fique por cima do watermark */
+  z-index: 1;
 }
 
 .arenaCard::before {
@@ -578,5 +585,50 @@ html[data-theme="dark"] .emptyBox {
 
   .h2 {
     font-size: 19px;
+  }
+}
+
+/* =========================================================
+   ✅ Watermark premium de fundo (Logo)
+   - Coloque a logo em: /public/brand-watermark.svg
+   - Pode ser PNG também, mas SVG fica mais clean.
+========================================================= */
+.brandWatermark{
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  /* 🔥 MAIS VISÍVEL */
+  opacity: 0.30;
+
+  /* ✅ você disse que já é PNG */
+  background-image: url("/brand-watermark.png");
+  background-repeat: no-repeat;
+
+  /* ✅ posição (um pouco mais pra baixo do header) */
+  background-position: center 140px;
+
+  /* 🔥 MAIOR */
+  background-size: min(88vw, 560px);
+
+  /* deixa premium sem “estourar” */
+  filter:
+    saturate(1)
+    contrast(1.08)
+    drop-shadow(0 24px 70px rgba(0,0,0,.18));
+}
+
+/* Dark: um pouco menos forte (pra não “gritar”) */
+html[data-theme="dark"] .brandWatermark{
+  opacity: 0.10;
+  filter:
+    saturate(0.95)
+    contrast(1.12)
+    drop-shadow(0 28px 80px rgba(0,0,0,.32));
+}
+@media (min-width: 900px){
+  .brandWatermark{
+    background-size: 620px;
   }
 }

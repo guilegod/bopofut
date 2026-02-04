@@ -5,6 +5,7 @@ const API_BASE =
 
 // ✅ lista de chaves possíveis onde seu app pode estar salvando token
 const TOKEN_KEYS = [
+  "bopo_token",      // ✅ do seu authService.js (principal)
   "bolafut_token",
   "token",
   "auth_token",
@@ -25,7 +26,7 @@ export function getToken() {
   }
 }
 
-export function setToken(token, key = "bolafut_token") {
+export function setToken(token, key = "bopo_token") {
   try {
     if (!token) {
       TOKEN_KEYS.forEach((k) => localStorage.removeItem(k));
@@ -49,7 +50,6 @@ export async function apiRequest(path, options = {}) {
   // ✅ token manual tem prioridade (options.token)
   const manualToken = (options.token || "").toString().trim();
   const storedToken = getToken();
-
   const tokenToUse = manualToken || storedToken;
 
   if (tokenToUse && !headers.Authorization && !headers.authorization) {
@@ -117,9 +117,9 @@ export async function apiRequest(path, options = {}) {
     });
 
     const message =
-  (data && (data.error || data.message)) ||
-  rawText ||
-  `Erro HTTP ${res.status}`;
+      (data && (data.error || data.message)) ||
+      rawText ||
+      `Erro HTTP ${res.status}`;
 
     const err = new Error(message);
     err.status = res.status;

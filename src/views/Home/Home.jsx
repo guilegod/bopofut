@@ -261,6 +261,9 @@ export default function Home({
 
   return (
     <div className={styles.page}>
+      {/* ✅ Watermark premium de fundo (logo) */}
+      <div className={styles.brandWatermark} aria-hidden="true" />
+
       {!heroDismissed ? (
         <div className={`${styles.hero} ${heroCompact ? styles.heroCompact : ""}`}>
           <button
@@ -429,7 +432,6 @@ export default function Home({
           )}
         </div>
       </section>
-
     </div>
   );
 }
